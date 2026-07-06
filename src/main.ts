@@ -9,6 +9,7 @@ import { mergeGames, parseMarkdownReport, renderMarkdown } from './markdown';
 import type { GameRecord, ReportData, ReportMeta } from './types';
 import { renderSparklineSvg } from './sparkline';
 import { registerServiceWorker } from './pwa';
+import { groupPlayerNames, nameKey } from './playerMatch';
 
 registerServiceWorker();
 
@@ -19,6 +20,7 @@ let records: GameRecord[] = [];
 let currentMarkdown = '';
 let currentAgg: Aggregates | null = null;
 let detectedUsername: string | null = null;
+let detectedMatchKeys: Set<string> | null = null;
 
 // ---------- dom ----------
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -36,6 +38,22 @@ const progressText = $('#progress-text');
 const resultsEl = $('#results');
 const exportCard = $('#export-card');
 const serverMsg = $('#server-msg');
+
+function isPlayerNameMatch(name: string | undefined, matchKeys: Set<string>): boolean {
+  return !!name && name !== '?' && matchKeys.has(nameKey(name));
+}
+function hasAnyPlayerName(g: ParsedGame, matchKeys: Set<string>): boolean {
+  return isPlayerNameMatch(g.headers['White'], matchKeys) || isPlayerNameMatch(g.headers['Black'], matchKeys);
+}
+function hasAnyNameAtAll(g: ParsedGame): boolean {
+  return (!!g.headers['White'] && g.headers['White'] !== '?') || (!!g.headers['Black'] && g.headers['Black'] !== '?');
+}
+// A chapter with no [White]/[Black] tags at all has no other player to attribute it to, so it's
+// assumed to be the analyzed player's game (analyzeGame infers their color from the chapter title
+// when possible).
+function gamesForPlayer(matchKeys: Set<string>): ParsedGame[] {
+  return parsedGames.filter((g) => (hasAnyNameAtAll(g) ? hasAnyPlayerName(g, matchKeys) : true));
+}
 
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
@@ -117,38 +135,38 @@ async function handleFiles(files: FileList | File[]) {
   if (parsedGames.length || baseReport) {
     const detected = detectMainPlayer();
     detectedUsername = detected?.name ?? null;
+    detectedMatchKeys = detected?.matchKeys ?? null;
     detectedPlayerName.textContent = detectedUsername ?? '—';
-    detectedPlayerCount.textContent = detected ? ` — ${detected.count} game${detected.count === 1 ? '' : 's'} will be analyzed` : '';
+    const total = detectedMatchKeys ? gamesForPlayer(detectedMatchKeys).length : 0;
+    detectedPlayerCount.textContent = detectedMatchKeys ? ` — ${total} game${total === 1 ? '' : 's'} will be analyzed` : '';
     configCard.hidden = false;
     configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
-// Auto-detects who the report is for: the name appearing in the most games (case-insensitively —
-// so the same player isn't split into separate entries by inconsistent header casing), weighted
-// toward a loaded report's existing owner so re-uploads stay attributed to the same player.
-function detectMainPlayer(): { name: string; count: number } | null {
-  const counts = new Map<string, { display: string; count: number }>();
+// Auto-detects who the report is for: the player appearing in the most games, weighted toward a
+// loaded report's existing owner so re-uploads stay attributed to the same player. Name variants
+// that likely refer to the same person (different casing, "Last, First" vs "First Last", or a
+// nickname/first-name-only form) are folded together by groupPlayerNames() so a tournament roster
+// with inconsistent naming doesn't silently drop that player's games from the report.
+function detectMainPlayer(): { name: string; count: number; matchKeys: Set<string> } | null {
+  const counts = new Map<string, number>();
   for (const g of parsedGames) {
     for (const key of ['White', 'Black'] as const) {
       const name = g.headers[key];
       if (!name || name === '?') continue;
-      const lower = name.toLowerCase();
-      const entry = counts.get(lower);
-      if (entry) entry.count++;
-      else counts.set(lower, { display: name, count: 1 });
+      counts.set(name, (counts.get(name) ?? 0) + 1);
     }
   }
   if (!counts.size && !baseReport) return null;
-  if (baseReport) {
-    const lower = baseReport.meta.username.toLowerCase();
-    if (!counts.has(lower)) counts.set(lower, { display: baseReport.meta.username, count: 0 });
-  }
-  const weight = (lower: string) =>
-    (baseReport && lower === baseReport.meta.username.toLowerCase() ? 10000 : 0) + counts.get(lower)!.count;
-  const bestKey = [...counts.keys()].sort((a, b) => weight(b) - weight(a))[0];
-  const best = counts.get(bestKey)!;
-  return { name: best.display, count: best.count };
+  if (baseReport && !counts.has(baseReport.meta.username)) counts.set(baseReport.meta.username, 0);
+
+  const groups = groupPlayerNames(counts);
+  const baseKey = baseReport ? nameKey(baseReport.meta.username) : null;
+  const weight = (g: (typeof groups)[number]) => g.count + (baseKey && g.keys.has(baseKey) ? 10000 : 0);
+  groups.sort((a, b) => weight(b) - weight(a));
+  const best = groups[0];
+  return { name: best.display, count: best.count, matchKeys: best.keys };
 }
 
 fileInput.addEventListener('change', () => {
@@ -177,26 +195,19 @@ analyzeBtn.addEventListener('click', () => void runAnalysis());
 
 async function runAnalysis() {
   const username = detectedUsername;
-  if (!username) return;
+  const matchKeys = detectedMatchKeys;
+  if (!username || !matchKeys) return;
   const depth = parseInt(depthSelect.value, 10);
   const useEngine = depth > 0;
 
   analyzeBtn.disabled = true;
   progressWrap.hidden = false;
 
+  const baseReportIsSamePlayer = !!baseReport && matchKeys.has(nameKey(baseReport.meta.username));
+
   // Skip games already analyzed in the loaded report (same id, same player).
-  const knownIds = new Set(
-    (baseReport && baseReport.meta.username.toLowerCase() === username.toLowerCase()
-      ? baseReport.games
-      : []
-    ).map((g) => g.id)
-  );
-  const toAnalyze = parsedGames.filter((g) => {
-    const isPlayer =
-      (g.headers['White'] ?? '').toLowerCase() === username.toLowerCase() ||
-      (g.headers['Black'] ?? '').toLowerCase() === username.toLowerCase();
-    return isPlayer && !knownIds.has(gameId(g));
-  });
+  const knownIds = new Set((baseReportIsSamePlayer ? baseReport!.games : []).map((g) => g.id));
+  const toAnalyze = gamesForPlayer(matchKeys).filter((g) => !knownIds.has(gameId(g)));
 
   let engine: Engine | null = null;
   try {
@@ -210,9 +221,14 @@ async function runAnalysis() {
     let done = 0;
     const newRecords: GameRecord[] = [];
     for (let i = 0; i < toAnalyze.length; i++) {
-      progressText.textContent = `Analyzing game ${i + 1} of ${toAnalyze.length}… (${toAnalyze[i].headers['White']} vs ${toAnalyze[i].headers['Black']})`;
+      const g = toAnalyze[i];
+      const label = g.headers['White'] && g.headers['Black']
+        ? `${g.headers['White']} vs ${g.headers['Black']}`
+        : g.headers['ChapterName'] || g.headers['Event'] || 'untitled game';
+      progressText.textContent = `Analyzing game ${i + 1} of ${toAnalyze.length}… (${label})`;
       const rec = await analyzeGame(toAnalyze[i], {
         username,
+        matchKeys,
         depth,
         engine,
         onPosition: () => {
@@ -225,10 +241,7 @@ async function runAnalysis() {
       await new Promise((r) => setTimeout(r, 0)); // let the UI breathe
     }
 
-    const oldGames =
-      baseReport && baseReport.meta.username.toLowerCase() === username.toLowerCase()
-        ? baseReport.games
-        : [];
+    const oldGames = baseReportIsSamePlayer ? baseReport!.games : [];
     records = mergeGames(oldGames, newRecords);
 
     const now = new Date().toISOString();

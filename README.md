@@ -17,7 +17,7 @@ A local-first chess toolkit with **five tools**, each its own single-page app, r
 
 Turns PGN files from **chess.com** or **lichess** into a deep, parent-friendly performance report. Stores growing reports as Markdown you can re-open and extend over time.
 
-The player the report is for is **auto-detected**, not picked from a dropdown: whichever name appears in the most games (case-insensitively, so inconsistent header casing can't split one player into separate entries) is assumed to be the report's subject, and every one of their games in the loaded file(s) is analyzed. Re-uploading a saved `.md` report weights its existing owner so the same player stays attributed across sessions.
+The player the report is for is **auto-detected**, not picked from a dropdown: whichever name appears in the most games is assumed to be the report's subject, and every one of their games in the loaded file(s) is analyzed. Name variants that likely refer to the same person are folded together automatically — different casing, "Last, First" vs "First Last" order (common in tournament-software rosters), and a shortened nickname/first-name-only form (e.g. a lichess study chapter titled just "Eevie" alongside others titled "Eevie Tare") — so a file with inconsistent naming across chapters or exports doesn't silently drop that player's games. A chapter with **no player tags at all** (some lichess study chapters only have a title like "Black vs Opponent Name") is still included, attributed to the detected player with their color inferred from that title. Re-uploading a saved `.md` report weights its existing owner so the same player stays attributed across sessions.
 
 ---
 
@@ -105,6 +105,7 @@ src/
   types.ts          shared data model (also the shape persisted in the .md)
   pgn.ts            multi-game PGN splitting & parsing, eval/clock tag extraction
   openings.ts       opening identification (header → ECOUrl → book)
+  playerMatch.ts    groups PGN name variants (casing, "Last, First", nicknames) into one player
   engine.ts         Stockfish 18 (lite) WASM worker wrapper — shared by analyze & live
   analyze.ts        per-game analysis: win%, accuracy, errors, phases, patterns
   aggregate.ts      cross-game tables, pattern detection, puzzle recommendations

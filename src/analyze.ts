@@ -3,6 +3,7 @@ import type { Engine } from './engine';
 import type { ParsedGame } from './pgn';
 import { gameId, timeClassOf } from './pgn';
 import { identifyOpening } from './openings';
+import { inferOwnerColorFromTitle, nameKey } from './playerMatch';
 import type { Color, ErrCounts, GameRecord, Phase, Result, WorstMove } from './types';
 
 export const WINNING_WINPCT = 70;
@@ -64,6 +65,7 @@ function emptyErr(): ErrCounts {
 
 export interface AnalyzeOptions {
   username: string;
+  matchKeys: Set<string>; // every name variant (see playerMatch.ts) that counts as the same player as `username`
   depth: number;          // engine depth; 0 = no engine (PGN evals only)
   engine: Engine | null;
   onPosition?: () => void; // progress tick per evaluated position
@@ -78,8 +80,15 @@ export function positionsNeeded(game: ParsedGame, useEngine: boolean): number {
 
 export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promise<GameRecord> {
   const h = game.headers;
+  const hasWhiteName = !!h['White'] && h['White'] !== '?';
+  const hasBlackName = !!h['Black'] && h['Black'] !== '?';
+  // Some study chapters carry no player tags at all — only a chapter title naming the color the
+  // owner played (e.g. "Black vs Suhaan Kesavan..."). Since there's no other name to attribute
+  // those to, default them to the player being analyzed rather than dropping them.
   const userIsWhite =
-    (h['White'] ?? '').toLowerCase() === opts.username.toLowerCase();
+    hasWhiteName || hasBlackName
+      ? opts.matchKeys.has(nameKey(h['White'] ?? ''))
+      : inferOwnerColorFromTitle(h['ChapterName'] || h['Event']) !== 'b';
   const userColor: Color = userIsWhite ? 'w' : 'b';
   const resultRaw = h['Result'] ?? '*';
   let result: Result = 'draw';
@@ -270,8 +279,8 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
     date: h['UTCDate'] || h['Date'] || '????.??.??',
     site: h['Link'] || h['Site'] || '',
     event: h['Event'] || '',
-    white: h['White'] || '?',
-    black: h['Black'] || '?',
+    white: h['White'] || (userIsWhite ? opts.username : '?'),
+    black: h['Black'] || (!userIsWhite ? opts.username : '?'),
     userColor,
     result,
     resultRaw,
