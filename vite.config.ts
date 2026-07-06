@@ -19,6 +19,7 @@ export default defineConfig({
         analyze: page('./analyze.html'),
         live: page('./live.html'),
         swiss: page('./swiss.html'),
+        rating: page('./rating.html'),
       },
     },
   },

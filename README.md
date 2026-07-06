@@ -1,13 +1,14 @@
 # ♟ PawnPrint
 
-A local-first chess toolkit with **three tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. An optional Node/Express backend adds server-side report storage, but the whole app also runs as a pure static site (e.g. GitHub Pages).
+A local-first chess toolkit with **four tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. An optional Node/Express backend adds server-side report storage, but the whole app also runs as a pure static site (e.g. GitHub Pages).
 
 | Page | Tool | What it does |
 |---|---|---|
-| `index.html` | **Hub** | Landing page linking to the three tools |
+| `index.html` | **Hub** | Landing page linking to the four tools |
 | `analyze.html` | **Analyze PGN** | Deep performance report from chess.com / lichess PGNs |
 | `live.html` | **Live & Engine** | Watch a live lichess game with move feedback; best-move suggestion from any position |
 | `swiss.html` | **Swiss Pairings** | Run a full Swiss tournament from a roster |
+| `rating.html` | **Rating Estimator** | Estimate a new US Chess (USCF) rating after an event |
 
 ---
 
@@ -95,7 +96,7 @@ Prefer the backend features (server report storage) live too? Deploy the whole t
 ## Project layout
 
 ```
-index.html / analyze.html / live.html / swiss.html   the four pages (Vite multi-page build)
+index.html / analyze.html / live.html / swiss.html / rating.html   the five pages (Vite multi-page build)
 src/
   types.ts        shared data model (also the shape persisted in the .md)
   pgn.ts          multi-game PGN splitting & parsing, eval/clock tag extraction
@@ -109,6 +110,8 @@ src/
   live.ts         Live & Engine UI (position analysis + live-game feedback)
   swissEngine.ts  pure Swiss logic: roster parsing, pairing, results, standings
   swiss.ts        Swiss Pairings UI
+  ratingEngine.ts pure USCF rating-estimate logic
+  rating.ts       Rating Estimator UI
 server/
   server.mjs      Express: static hosting, /api/reports save/load, /api/live/:id SSE relay
 public/engine/    Stockfish 18 (lite) worker + wasm
@@ -157,6 +160,19 @@ Run a complete Swiss-system tournament in the browser.
 - **Navigation:** every tool page has a **🏠 Home** link in the top nav back to the PawnPrint hub — your tournament stays saved when you navigate away and back.
 
 The pairing engine (`src/swissEngine.ts`) is pure and framework-free. It has been stress-tested across many field sizes, round counts, and result models: no rematches when mathematically avoidable, byes capped at one per player, and conserved scores.
+
+---
+
+## Tool 4 — Rating Estimator (`/rating.html`)
+
+Estimate a new US Chess (USCF) rating after an event, using the published rating formula.
+
+- **Inputs:** current rating, total score, number of prior rated games, age (optional), and up to 15 opponent ratings.
+- **Formula:** per-game win expectancy on the classic logistic curve with the ±400 rating-difference cap; K-factor = 800 / (N + games), where N is 50 for an established player (≥ 26 prior games) or based on actual prior games for a provisional one; a bonus provision for scoring well above expectation; performance rating from the average opponent rating and score percentage.
+- **Dual-rated option:** "Use lower K values for high rated players (2200 and up) for estimating regular ratings in dual-rated events" — when checked and the current rating is 2200+, effective games are boosted for a lower K.
+- **Output:** new rating, rating change, performance rating, K value, plus a detail table (win expectancy sum, effective N, established/provisional status, base change vs. bonus) and contextual notes (provisional-rating caveat, junior-player note, dual-rated applicability, single-event swing cap).
+
+This is an **unofficial estimate**, clearly labeled as such in the tool — US Chess's actual post-event computation is run centrally (Glickman-based) and may differ slightly; the estimator mirrors the classic public formula players commonly use to predict their own change. The engine (`src/ratingEngine.ts`) is pure and framework-free.
 
 ---
 

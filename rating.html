@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USCF Rating Estimator — PawnPrint</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♟</text></svg>" />
+  </head>
+  <body>
+    <nav class="topnav">
+      <a class="brand" href="index.html">♟ PawnPrint</a>
+      <div class="navlinks">
+        <a href="index.html">🏠 Home</a>
+        <a href="analyze.html">Analyze PGN</a>
+        <a href="live.html">Live &amp; Engine</a>
+        <a href="swiss.html">Swiss Pairings</a>
+        <a href="rating.html" class="active">Rating Estimator</a>
+      </div>
+    </nav>
+    <div id="app">
+      <header class="app-header">
+        <h1>📈 USCF Rating Estimator</h1>
+        <p class="tagline">Estimate your new US Chess rating after an event — win expectancy, K-factor, bonus points, and performance rating, using the published rating formula.</p>
+      </header>
+
+      <section class="card">
+        <h2><span class="step">1</span> Player</h2>
+        <div class="rating-grid">
+          <label class="stack">Current rating
+            <input type="number" id="r-current" class="text-input" placeholder="1500" min="100" max="3200" />
+          </label>
+          <label class="stack">Total score
+            <input type="number" id="r-score" class="text-input" placeholder="3.5" min="0" step="0.5" />
+          </label>
+          <label class="stack">Number of prior rated games
+            <input type="number" id="r-priorgames" class="text-input" placeholder="40" min="0" step="1" />
+          </label>
+          <label class="stack">Age <span class="hint">(optional)</span>
+            <input type="number" id="r-age" class="text-input" placeholder="14" min="1" max="120" step="1" />
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">2</span> Opponents <span class="hint">(up to 15 ratings)</span></h2>
+        <div id="opponent-grid" class="opponent-grid"></div>
+        <p class="hint">Enter one rating per game played in this event. Leave the rest blank.</p>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">3</span> Options</h2>
+        <label class="checkbox-row">
+          <input type="checkbox" id="r-duallowk" />
+          Use lower K values for high rated players (2200 and up) for estimating regular ratings in dual-rated events
+        </label>
+        <div class="btn-row" style="margin-top:16px;">
+          <button id="r-estimate-btn" class="btn btn-primary btn-lg">Estimate rating →</button>
+          <button id="r-clear-btn" class="btn btn-ghost">Clear all</button>
+        </div>
+        <div id="r-error" class="neg" style="margin-top:10px;"></div>
+      </section>
+
+      <section class="card" id="r-results-card" hidden>
+        <h2><span class="step">4</span> Estimated Rating</h2>
+        <div class="summary-cards">
+          <div class="stat-card"><span class="big" id="r-new-rating">—</span><span class="label">New Rating</span></div>
+          <div class="stat-card"><span class="big" id="r-change">—</span><span class="label">Rating Change</span></div>
+          <div class="stat-card"><span class="big" id="r-performance">—</span><span class="label">Performance</span></div>
+          <div class="stat-card"><span class="big" id="r-kvalue">—</span><span class="label">K Value</span></div>
+        </div>
+        <table class="rating-detail-table">
+          <tbody>
+            <tr><td>Games counted</td><td class="num" id="r-games">—</td></tr>
+            <tr><td>Sum of win expectancy (We)</td><td class="num" id="r-we">—</td></tr>
+            <tr><td>Effective number of games (N)</td><td class="num" id="r-n">—</td></tr>
+            <tr><td>Rating status</td><td class="num" id="r-status">—</td></tr>
+            <tr><td>Base rating change (K × (S − We))</td><td class="num" id="r-basechange">—</td></tr>
+            <tr><td>Bonus points</td><td class="num" id="r-bonus">—</td></tr>
+          </tbody>
+        </table>
+        <div id="r-notes" class="rating-notes"></div>
+        <p class="hint" style="margin-top:14px;">This is an unofficial estimate using the published US Chess rating formula (win expectancy with the 400-point cap, the N+m K-factor, and a bonus provision for large over-performance). US Chess's actual computation is run centrally and may differ slightly.</p>
+      </section>
+
+      <footer class="app-footer">
+        PawnPrint · runs entirely in your browser · not affiliated with US Chess Federation
+      </footer>
+    </div>
+    <script type="module" src="/src/rating.ts"></script>
+  </body>
+</html>

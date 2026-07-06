@@ -308,6 +308,23 @@ a { color: var(--blue); }
 .round-block h3 { margin: 4px 0 6px; }
 .result-sel { min-width: 150px; padding: 5px 8px; }
 
+/* ---------- rating estimator ---------- */
+.rating-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+.opponent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.opp-slot { font-size: 0.78rem; color: var(--text-dim); }
+.opp-input { padding: 7px 8px; text-align: center; }
+.checkbox-row {
+  display: flex; align-items: flex-start; gap: 10px; font-size: 0.92rem; cursor: pointer;
+  color: var(--text); line-height: 1.4;
+}
+.checkbox-row input[type="checkbox"] { margin-top: 3px; width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--accent); }
+.rating-detail-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.92rem; }
+.rating-detail-table td { padding: 7px 4px; border-bottom: 1px solid var(--border); }
+.rating-detail-table td:first-child { color: var(--text-dim); }
+.rating-notes { margin-top: 10px; }
+.rating-notes ul { padding-left: 20px; margin: 0; }
+.rating-notes li { color: var(--gold); font-size: 0.88rem; margin-bottom: 4px; }
+
 @media print {
   .topnav, .btn, .config-row, #setup-card, #rounds, #section-tabs, #control-card, #standings-card,
   .app-footer, .app-header .tagline { display: none !important; }
