@@ -137,8 +137,7 @@ samples/          example PGNs (bundled "try the sample" button)
 PawnPrint is an installable PWA (Progressive Web App):
 
 - **Install** — most browsers show an install prompt (address-bar icon, or browser menu → "Install PawnPrint" / "Add to Home Screen"). Installed, it opens in its own window with no browser chrome, like a native app.
-- **Offline** — a service worker caches the app shell (HTML/CSS/JS) and the Stockfish engine files after your first visit, using a stale-while-revalidate strategy: cached assets load instantly while a fresh copy is fetched in the background for next time. Once the engine has loaded once, position analysis and PGN review keep working with no connectivity at all — handy in a tournament hall with bad wifi. Live game streaming and lichess study/search lookups still need a connection, since those are fetched from lichess's API rather than cached.
-- Assets update automatically in the background; reload the app to pick up a new version.
+- **Offline** — a service worker caches the app shell and the Stockfish engine files after your first visit. Content-hashed JS/CSS/image assets are cache-first with a background refresh (safe, since a new build gets a new URL); HTML pages are network-first so you always get the latest version when online, falling back to the cached copy only when you're offline. Once the engine has loaded once, position analysis and PGN review keep working with no connectivity at all — handy in a tournament hall with bad wifi. Live game streaming and lichess study/search lookups still need a connection, since those are fetched from lichess's API rather than cached.
 
 ---
 
