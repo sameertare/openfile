@@ -16,6 +16,11 @@
 
 * { box-sizing: border-box; }
 
+/* The [hidden] attribute must always win over any class's own `display` rule (e.g. `.config-row
+   { display: flex }` would otherwise out-cascade the browser's default `[hidden]{display:none}`,
+   since author styles beat UA styles regardless of specificity or source order). */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--bg);
