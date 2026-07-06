@@ -8,8 +8,8 @@ export interface ParsedMove {
   moveNo: number;      // full-move number
   before: string;      // FEN before the move
   after: string;       // FEN after the move
-  evalCp: number | null;   // from PGN [%eval] comment, white perspective, centipawns (mate mapped to ±10000-n)
-  clockSec: number | null; // from [%clk] comment — clock of the mover after the move
+  evalCp: number | null;   // from PGN [%eval] comment, white perspective, centipawns (mate mapped to plus/minus 10000-n)
+  clockSec: number | null; // from [%clk] comment - clock of the mover after the move
 }
 
 export interface ParsedGame {
@@ -18,9 +18,34 @@ export interface ParsedGame {
   raw: string;
 }
 
+/** Why a chunk failed to become a game - surfaced in the UI so failures aren't a black box. */
+export interface ParseFailure {
+  reason: string;
+  snippet: string; // first line of the offending chunk, for identification
+}
+
+const BOM_CODE = 0xfeff;
+
+/**
+ * Drop stray control characters (other than tab/newline) that typically show up when a file got
+ * decoded with the wrong text encoding, and a leading byte-order-mark if present. Written as a
+ * char-code filter rather than a regex hex-range, to avoid escape-sequence corruption.
+ */
+function stripStrayControlChars(text: string): string {
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (i === 0 && code === BOM_CODE) continue;
+    const isPrintable = code >= 32 && code !== 127;
+    const isAllowedWhitespace = code === 9 || code === 10 || code === 13; // tab, newline, CR
+    if (isPrintable || isAllowedWhitespace) out += text[i];
+  }
+  return out;
+}
+
 /** Split a file that may contain many games into individual PGN chunks. */
 export function splitPgn(text: string): string[] {
-  const normalized = text.replace(/\r\n/g, '\n').trim();
+  const normalized = stripStrayControlChars(text).replace(/\r\n?/g, '\n').trim();
   if (!normalized) return [];
   const chunks = normalized.split(/\n(?=\[Event\s)/g);
   return chunks.map((c) => c.trim()).filter((c) => c.length > 0 && /\[\w+\s/.test(c));
@@ -55,23 +80,46 @@ function clkToSec(clkStr: string): number | null {
   return sec;
 }
 
-export function parseGame(chunk: string): ParsedGame | null {
+function firstLine(chunk: string): string {
+  return chunk.split('\n', 1)[0]?.slice(0, 120) ?? '';
+}
+
+/**
+ * Some exporters (certain lichess tooling, third-party analysis tools) write eval and clock as
+ * two separate back-to-back comment blocks, e.g. "{ [%eval 0.2] } { [%clk 0:03:00] }", instead of
+ * one combined block. chess.js's PGN parser only accepts a single comment per move and throws on
+ * the second "{". Since headers use square brackets exclusively, merging every "}...{" run into a
+ * single space is safe across the whole chunk and collapses any number of adjacent blocks into one.
+ */
+function mergeAdjacentComments(chunk: string): string {
+  return chunk.replace(/\}\s*\{/g, ' ');
+}
+
+/**
+ * Parse one PGN chunk, reporting why on failure instead of silently dropping it.
+ * `parseGame` (below) is the same thing without the diagnostic - kept for existing callers.
+ */
+export function tryParseGame(rawChunk: string): { game: ParsedGame | null; error?: ParseFailure } {
+  const chunk = mergeAdjacentComments(rawChunk);
   const headers = parseHeaders(chunk);
   const chess = new Chess();
   try {
     chess.loadPgn(chunk);
-  } catch {
-    return null;
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    return { game: null, error: { reason, snippet: firstLine(rawChunk) } };
   }
   const history = chess.history({ verbose: true });
-  if (history.length === 0) return null;
+  if (history.length === 0) {
+    return { game: null, error: { reason: 'No moves in this game (likely aborted before move 1)', snippet: firstLine(chunk) } };
+  }
 
-  // Comments keyed by the FEN of the position *after* the commented move.
+  // Comments keyed by the FEN of the position after the commented move.
   const commentByFen = new Map<string, string>();
   try {
     for (const c of chess.getComments()) commentByFen.set(c.fen, c.comment);
   } catch {
-    /* comments unavailable — fine */
+    /* comments unavailable - fine */
   }
 
   const moves: ParsedMove[] = [];
@@ -91,7 +139,11 @@ export function parseGame(chunk: string): ParsedGame | null {
       clockSec: clkMatch ? clkToSec(clkMatch[1]) : null,
     });
   }
-  return { headers, moves, raw: chunk };
+  return { game: { headers, moves, raw: rawChunk } };
+}
+
+export function parseGame(chunk: string): ParsedGame | null {
+  return tryParseGame(chunk).game;
 }
 
 /** Stable id for deduping across sessions: prefer the game URL, else a content hash. */

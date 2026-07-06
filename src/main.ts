@@ -1,6 +1,6 @@
 import './style.css';
-import type { ParsedGame } from './pgn';
-import { gameId, parseGame, splitPgn } from './pgn';
+import type { ParsedGame, ParseFailure } from './pgn';
+import { gameId, splitPgn, tryParseGame } from './pgn';
 import { Engine } from './engine';
 import { analyzeGame, positionsNeeded } from './analyze';
 import { aggregate, scorePct, themeUrl } from './aggregate';
@@ -42,6 +42,13 @@ async function handleFiles(files: FileList | File[]) {
   let newGames = 0;
   let mdLoaded = 0;
   let failed = 0;
+  const failureCounts = new Map<string, { count: number; sample: string }>();
+  const recordFailure = (f: ParseFailure) => {
+    const existing = failureCounts.get(f.reason);
+    if (existing) existing.count++;
+    else failureCounts.set(f.reason, { count: 1, sample: f.snippet });
+  };
+
   for (const file of Array.from(files)) {
     const text = await file.text();
     if (file.name.endsWith('.md') || text.includes('chess-insight:data:v1')) {
@@ -61,12 +68,16 @@ async function handleFiles(files: FileList | File[]) {
       } else failed++;
       continue;
     }
-    for (const chunk of splitPgn(text)) {
-      const g = parseGame(chunk);
-      if (g) {
-        parsedGames.push(g);
+    const chunks = splitPgn(text);
+    for (const chunk of chunks) {
+      const { game, error } = tryParseGame(chunk);
+      if (game) {
+        parsedGames.push(game);
         newGames++;
-      } else failed++;
+      } else {
+        failed++;
+        if (error) recordFailure(error);
+      }
     }
   }
   // de-dupe parsed games by id
@@ -83,7 +94,19 @@ async function handleFiles(files: FileList | File[]) {
   if (baseReport) chips.push(`<span class="chip">📄 previous report: ${baseReport.games.length} analyzed game(s) for <b>${esc(baseReport.meta.username)}</b></span>`);
   if (failed) chips.push(`<span class="chip">⚠ ${failed} item(s) could not be parsed</span>`);
   if (mdLoaded && !parsedGames.length) chips.push(`<span class="chip">Tip: add new PGN files to extend this report</span>`);
-  fileSummary.innerHTML = chips.join(' ');
+  let html = chips.join(' ');
+  if (failureCounts.size) {
+    const rows = [...failureCounts.entries()]
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 6)
+      .map(
+        ([reason, { count, sample }]) =>
+          `<li><b>${count}×</b> ${esc(reason)} <span class="hint">— e.g. "${esc(sample)}"</span></li>`
+      )
+      .join('');
+    html += `<details class="parse-errors"><summary>Why ${failed} item(s) failed to parse</summary><ul>${rows}</ul></details>`;
+  }
+  fileSummary.innerHTML = html;
 
   if (parsedGames.length || baseReport) {
     populateUsernames();

@@ -201,7 +201,7 @@ function parsePlainList(text: string): RosterEntry[] {
   for (let raw of text.replace(/\r/g, '').split('\n')) {
     let line = raw.trim();
     if (!line) continue;
-    if (/^(name|player|rank)\b/i.test(line) && /rating|elo/i.test(line)) continue; // header row
+    if ((/^(name|player|rank)\b/i.test(line) || /^#/.test(line)) && /rating|elo|\bid\b/i.test(line)) continue; // header row
     line = line.replace(/^\s*\d+\s*[.)-]\s*/, ''); // strip "1." / "1)" / "1-"
     // find a rating-like trailing number
     let rating: number | null = null;

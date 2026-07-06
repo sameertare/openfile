@@ -33,6 +33,27 @@ const FORMAT_HINT: Record<string, string> = {
   table: 'A delimited table whose header row labels the columns (tab- or comma-separated). The Name and Rating columns are used; #, ID and bye columns are ignored.',
   nwchess: 'An NWChess RosterTable.csv export. FIDE ignored; seeded by max(NWSRS, USCF); withdrawn players excluded; multiple sections supported.',
 };
+const FORMAT_LABEL: Record<string, string> = { plain: 'Plain list', table: 'US Chess table', nwchess: 'NWChess RosterTable.csv' };
+
+/**
+ * If parsing with the currently-selected format leaves numbers stuck in player names (a strong
+ * sign the wrong format is selected — e.g. a tab/space table parsed as a plain list), check
+ * whether one of the other two formats parses the same text into fully clean names with at least
+ * as many players, and suggest switching to it. Returns null if the current format looks fine.
+ */
+function suggestBetterFormat(text: string, current: RosterFormat, currentRoster: RosterEntry[]) {
+  const dirty = currentRoster.filter((p) => /\d/.test(p.name)).length;
+  if (dirty === 0) return null;
+  const others: RosterFormat[] = (['plain', 'table', 'nwchess'] as RosterFormat[]).filter((f) => f !== current);
+  let best: { format: RosterFormat; roster: RosterEntry[] } | null = null;
+  for (const f of others) {
+    const roster = parseRoster(text, f);
+    if (roster.length < currentRoster.length) continue;
+    if (roster.some((p) => /\d/.test(p.name))) continue;
+    if (!best || roster.length > best.roster.length) best = { format: f, roster };
+  }
+  return best;
+}
 
 const SAMPLES: Record<string, { text: string; tname: string }> = {
   plain: {
@@ -140,10 +161,25 @@ function previewRoster() {
     : '';
   const unrated = roster.filter((p) => p.rating == null).length;
   const withByes = roster.filter((p) => p.byeRounds && p.byeRounds.length).length;
+
+  const suggestion = suggestBetterFormat(text, fmt, all);
+  const warning = suggestion
+    ? `<div class="format-warning">⚠ These names still contain numbers — this usually means the wrong roster format is selected. This looks like <b>${FORMAT_LABEL[suggestion.format]}</b> instead.
+        <button id="switch-format-btn" class="btn btn-primary" data-fmt="${suggestion.format}">Switch to ${FORMAT_LABEL[suggestion.format]} →</button></div>`
+    : '';
+
   prev.innerHTML =
+    warning +
     note +
     `<p class="hint">Previewing ${roster.length} players${secs.length > 1 ? '' : ` · recommended rounds: <b>${rr}</b>`}${unrated ? ` · ${unrated} unrated` : ''}${withByes ? ` · ${withByes} with a requested bye` : ''}</p>` +
     `<div class="chip-list">${roster.map((p) => `<span class="chip">${esc(p.name)}${p.rating ? ` <b>${p.rating}</b>` : ' <span class="hint">unrated</span>'}${p.byeRounds && p.byeRounds.length ? ` <span class="hint">(bye R${p.byeRounds.join(',')})</span>` : ''}</span>`).join('')}</div>`;
+
+  $('#switch-format-btn')?.addEventListener('click', () => {
+    const btn = $('#switch-format-btn') as HTMLButtonElement;
+    ($('#format-select') as HTMLSelectElement).value = btn.dataset.fmt!;
+    applyFormatHint();
+    previewRoster();
+  });
 }
 
 ($('#section-filter') as HTMLSelectElement).addEventListener('change', previewRoster);
@@ -196,6 +232,17 @@ $('#reset-tourn').addEventListener('click', () => {
     localStorage.removeItem(STORE_KEY);
     renderAll();
   }
+});
+
+// Non-destructive: reveal the roster screen again (same roster text/format still in the
+// textarea) so a wrong-format or otherwise broken tournament can be fixed and re-created,
+// without deleting anything unless "Create tournament" is actually clicked again.
+$('#edit-roster-btn').addEventListener('click', () => {
+  ($('#setup-card') as HTMLElement).hidden = false;
+  ($('#control-card') as HTMLElement).hidden = true;
+  ($('#standings-card') as HTMLElement).hidden = true;
+  previewRoster();
+  ($('#setup-card') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 $('#export-json').addEventListener('click', () => {
