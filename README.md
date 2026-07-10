@@ -1,4 +1,4 @@
-# ♟ PawnPrint
+# ♖ OpenFile
 
 A local-first chess toolkit with **five tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. An optional Node/Express backend adds server-side report storage, but the whole app also runs as a pure static site (e.g. GitHub Pages).
 
@@ -61,13 +61,13 @@ npm run dev          # terminal 2 — Vite dev server with hot reload
 
 ## Deploy to GitHub Pages
 
-PawnPrint is built to run as a **pure static site** — Stockfish runs in the browser, live games stream directly from lichess (CORS-allowed), Swiss uses `localStorage`, and reports are saved via file download/upload. The only feature that needs the Node backend is *server-side* report storage, which is optional.
+OpenFile is built to run as a **pure static site** — Stockfish runs in the browser, live games stream directly from lichess (CORS-allowed), Swiss uses `localStorage`, and reports are saved via file download/upload. The only feature that needs the Node backend is *server-side* report storage, which is optional.
 
 A workflow is included at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). To publish:
 
 ```bash
-git init && git add -A && git commit -m "PawnPrint"
-gh repo create pawnprint --public --source=. --push   # or create the repo in the GitHub UI and push
+git init && git add -A && git commit -m "OpenFile"
+gh repo create openfile --public --source=. --push   # or create the repo in the GitHub UI and push
 ```
 
 Then in the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Every push to `main` builds and deploys automatically. The workflow sets Vite's `--base` to your repo name, so assets resolve correctly at `https://<you>.github.io/<repo>/` (the 7 MB engine `.wasm` is committed and served with the right MIME type; single-threaded Stockfish means no special cross-origin-isolation headers are needed).
@@ -77,7 +77,7 @@ Prefer the backend features (server report storage) live too? Deploy the whole t
 ### Getting your PGN
 
 - **chess.com** — Profile → Games → Download, or the monthly archive. Multiple monthly files? Drop them all in at once.
-- **lichess** — Profile → Export games (`.pgn`). Lichess PGNs often include `[%eval]` and `[%clk]` tags; when present, PawnPrint uses them directly (instant, no engine needed) — otherwise it runs Stockfish on every position.
+- **lichess** — Profile → Export games (`.pgn`). Lichess PGNs often include `[%eval]` and `[%clk]` tags; when present, OpenFile uses them directly (instant, no engine needed) — otherwise it runs Stockfish on every position.
 
 ### Engine depth
 
@@ -137,9 +137,9 @@ samples/          example PGNs (bundled "try the sample" button)
 
 ## Install as an app / offline use
 
-PawnPrint is an installable PWA (Progressive Web App):
+OpenFile is an installable PWA (Progressive Web App):
 
-- **Install** — most browsers show an install prompt (address-bar icon, or browser menu → "Install PawnPrint" / "Add to Home Screen"). Installed, it opens in its own window with no browser chrome, like a native app.
+- **Install** — most browsers show an install prompt (address-bar icon, or browser menu → "Install OpenFile" / "Add to Home Screen"). Installed, it opens in its own window with no browser chrome, like a native app.
 - **Offline** — a service worker caches the app shell and the Stockfish engine files after your first visit. Content-hashed JS/CSS/image assets are cache-first with a background refresh (safe, since a new build gets a new URL); HTML pages are network-first so you always get the latest version when online, falling back to the cached copy only when you're offline. Once the engine has loaded once, position analysis and PGN review keep working with no connectivity at all — handy in a tournament hall with bad wifi. Live game streaming and lichess study/search lookups still need a connection, since those are fetched from lichess's API rather than cached.
 
 ---
@@ -184,7 +184,7 @@ Run a complete Swiss-system tournament in the browser.
 - **Results & standings:** enter 1-0 / ½-½ / 0-1 per board; standings update live with **Buchholz** and **Sonneborn-Berger** tiebreaks, W/D/L (a requested half-point bye counts as a draw, a forced full-point bye counts as a win), and color balance.
 - **Wall chart:** a crosstable — one row per player (current standings order), one column per round — showing exactly who they played, with what color, and the result (e.g. `8w+` = played standings-#8 as White and won; `4b=` = played #4 as Black and drew; a pending pairing shows the opponent with no result yet). The single most useful view for a TD or parent scanning for repeat opponents or checking a player's path through the event at a glance.
 - **Persistence:** the whole event auto-saves in your browser (localStorage). **Export/Import** it as JSON, and **Print all standings** for posting.
-- **Navigation:** every tool page has a **🏠 Home** link in the top nav back to the PawnPrint hub — your tournament stays saved when you navigate away and back.
+- **Navigation:** every tool page has a **🏠 Home** link in the top nav back to the OpenFile hub — your tournament stays saved when you navigate away and back.
 
 The pairing engine (`src/swissEngine.ts`) is pure and framework-free. It has been stress-tested across many field sizes, round counts, and result models: no rematches when mathematically avoidable, byes capped at one per player, and conserved scores.
 

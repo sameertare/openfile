@@ -1,5 +1,5 @@
 /**
- * PawnPrint service worker — runtime caching so the app (including the ~7MB Stockfish engine)
+ * OpenFile service worker — runtime caching so the app (including the ~7MB Stockfish engine)
  * works offline after the first visit. No build-time precache list: Vite's content-hashed
  * filenames change on every build, so instead every same-origin GET is cached the first time
  * it's fetched and served from cache on later visits, including offline.
@@ -16,7 +16,7 @@
  */
 
 // Bump this on any change to this file's caching behavior, to drop old caches on activate.
-const CACHE_NAME = 'pawnprint-v2';
+const CACHE_NAME = 'openfile-v1';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

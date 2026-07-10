@@ -1,9 +1,9 @@
 {
-  "name": "pawnprint",
+  "name": "openfile",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "PawnPrint — chess toolkit: PGN performance analysis, live engine board, and Swiss tournament pairings",
+  "description": "OpenFile — chess toolkit: PGN performance analysis, live engine board, and Swiss tournament pairings",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

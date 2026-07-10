@@ -9,7 +9,7 @@ import { registerServiceWorker } from './pwa';
 registerServiceWorker();
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
-const STORE_KEY = 'pawnprint-swiss';
+const STORE_KEY = 'openfile-swiss';
 
 /** An event holds one Swiss tournament per section; all sections advance round-by-round together. */
 interface SwissEvent { name: string; sections: Tournament[]; active: number; }

@@ -24,7 +24,7 @@ export function buildAnnotatedPgn(g: GameRecord): string {
   if (g.eco) headers.push(headerLine('ECO', g.eco));
   if (g.opening) headers.push(headerLine('Opening', g.opening));
   if (g.timeControl && g.timeControl !== '?') headers.push(headerLine('TimeControl', g.timeControl));
-  if (g.engineDepth) headers.push(headerLine('Annotator', `PawnPrint (Stockfish 18, depth ${g.engineDepth})`));
+  if (g.engineDepth) headers.push(headerLine('Annotator', `OpenFile (Stockfish 18, depth ${g.engineDepth})`));
 
   const sans = g.sans ?? [];
   if (!sans.length) {
@@ -89,7 +89,7 @@ export function buildPgnFromLine(opts: {
   bestU: (string | null)[];
 }): string {
   const headers = [
-    headerLine('Event', opts.event || 'PawnPrint Live & Engine'),
+    headerLine('Event', opts.event || 'OpenFile Live & Engine'),
     headerLine('Site', '?'),
     headerLine('Date', '????.??.??'),
     headerLine('White', opts.white || '?'),

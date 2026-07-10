@@ -1,5 +1,5 @@
 /**
- * PawnPrint backend (optional) — serves the built SPA and persists markdown reports.
+ * OpenFile backend (optional) — serves the built SPA and persists markdown reports.
  * The app also runs fully static; this backend only adds server-side report storage.
  */
 import express from 'express';
@@ -106,5 +106,5 @@ app.use(express.static(DIST)); // includes the sample PGNs (bundled from public/
 app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(DIST, 'index.html')));
 
 app.listen(PORT, () => {
-  console.log(`PawnPrint running at http://localhost:${PORT}`);
+  console.log(`OpenFile running at http://localhost:${PORT}`);
 });

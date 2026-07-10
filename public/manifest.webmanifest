@@ -1,6 +1,6 @@
 {
-  "name": "PawnPrint",
-  "short_name": "PawnPrint",
+  "name": "OpenFile",
+  "short_name": "OpenFile",
   "description": "Chess analysis, live engine, Swiss pairings, and rating estimators — runs entirely in your browser.",
   "start_url": "./index.html",
   "scope": "./",

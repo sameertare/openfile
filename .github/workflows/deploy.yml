@@ -1,4 +1,4 @@
-name: Deploy PawnPrint to GitHub Pages
+name: Deploy OpenFile to GitHub Pages
 
 on:
   push:
