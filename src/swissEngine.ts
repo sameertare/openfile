@@ -276,10 +276,13 @@ function assignColors(a: Player, b: Player): { whiteId: number; blackId: number 
   if (balA !== balB) {
     aWhite = balA < balB; // the one owed white (more negative balance) gets white
   } else {
-    const la = lastColor(a), lb = lastColor(b);
-    if (la !== lb && (la === 'b' || lb === 'w')) aWhite = la === 'b';
-    else if (la !== lb) aWhite = lb === 'w';
-    else aWhite = a.id < b.id; // fallback: higher seed white
+    // Equal balance: honour alternation (opposite of each player's last color), if either has one.
+    const wantA = lastColor(a) === 'w' ? 'b' : lastColor(a) === 'b' ? 'w' : null;
+    const wantB = lastColor(b) === 'w' ? 'b' : lastColor(b) === 'b' ? 'w' : null;
+    if (wantA && !wantB) aWhite = wantA === 'w';
+    else if (wantB && !wantA) aWhite = wantB === 'b'; // b's preference determines a's color by elimination
+    else if (wantA && wantB && wantA !== wantB) aWhite = wantA === 'w';
+    else aWhite = a.id < b.id; // both no preference, or a genuine same-color conflict: fall back to seed
   }
   return aWhite ? { whiteId: a.id, blackId: b.id } : { whiteId: b.id, blackId: a.id };
 }
