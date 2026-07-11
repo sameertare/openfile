@@ -179,7 +179,10 @@ a { color: var(--blue); }
   padding: 10px 22px; position: sticky; top: 0; z-index: 20;
   gap: 10px;
 }
-.topnav .brand { font-weight: 700; font-size: 1.05rem; text-decoration: none; color: var(--text); flex-shrink: 0; }
+.topnav .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; text-decoration: none; color: var(--text); flex-shrink: 0; }
+.brand-logo { border-radius: 6px; display: block; }
+.app-header h1 { display: flex; align-items: center; gap: 12px; }
+.header-logo { border-radius: 10px; display: block; }
 .navlinks { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .navlinks a {
   color: var(--text-dim); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.9rem;
