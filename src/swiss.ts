@@ -5,8 +5,10 @@ import {
 } from './swissEngine';
 import type { GameResult, RosterEntry, RosterFormat, Tournament } from './swissEngine';
 import { registerServiceWorker } from './pwa';
+import { initTheme } from './theme';
 
 registerServiceWorker();
+initTheme();
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const STORE_KEY = 'openfile-swiss';

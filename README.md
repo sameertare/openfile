@@ -26,7 +26,7 @@ The player the report is for is **auto-detected**, not picked from a dropdown: w
 ## What it analyzes
 
 - **Openings** — every opening played, with W/D/L, score %, colour split and accuracy; **strongest** and **weakest** openings called out in their own tables. When games span more than one time control, an **Openings by time control** section repeats the same breakdown per Bullet/Blitz/Rapid/Classical/Daily — a repertoire that scores well in Rapid can fall apart under Bullet's time pressure, and the aggregate-only view would hide that.
-- **Game phases** — separate accuracy, inaccuracy/mistake/blunder counts for **opening / middlegame / endgame**, plus which phase decided each loss.
+- **Game phases** — separate accuracy, inaccuracy/mistake/blunder counts for **opening / middlegame / endgame**, plus which phase decided each loss. An **errors-by-move-number** chart underneath plots inaccuracies/mistakes/blunders against the actual move number they happened on — more granular than the phase split, since two games can reach (say) the endgame at very different move numbers.
 - **Endgames** — which endgame types you reach (rook, pawn, queen…) and your record in each.
 - **Tactics** — missed wins, missed forced mates, missed tactical shots (engine's best was an unplayed capture/check), and your biggest single-move swings.
 - **Errors in wins vs losses** — do blunders cluster in the games you lose?
@@ -121,6 +121,7 @@ src/
   linechart.ts      generic multi-series SVG line chart, shared by the report trend chart & time-usage chart
   pgnExport.ts      annotated-PGN builder ([%eval] + best-move comments), shared by Analyze & Live
   pwa.ts            service worker registration, shared by every page's entry module
+  theme.ts          light/dark theme toggle, shared by every page's entry module
   swissEngine.ts    pure Swiss logic: roster parsing, pairing, results, standings
   swiss.ts          Swiss Pairings UI
   openingTree.ts    pure opening-tree logic: builds a move trie from games, aggregates W/D/L per node
@@ -143,6 +144,7 @@ samples/          example PGNs (bundled "try the sample" button)
 
 - Analysis of the user's moves only — the identified player is auto-detected from the PGN and selectable.
 - All processing is local; no game data leaves your machine.
+- **Light/dark theme** — every page has a toggle (☀️/🌙) in the top nav. The choice is saved to `localStorage` and applied on every page via a small inline script in `<head>`, so it survives navigation without a flash of the wrong theme. Dark is the default. `src/theme.ts` wires up the toggle button on every page.
 
 ## Install as an app / offline use
 

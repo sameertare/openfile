@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
   </head>
   <body>
     <nav class="topnav">
@@ -23,6 +24,7 @@
         <a href="fide-rating.html">FIDE Rating</a>
         <a href="about.html" class="active">About</a>
       </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
     </nav>
     <div id="app">
       <header class="app-header">

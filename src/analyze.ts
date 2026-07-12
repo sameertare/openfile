@@ -169,6 +169,7 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
   let endgameType: string | null = null;
   let userMoveCount = 0;
   const clockSeries: { moveNo: number; sec: number }[] = [];
+  const errorSeries: { moveNo: number; kind: 'inaccuracy' | 'mistake' | 'blunder' }[] = [];
 
   for (let i = 0; i < game.moves.length; i++) {
     const mv = game.moves[i];
@@ -201,6 +202,7 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
       errors[phase][
         kind === 'blunder' ? 'blunders' : kind === 'mistake' ? 'mistakes' : 'inaccuracies'
       ]++;
+      errorSeries.push({ moveNo: mv.moveNo, kind });
       if (firstErrorMove === null) firstErrorMove = mv.moveNo;
       if (
         decisiveErrorMove === null &&
@@ -323,6 +325,7 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
     clockDataAvailable,
     timePressureBlunders,
     clockSeries,
+    errorSeries,
     worstMoves: worstMoves.slice(0, 3),
     evalGraph: analyzed ? evals.map((v) => Math.max(-1000, Math.min(1000, v ?? 0))) : null,
     sans,

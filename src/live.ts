@@ -8,9 +8,11 @@ import { identifyOpening } from './openings';
 import { splitPgn } from './pgn';
 import { mountInteractiveSparkline } from './sparkline';
 import { registerServiceWorker } from './pwa';
+import { initTheme } from './theme';
 import { buildPgnFromLine, downloadPgn } from './pgnExport';
 
 registerServiceWorker();
+initTheme();
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

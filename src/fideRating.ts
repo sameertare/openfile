@@ -1,8 +1,10 @@
 import './style.css';
 import { estimateFideRating } from './fideRatingEngine';
 import { registerServiceWorker } from './pwa';
+import { initTheme } from './theme';
 
 registerServiceWorker();
+initTheme();
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const NUM_OPPONENTS = 15;

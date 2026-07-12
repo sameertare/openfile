@@ -7,8 +7,10 @@ import { compareReports, betterSide, headToHead } from './reportCompare';
 import type { DeltaRow, OpeningDelta } from './reportCompare';
 import { renderLineChartSvg } from './linechart';
 import { registerServiceWorker } from './pwa';
+import { initTheme } from './theme';
 
 registerServiceWorker();
+initTheme();
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 

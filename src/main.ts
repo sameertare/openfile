@@ -10,10 +10,12 @@ import type { GameRecord, ReportData, ReportMeta } from './types';
 import { renderSparklineSvg } from './sparkline';
 import { renderLineChartSvg } from './linechart';
 import { registerServiceWorker } from './pwa';
+import { initTheme } from './theme';
 import { groupPlayerNames, nameKey } from './playerMatch';
 import { buildAnnotatedPgn, downloadPgn } from './pgnExport';
 
 registerServiceWorker();
+initTheme();
 
 // ---------- state ----------
 let parsedGames: ParsedGame[] = [];
@@ -425,6 +427,20 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
     ${
       egRows.length
         ? `<h3>Endgame types reached</h3><table><thead><tr><th>Type</th><th class="num">Games</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num">Score</th></tr></thead><tbody>${egRows.map(([type, w]) => wdlRow(esc(type), w)).join('')}</tbody></table>`
+        : ''
+    }
+    ${
+      a.errorsByMove.length > 1
+        ? `<h3>Errors by move number</h3>
+    <p class="section-note">Where inaccuracies, mistakes and blunders actually land across the whole game, move by move — more granular than the opening/middlegame/endgame split above, since two games can reach the endgame at very different move numbers.</p>
+    ${renderLineChartSvg(
+      [
+        { label: 'Inaccuracies', values: a.errorsByMove.map((e) => e.inaccuracies), color: 'var(--blue)' },
+        { label: 'Mistakes', values: a.errorsByMove.map((e) => e.mistakes), color: 'var(--gold)' },
+        { label: 'Blunders', values: a.errorsByMove.map((e) => e.blunders), color: 'var(--red)' },
+      ],
+      { xLabels: a.errorsByMove.map((e) => String(e.moveNo)) }
+    )}`
         : ''
     }
   </div>`);

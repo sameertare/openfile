@@ -66,6 +66,7 @@ export interface Aggregates {
   byTimeClass: { timeClass: string; wdl: WDL; avgAccuracy: number | null }[];
   openingsByTimeClass: { timeClass: string; openings: OpeningRow[] }[];
   timeUsage: { moveNo: number; avgSec: number; games: number }[];
+  errorsByMove: { moveNo: number; inaccuracies: number; mistakes: number; blunders: number }[];
   phases: PhaseStats[];
   overallAccuracy: number | null;
   tactics: {
@@ -213,6 +214,24 @@ export function aggregate(games: GameRecord[]): Aggregates {
     .map(([moveNo, v]) => ({ moveNo, avgSec: Math.round((v.sum / v.count) * 10) / 10, games: v.count }))
     .sort((a, b) => a.moveNo - b.moveNo);
 
+  // Where in the game (by move number) errors actually happen — more granular than the
+  // opening/middlegame/endgame phase split, useful for spotting e.g. "most blunders land around
+  // move 20" regardless of which phase that fell in for a given game.
+  const errorsByMoveMap = new Map<number, { inaccuracies: number; mistakes: number; blunders: number }>();
+  for (const g of games) {
+    for (const entry of g.errorSeries ?? []) {
+      let bucket = errorsByMoveMap.get(entry.moveNo);
+      if (!bucket) {
+        bucket = { inaccuracies: 0, mistakes: 0, blunders: 0 };
+        errorsByMoveMap.set(entry.moveNo, bucket);
+      }
+      bucket[entry.kind === 'blunder' ? 'blunders' : entry.kind === 'mistake' ? 'mistakes' : 'inaccuracies']++;
+    }
+  }
+  const errorsByMove = [...errorsByMoveMap.entries()]
+    .map(([moveNo, v]) => ({ moveNo, ...v }))
+    .sort((a, b) => a.moveNo - b.moveNo);
+
   // Phase stats
   const phases: PhaseStats[] = PHASES.map((phase) => {
     const accs = analyzed
@@ -319,6 +338,7 @@ export function aggregate(games: GameRecord[]): Aggregates {
       (a, b) => b.openings.reduce((s, o) => s + o.games, 0) - a.openings.reduce((s, o) => s + o.games, 0)
     ),
     timeUsage,
+    errorsByMove,
     phases, overallAccuracy, tactics, patterns, recommendations,
     analyzedCount: analyzed.length,
   };

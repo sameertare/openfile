@@ -7,8 +7,10 @@ import { Board } from './board';
 import { buildTree, childSummaries, nodeAtPath, scorePct } from './openingTree';
 import type { TreeNode, ChildSummary, GameRef } from './openingTree';
 import { registerServiceWorker } from './pwa';
+import { initTheme } from './theme';
 
 registerServiceWorker();
+initTheme();
 
 // ---------- state ----------
 interface ExplorerGame { sans: string[]; color: Color; result: Result; opponent: string; link: string | null; date: string; }

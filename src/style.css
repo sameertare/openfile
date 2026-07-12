@@ -14,6 +14,20 @@
   font-size: 15px;
 }
 
+:root[data-theme="light"] {
+  --bg: #f4f5f7;
+  --bg-card: #ffffff;
+  --bg-inset: #eef1f5;
+  --border: #d7dce3;
+  --text: #1b2130;
+  --text-dim: #5b6472;
+  --accent: #4d7f3a;
+  --accent-dark: #3a612c;
+  --gold: #9c6f16;
+  --red: #c3402f;
+  --blue: #2c6aa0;
+}
+
 * { box-sizing: border-box; }
 
 /* The [hidden] attribute must always win over any class's own `display` rule (e.g. `.config-row
@@ -183,6 +197,11 @@ a { color: var(--blue); }
 .brand-logo { border-radius: 6px; display: block; }
 .app-header h1 { display: flex; align-items: center; gap: 12px; }
 .header-logo { border-radius: 10px; display: block; }
+.theme-toggle {
+  flex-shrink: 0; background: var(--bg-inset); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; width: 34px; height: 34px; font-size: 1rem; cursor: pointer; line-height: 1;
+}
+.theme-toggle:hover { border-color: var(--accent); }
 .navlinks { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .navlinks a {
   color: var(--text-dim); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.9rem;
