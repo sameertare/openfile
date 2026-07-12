@@ -417,6 +417,18 @@ a { color: var(--blue); }
 .extra-game-form .extra-rating { width: 110px; }
 .extra-game-form .btn-sm { margin-top: 0; }
 
+.round-advanced { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; }
+.round-advanced summary { cursor: pointer; color: var(--text-dim); font-size: 0.88rem; font-weight: 600; }
+.round-advanced summary:hover { color: var(--text); }
+.advanced-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-size: 0.9rem; }
+
+#bye-request-details summary { cursor: pointer; list-style: none; }
+#bye-request-details summary::-webkit-details-marker { display: none; }
+#bye-request-details summary h2 { display: inline-flex; align-items: center; gap: 8px; }
+#bye-request-details summary h2::before { content: '▸'; font-size: 0.75em; color: var(--text-dim); transition: transform 0.15s; display: inline-block; }
+#bye-request-details[open] summary h2::before { transform: rotate(90deg); }
+#bye-request-details > p, #bye-request-details > .config-row, #bye-request-details > #bye-player-list, #bye-request-details > #pending-byes { margin-top: 14px; }
+
 .wallchart-wrap { max-height: 480px; overflow-y: auto; }
 .wallchart-table th, .wallchart-table td { padding: 5px 8px; }
 .wallchart-table thead th { position: sticky; top: 0; background: var(--bg-inset); z-index: 1; }

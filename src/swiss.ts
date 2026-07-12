@@ -400,6 +400,7 @@ function renderByeRequestCard(t: Tournament) {
         )
         .join('')}</ul>`
     : '';
+  $('#bye-request-count').textContent = pending.length ? `(${pending.length} pending)` : '';
 }
 
 function renderSectionTabs() {
@@ -442,7 +443,7 @@ function renderRounds(t: Tournament) {
             const label = pts === 0.5 ? 'REQUESTED BYE (+½)' : 'BYE (+1)';
             const isAdding = isLatestRound && addingExtraFor?.round === round.number && addingExtraFor?.byeId === pr.byeId;
             if (isAdding) {
-              return `<tr><td class="num">${pr.board}</td><td colspan="4">
+              return `<tr><td class="num">${pr.board}</td><td colspan="3">
                 <div class="extra-game-form">
                   <b>${esc(nameWithRatingOf(t, pr.byeId))}</b> vs
                   <input type="text" class="text-input extra-name" placeholder="Opponent name" />
@@ -452,22 +453,9 @@ function renderRounds(t: Tournament) {
                 </div>
               </td></tr>`;
             }
-            const addBtn = isLatestRound
-              ? ` <button class="btn btn-ghost btn-sm add-extra-btn" data-round="${round.number}" data-bye="${pr.byeId}">+ Add extra game</button>`
-              : '';
-            const swapControl = isLatestRound && swapCandidates.length
-              ? ` <select class="swap-bye-select" data-round="${round.number}" data-bye="${pr.byeId}">
-                    <option value="">Swap bye with…</option>
-                    ${swapCandidates.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}
-                  </select>
-                  <button class="btn btn-ghost btn-sm swap-bye-btn" data-round="${round.number}" data-bye="${pr.byeId}">Swap</button>`
-              : '';
-            return `<tr><td class="num">${pr.board}</td><td colspan="2"><b>${esc(nameWithRatingOf(t, pr.byeId))}</b></td><td colspan="2" class="mid">${label}${addBtn}${swapControl}</td></tr>`;
+            return `<tr><td class="num">${pr.board}</td><td colspan="2"><b>${esc(nameWithRatingOf(t, pr.byeId))}</b></td><td class="mid">${label}</td></tr>`;
           }
           const sel = (val: string, cur: GameResult) => `<option value="${val}"${cur === val ? ' selected' : ''}>`;
-          const swapColorsBtn = isLatestRound
-            ? `<button class="btn-icon swap-colors-btn" data-round="${round.number}" data-board="${pr.board}" title="Swap White/Black on this board">⇅</button>`
-            : '';
           return `<tr>
             <td class="num">${pr.board}</td>
             <td>♔ ${esc(nameWithRatingOf(t, pr.whiteId))}</td>
@@ -480,28 +468,59 @@ function renderRounds(t: Tournament) {
                 ${sel('0-1', pr.result)}Black wins (0-1)</option>
               </select>
             </td>
-            <td class="num">${swapColorsBtn}</td>
           </tr>`;
         })
         .join('');
-      const swapBoardsControl = isLatestRound && swapBoardOptions.length >= 2
-        ? `<div class="swap-players-row">
-            <span class="hint">Swap two players between boards:</span>
-            <select class="swap-board-select" data-slot="a">
-              ${swapBoardOptions.map((o) => `<option value="${o.id}">${esc(o.label)}</option>`).join('')}
-            </select>
-            <span>⇄</span>
-            <select class="swap-board-select" data-slot="b">
-              ${swapBoardOptions.map((o, i) => `<option value="${o.id}"${i === 1 ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}
-            </select>
-            <button class="btn btn-ghost btn-sm swap-players-btn" data-round="${round.number}">Swap</button>
-          </div>`
+
+      // Correction tools are tucked behind a collapsed panel — they're for fixing a mistake, not
+      // part of the normal per-round flow, and showing them inline on every board/bye row was
+      // cluttering the common case (just entering results).
+      let advancedBody = '';
+      if (isLatestRound) {
+        const realPairings = round.pairings.filter((p) => p.byeId == null);
+        const byeRows = round.pairings
+          .filter((p) => p.byeId != null)
+          .map((pr) => {
+            const addBtn = `<button class="btn btn-ghost btn-sm add-extra-btn" data-round="${round.number}" data-bye="${pr.byeId}">+ Add extra game</button>`;
+            const swapControl = swapCandidates.length
+              ? `<select class="swap-bye-select" data-round="${round.number}" data-bye="${pr.byeId}">
+                   <option value="">Swap bye with…</option>
+                   ${swapCandidates.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}
+                 </select>
+                 <button class="btn btn-ghost btn-sm swap-bye-btn" data-round="${round.number}" data-bye="${pr.byeId}">Swap</button>`
+              : '';
+            return `<div class="advanced-row"><b>${esc(nameWithRatingOf(t, pr.byeId!))}</b>'s bye — ${addBtn} ${swapControl}</div>`;
+          })
+          .join('');
+        const swapColorsRow = realPairings.length
+          ? `<div class="advanced-row"><span class="hint">Swap colors:</span> ${realPairings
+              .map((p) => `<button class="btn btn-ghost btn-sm swap-colors-btn" data-round="${round.number}" data-board="${p.board}">Bd ${p.board} ⇅</button>`)
+              .join(' ')}</div>`
+          : '';
+        const swapBoardsControl = swapBoardOptions.length >= 2
+          ? `<div class="advanced-row swap-players-row">
+              <span class="hint">Swap two players between boards:</span>
+              <select class="swap-board-select" data-slot="a">
+                ${swapBoardOptions.map((o) => `<option value="${o.id}">${esc(o.label)}</option>`).join('')}
+              </select>
+              <span>⇄</span>
+              <select class="swap-board-select" data-slot="b">
+                ${swapBoardOptions.map((o, i) => `<option value="${o.id}"${i === 1 ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}
+              </select>
+              <button class="btn btn-ghost btn-sm swap-players-btn" data-round="${round.number}">Swap</button>
+            </div>`
+          : '';
+        advancedBody = byeRows + swapColorsRow + swapBoardsControl;
+      }
+      const advancedPanel = advancedBody
+        ? `<details class="round-advanced"><summary>⚙ Fix a mistake in this round</summary>${advancedBody}</details>`
         : '';
+
       return `<div class="round-block">
         <h3>Round ${round.number} ${round.complete ? '<span class="pos">✓ complete</span>' : '<span class="hint">in progress</span>'}</h3>
-        <table><thead><tr><th class="num">Bd</th><th>White</th><th>Black</th><th>Result</th><th></th></tr></thead>
+        <table><thead><tr><th class="num">Bd</th><th>White</th><th>Black</th><th>Result</th></tr></thead>
         <tbody>${rows}</tbody></table>
-        ${swapBoardsControl}
+        ${advancedPanel}
       </div>`;
     })
     .reverse()
