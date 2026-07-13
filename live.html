@@ -37,7 +37,7 @@
         <button class="tab" data-mode="live">📡 Live lichess game</button>
       </div>
 
-      <div class="live-layout">
+      <div class="live-layout" id="live-layout">
         <div class="board-col">
           <div id="board"></div>
           <div class="evalbar-wrap" title="Evaluation (white's perspective)">
@@ -56,6 +56,9 @@
             <button id="export-pgn-btn" class="btn nav-btn" title="Download this game as an annotated PGN (engine evals + best moves as comments)">⬇ PGN</button>
             <button id="flip-btn" class="btn nav-btn" title="Flip board">⇅</button>
           </div>
+        </div>
+
+        <div class="analysis-col">
           <div class="turn-row">
             <div id="turn-indicator" class="turn-indicator"></div>
             <div id="opening-name" class="opening-name"></div>

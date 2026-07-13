@@ -171,6 +171,7 @@ Two modes, one board (Stockfish 18 runs locally in the browser):
 - Paste a lichess **study** link (with or without a chapter) to load that chapter as a static, navigable game — click pieces or step with ◀ ▶, same as Any Position. A study with multiple chapters loads chapter 1, with a note to paste a direct chapter link for another.
 - Paste a lichess **analysis-board** link (with an embedded FEN) or just a bare **FEN** to load that single position.
 - Every move gets **feedback** — Best / OK / Inaccuracy ?! / Mistake ? / Blunder ?? — based on the win-probability swing, with the engine's better move shown when relevant. The **● LIVE** badge (and jump-back-to-live button) only appears for an actual live game, not a study/position load.
+- In this mode, the layout swaps sides: the move-feedback/candidates panel moves to the right, and the "Watch a live game, study, or position" connect form sits directly under the board on the left — so the connect form is out of the way once you're actually watching a game, and the feedback you're there for gets the prime spot next to the board. Any Position mode keeps the original layout (feedback under the board, setup panel on the right).
 
 **Top candidate moves (both modes)** — the currently viewed position always shows the top 3 engine moves (Stockfish's MultiPV), each with its evaluation and a short continuation, drawn on the board as three ranked arrows (green/gold/blue, thickest and brightest for the best move) — useful for seeing what else was worth considering, not just the single best line.
 

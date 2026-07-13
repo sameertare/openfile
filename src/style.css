@@ -237,8 +237,23 @@ a { color: var(--blue); }
 .tab.active { background: var(--accent); color: #10140c; border-color: var(--accent-dark); font-weight: 600; }
 
 /* ---------- live layout ---------- */
-.live-layout { display: grid; grid-template-columns: minmax(320px, 460px) 1fr; gap: 22px; align-items: start; }
-.board-col { display: flex; flex-direction: column; gap: 10px; }
+/* Three grid areas: the board itself (top-left), the move-feedback/analysis panels underneath
+   it, and the side panel (position setup or live-game connect form). In live mode the analysis
+   area and the side panel swap places — feedback moves to the right, the "Watch a live game"
+   connect panel moves under the board — via .live-layout[data-mode="live"] remapping which grid
+   cell each area name resolves to; the elements themselves keep the same grid-area the whole
+   time, so this is a pure CSS reflow, no DOM changes. */
+.live-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) 1fr;
+  grid-template-areas: "board panel" "analysis panel";
+  gap: 22px;
+  align-items: start;
+}
+.live-layout[data-mode="live"] { grid-template-areas: "board analysis" "panel analysis"; }
+.board-col { grid-area: board; display: flex; flex-direction: column; gap: 10px; }
+.analysis-col { grid-area: analysis; display: flex; flex-direction: column; gap: 10px; }
+.side-col { grid-area: panel; }
 .mode-panel .stack { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 0.88rem; color: var(--text-dim); }
 .text-input, .text-area {
   background: var(--bg-inset); color: var(--text); border: 1px solid var(--border);
@@ -529,7 +544,13 @@ a { color: var(--blue); }
 }
 
 @media (max-width: 820px) {
-  .live-layout { grid-template-columns: 1fr; }
+  /* Single column: board, then whichever panel is active, then the move-feedback area — same
+     stacking order regardless of live/position mode, since the left/right swap only makes sense
+     side-by-side. */
+  .live-layout, .live-layout[data-mode="live"] {
+    grid-template-columns: 1fr;
+    grid-template-areas: "board" "panel" "analysis";
+  }
 }
 
 /* ---------- middlegame plans ---------- */
