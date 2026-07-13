@@ -255,6 +255,36 @@ a { color: var(--blue); }
 .analysis-col { grid-area: analysis; display: flex; flex-direction: column; gap: 10px; }
 .side-col { grid-area: panel; }
 .mode-panel .stack { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 0.88rem; color: var(--text-dim); }
+
+/* ---------- opening explorer layout ---------- */
+/* A dedicated, wider layout (chesscompass.com-style: the board dominates, the tree/games panel
+   is a compact fixed-width column beside it) — kept separate from .live-layout so this doesn't
+   also resize the Live & Engine board, which has different auxiliary panels (eval bar, candidate
+   moves, move list) tuned to its narrower column. #app's site-wide 1060px cap is lifted for this
+   page via .app-wide since a big board needs more than that to not immediately hit its max. */
+#app.app-wide { max-width: 1400px; }
+.explorer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: 24px;
+  align-items: start;
+}
+.explorer-board-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: min(760px, calc(100vh - 260px));
+  margin: 0 auto;
+  min-width: 0; /* grid items default to min-width:auto — without this, wide unshrinkable
+    content (e.g. the summary-card row) pushes the track past its 1fr share and overflows the
+    viewport on narrow screens instead of shrinking or wrapping. */
+}
+.explorer-side-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (max-width: 900px) {
+  .explorer-layout { grid-template-columns: 1fr; }
+  .explorer-board-col { max-width: 560px; }
+}
 .text-input, .text-area {
   background: var(--bg-inset); color: var(--text); border: 1px solid var(--border);
   border-radius: 8px; padding: 9px 11px; font-size: 0.95rem; font-family: inherit; width: 100%;

@@ -25,7 +25,7 @@
       </div>
           <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
     </nav>
-    <div id="app">
+    <div id="app" class="app-wide">
       <header class="app-header">
         <h1>🌳 Opening Explorer</h1>
         <p class="tagline">Turn your own games into a branching opening tree — see how often you play each move and how you actually score from there. Or scout an opponent's account the same way, before you play them.</p>
@@ -111,8 +111,8 @@
       </section>
 
       <section id="results" hidden>
-        <div class="live-layout">
-          <div class="board-col">
+        <div class="explorer-layout">
+          <div class="explorer-board-col">
             <div id="board"></div>
             <div class="nav-row">
               <button id="root-btn" class="btn nav-btn" title="Back to start position">⏮ Start</button>
@@ -123,7 +123,7 @@
             <div id="node-stats" class="summary-cards"></div>
           </div>
 
-          <div class="side-col">
+          <div class="explorer-side-col">
             <section class="card">
               <h2>Your moves from here</h2>
               <div id="your-moves" class="games-table-wrap"></div>
