@@ -431,6 +431,16 @@ a { color: var(--blue); }
 .more-menu summary:hover { color: var(--text); }
 .more-menu .config-row { margin-top: 10px; }
 
+.round-methodology { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; }
+.round-methodology summary { cursor: pointer; color: var(--text-dim); font-size: 0.88rem; font-weight: 600; }
+.round-methodology summary:hover { color: var(--text); }
+.score-group-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
+.score-group-label { flex-shrink: 0; min-width: 68px; font-weight: 600; font-size: 0.85rem; color: var(--text-dim); padding-top: 4px; }
+.score-group-players { display: flex; flex-wrap: wrap; gap: 6px; }
+.player-chip { display: inline-flex; align-items: center; background: var(--bg-inset); border: 1px solid var(--border); border-radius: 12px; padding: 3px 10px; font-size: 0.82rem; }
+.player-chip.floated { border-color: var(--gold); }
+.float-arrow { color: var(--gold); font-weight: 700; }
+
 #bye-request-details summary { cursor: pointer; list-style: none; }
 #bye-request-details summary::-webkit-details-marker { display: none; }
 #bye-request-details summary h2 { display: inline-flex; align-items: center; gap: 8px; }

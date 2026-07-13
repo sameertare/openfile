@@ -32,12 +32,19 @@ export interface Round {
   complete: boolean;
 }
 
+export interface FamilyGroup {
+  id: number;
+  label: string;
+  playerIds: number[];
+}
+
 export interface Tournament {
   name: string;
   players: Player[];
   rounds: Round[];
   createdAt: string;
   totalRounds: number; // TD-chosen (or auto-recommended) round count for this event
+  familyGroups: FamilyGroup[]; // players who shouldn't face each other when avoidable (siblings, etc.)
 }
 
 // ---------------- roster parsing ----------------
@@ -282,7 +289,28 @@ export function createTournament(name: string, roster: RosterEntry[], totalRound
     })),
     rounds: [],
     totalRounds: totalRounds && totalRounds > 0 ? totalRounds : recommendedRounds(roster.length),
+    familyGroups: [],
   };
+}
+
+/** Marks 2+ players as related (siblings, parent/child, spouses, …) so the pairing engine avoids
+ *  matching them against each other when an alternative pairing exists — the same soft-preference
+ *  treatment already given to rematches. Returns the new group's id, or null if fewer than 2 valid
+ *  player ids were given. */
+export function addFamilyGroup(t: Tournament, label: string, playerIds: number[]): number | null {
+  const valid = [...new Set(playerIds)].filter((id) => t.players.some((p) => p.id === id));
+  if (valid.length < 2) return null;
+  const id = Math.max(0, ...t.familyGroups.map((g) => g.id)) + 1;
+  t.familyGroups.push({ id, label: label.trim() || `Group ${id}`, playerIds: valid });
+  return id;
+}
+
+export function removeFamilyGroup(t: Tournament, groupId: number): void {
+  t.familyGroups = t.familyGroups.filter((g) => g.id !== groupId);
+}
+
+function sameFamilyGroup(t: Tournament, aId: number, bId: number): boolean {
+  return t.familyGroups.some((g) => g.playerIds.includes(aId) && g.playerIds.includes(bId));
 }
 
 // ---------------- pairing ----------------
@@ -317,7 +345,7 @@ function assignColors(a: Player, b: Player): { whiteId: number; blackId: number 
  * split into top half S1 and bottom half S2, then pair S1[i] with S2[i] (i.e. 1v(h+1), 2v(h+2)…),
  * permuting S2 by backtracking only as needed to avoid rematches.
  */
-function foldPair(bracket: Player[], allowRematch: boolean): [Player, Player][] | null {
+function foldPair(bracket: Player[], allowRematch: boolean, isFamilyConflict: (a: Player, b: Player) => boolean): [Player, Player][] | null {
   const n = bracket.length;
   if (n === 0) return [];
   if (n % 2 === 1) return null;
@@ -333,7 +361,7 @@ function foldPair(bracket: Player[], allowRematch: boolean): [Player, Player][] 
     for (const j of order) {
       if (used[j]) continue;
       const b = S2[j];
-      if (!allowRematch && a.opponents.includes(b.id)) continue;
+      if (!allowRematch && (a.opponents.includes(b.id) || isFamilyConflict(a, b))) continue;
       used[j] = true;
       const sub = bt(i + 1, used);
       if (sub !== null) return [[a, b], ...sub];
@@ -346,10 +374,10 @@ function foldPair(bracket: Player[], allowRematch: boolean): [Player, Player][] 
 
 /**
  * General bracket pairing with full backtracking, biased toward the Dutch fold: the top player
- * prefers the player at the top of the bottom half. Finds a rematch-free pairing whenever one
- * exists (unlike foldPair, which only permutes the bottom half).
+ * prefers the player at the top of the bottom half. Finds a rematch-free (and family-conflict-free)
+ * pairing whenever one exists (unlike foldPair, which only permutes the bottom half).
  */
-function generalPair(pool: Player[], allowRematch: boolean): [Player, Player][] | null {
+function generalPair(pool: Player[], allowRematch: boolean, isFamilyConflict: (a: Player, b: Player) => boolean): [Player, Player][] | null {
   if (pool.length === 0) return [];
   const a = pool[0];
   const rest = pool.slice(1);
@@ -365,32 +393,34 @@ function generalPair(pool: Player[], allowRematch: boolean): [Player, Player][] 
     });
   for (const i of order) {
     const b = rest[i];
-    if (!allowRematch && a.opponents.includes(b.id)) continue;
-    const sub = generalPair(rest.filter((_, idx) => idx !== i), allowRematch);
+    if (!allowRematch && (a.opponents.includes(b.id) || isFamilyConflict(a, b))) continue;
+    const sub = generalPair(rest.filter((_, idx) => idx !== i), allowRematch, isFamilyConflict);
     if (sub !== null) return [[a, b], ...sub];
   }
   return null;
 }
 
-/** Best even-bracket pairing: textbook fold first, then any rematch-free pairing, then relax. */
-function pairEven(pool: Player[]): [Player, Player][] {
+/** Best even-bracket pairing: textbook fold first, then any rematch/family-conflict-free pairing, then relax. */
+function pairEven(pool: Player[], isFamilyConflict: (a: Player, b: Player) => boolean): [Player, Player][] {
   return (
-    foldPair(pool, false) ??
-    generalPair(pool, false) ??
-    foldPair(pool, true) ??
-    generalPair(pool, true) ??
+    foldPair(pool, false, isFamilyConflict) ??
+    generalPair(pool, false, isFamilyConflict) ??
+    foldPair(pool, true, isFamilyConflict) ??
+    generalPair(pool, true, isFamilyConflict) ??
     []
   );
 }
 
 /** Pair a score bracket (possibly odd → one player down-floats). Returns pairs + the floater. */
-function pairBracket(pool: Player[]): { pairs: [Player, Player][]; floater: Player | null } {
-  if (pool.length % 2 === 0) return { pairs: pairEven(pool), floater: null };
+function pairBracket(pool: Player[], isFamilyConflict: (a: Player, b: Player) => boolean): { pairs: [Player, Player][]; floater: Player | null } {
+  if (pool.length % 2 === 0) return { pairs: pairEven(pool, isFamilyConflict), floater: null };
   // Odd: float one player down. Try floating from the lowest upward until the rest pair cleanly.
   for (const relax of [false, true]) {
     for (let k = pool.length - 1; k >= 0; k--) {
       const rest = pool.filter((_, idx) => idx !== k);
-      const pairs = relax ? generalPair(rest, true) : (foldPair(rest, false) ?? generalPair(rest, false));
+      const pairs = relax
+        ? generalPair(rest, true, isFamilyConflict)
+        : (foldPair(rest, false, isFamilyConflict) ?? generalPair(rest, false, isFamilyConflict));
       if (pairs) return { pairs, floater: pool[k] };
     }
   }
@@ -483,13 +513,93 @@ export function explainPairing(t: Tournament, roundNo: number, board: number): s
   const summarize = (h: Color[]) => (h.length ? `${h.filter((c) => c === 'w').length}W-${h.filter((c) => c === 'b').length}B` : 'none yet');
   const priorRound = priorMeetingRound(t, w.id, b.id, roundNo);
 
-  return [
+  const balOf = (h: Color[]) => h.filter((c) => c === 'w').length - h.filter((c) => c === 'b').length;
+  const wBal = balOf(wHist);
+  const bBal = balOf(bHist);
+  const colorReason =
+    wBal !== bBal
+      ? `${wBal < bBal ? w.name : b.name} had the more negative color balance (owed White) and got it.`
+      : `Color balance was tied (${wBal >= 0 ? '+' : ''}${wBal} each), so it came down to alternating each player's last color, or seed order if that was also tied.`;
+
+  const lines = [
     wScore === bScore
       ? `Both entered Round ${roundNo} with ${wScore} point(s) — paired within the same score group.`
-      : `${w.name} entered with ${wScore} point(s), ${b.name} with ${bScore} — different score groups, so one of them floated to complete an odd bracket.`,
-    `Color history before this round — ${w.name}: ${summarize(wHist)}. ${b.name}: ${summarize(bHist)}.`,
-    priorRound ? `Rematch — they also played in Round ${priorRound}.` : 'First meeting between these two players.',
+      : `${wScore > bScore ? w.name : b.name} entered with ${Math.max(wScore, bScore)} point(s) and floated down to pair against ${wScore > bScore ? b.name : w.name} (${Math.min(wScore, bScore)} point(s)), needed to complete an odd bracket.`,
+    `Color history before this round — ${w.name}: ${summarize(wHist)}. ${b.name}: ${summarize(bHist)}. ${colorReason}`,
+    priorRound ? `Rematch — they also played in Round ${priorRound}. Paired again only because no rematch-free pairing was available.` : 'First meeting between these two players.',
   ];
+  if (sameFamilyGroup(t, w.id, b.id)) {
+    const group = t.familyGroups.find((g) => g.playerIds.includes(w.id) && g.playerIds.includes(b.id));
+    lines.push(`${w.name} and ${b.name} are marked as "${group?.label ?? 'a family group'}" — paired anyway because no conflict-free pairing was available this round.`);
+  }
+  return lines;
+}
+
+export interface RoundPlayerInfo {
+  id: number;
+  name: string;
+  scoreBefore: number;
+  opponentName: string | null; // null if this player had a bye
+  opponentScoreBefore: number | null;
+  floated: boolean; // true when paired against a different score group
+}
+
+export interface RoundSummary {
+  groups: { score: number; players: RoundPlayerInfo[] }[]; // by each player's own pre-round score, desc
+  forcedRematches: { aName: string; bName: string; lastRound: number }[];
+  forcedFamilyConflicts: { aName: string; bName: string; label: string }[];
+}
+
+/**
+ * Whole-round methodology summary: every player grouped by the score they entered the round
+ * with, who floated across a score-group boundary to complete an odd bracket, and any rematches
+ * or family-group conflicts that were unavoidable this round. Feeds the round diagram in the UI.
+ * Reconstructed after the fact from round history, same approach as explainPairing.
+ */
+export function explainRound(t: Tournament, roundNo: number): RoundSummary {
+  const round = t.rounds[roundNo - 1];
+  if (!round) return { groups: [], forcedRematches: [], forcedFamilyConflicts: [] };
+  const byId = new Map(t.players.map((p) => [p.id, p]));
+  const infos: RoundPlayerInfo[] = [];
+  const forcedRematches: RoundSummary['forcedRematches'] = [];
+  const forcedFamilyConflicts: RoundSummary['forcedFamilyConflicts'] = [];
+
+  for (const pr of round.pairings) {
+    if (pr.byeId != null) {
+      const p = byId.get(pr.byeId);
+      if (!p) continue;
+      infos.push({
+        id: p.id, name: p.name, scoreBefore: scoreBeforeRound(t, p.id, roundNo),
+        opponentName: null, opponentScoreBefore: null, floated: false,
+      });
+      continue;
+    }
+    const w = byId.get(pr.whiteId!);
+    const b = byId.get(pr.blackId!);
+    if (!w || !b) continue;
+    const wScore = scoreBeforeRound(t, w.id, roundNo);
+    const bScore = scoreBeforeRound(t, b.id, roundNo);
+    // Only the higher-scoring player is the one who actually moved brackets (down-floated to
+    // complete an odd group) — the lower-scoring player is correctly paired within their own
+    // group, just with an extra (higher-scoring) opponent, so they aren't marked as floated.
+    infos.push({ id: w.id, name: w.name, scoreBefore: wScore, opponentName: b.name, opponentScoreBefore: bScore, floated: wScore > bScore });
+    infos.push({ id: b.id, name: b.name, scoreBefore: bScore, opponentName: w.name, opponentScoreBefore: wScore, floated: bScore > wScore });
+
+    const priorRound = priorMeetingRound(t, w.id, b.id, roundNo);
+    if (priorRound) forcedRematches.push({ aName: w.name, bName: b.name, lastRound: priorRound });
+    if (sameFamilyGroup(t, w.id, b.id)) {
+      const group = t.familyGroups.find((g) => g.playerIds.includes(w.id) && g.playerIds.includes(b.id));
+      forcedFamilyConflicts.push({ aName: w.name, bName: b.name, label: group?.label ?? 'family group' });
+    }
+  }
+
+  const scoreVals = [...new Set(infos.map((i) => i.scoreBefore))].sort((a, b) => b - a);
+  const groups = scoreVals.map((score) => ({
+    score,
+    players: infos.filter((i) => i.scoreBefore === score).sort((a, b) => a.name.localeCompare(b.name)),
+  }));
+
+  return { groups, forcedRematches, forcedFamilyConflicts };
 }
 
 /**
@@ -518,6 +628,7 @@ export function cancelByeRequest(t: Tournament, playerId: number, roundNo: numbe
 export function pairNextRound(t: Tournament): Round {
   const nextRoundNo = t.rounds.length + 1;
   const active = t.players.filter((p) => !p.withdrawn && !p.isHouse);
+  const isFamilyConflict = (a: Player, b: Player) => sameFamilyGroup(t, a.id, b.id);
 
   // Honour requested byes for this specific round — those players sit out with a half-point,
   // and everyone else is paired as usual.
@@ -547,22 +658,23 @@ export function pairNextRound(t: Tournament): Round {
   let floaters: Player[] = [];
   for (const sc of scores) {
     const bracket = [...floaters, ...pool.filter((p) => p.score === sc)].sort(bySeed);
-    const { pairs: bp, floater } = pairBracket(bracket);
+    const { pairs: bp, floater } = pairBracket(bracket, isFamilyConflict);
     pairs.push(...bp);
     floaters = floater ? [floater] : [];
   }
   if (floaters.length) {
-    const extra = foldPair(floaters.sort(bySeed), true);
+    const extra = foldPair(floaters.sort(bySeed), true, isFamilyConflict);
     if (extra) pairs.push(...extra);
   }
 
-  // If the bracket method produced any rematch, prefer a globally rematch-free pairing when one
-  // exists (exhaustive fold-biased backtracking over the whole field).
+  // If the bracket method produced any rematch or family conflict, prefer a globally clean
+  // pairing when one exists (exhaustive fold-biased backtracking over the whole field).
   const rematches = (ps: [Player, Player][]) =>
     ps.filter(([a, b]) => a.opponents.includes(b.id)).length;
-  if (rematches(pairs) > 0) {
-    const global = generalPair(pool, false);
-    if (global && rematches(global) === 0) pairs = global;
+  const familyConflicts = (ps: [Player, Player][]) => ps.filter(([a, b]) => isFamilyConflict(a, b)).length;
+  if (rematches(pairs) > 0 || familyConflicts(pairs) > 0) {
+    const global = generalPair(pool, false, isFamilyConflict);
+    if (global && rematches(global) === 0 && familyConflicts(global) === 0) pairs = global;
   }
 
   const pairings: Pairing[] = pairs.map(([a, b], i) => {

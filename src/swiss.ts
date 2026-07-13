@@ -1,8 +1,9 @@
 import './style.css';
 import {
-  addExtraGameForBye, cancelByeRequest, commitRound, createTournament, explainPairing,
-  isNwchessRoster, nextRoundNumber, pairNextRound, parseRoster, recommendedRounds,
-  requestByeForRound, setResult, standings, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
+  addExtraGameForBye, addFamilyGroup, cancelByeRequest, commitRound, createTournament,
+  explainPairing, explainRound, isNwchessRoster, nextRoundNumber, pairNextRound, parseRoster,
+  recommendedRounds, removeFamilyGroup, requestByeForRound, setResult, standings,
+  swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
 } from './swissEngine';
 import type { GameResult, RosterEntry, RosterFormat, Tournament } from './swissEngine';
 import { registerServiceWorker } from './pwa';
@@ -317,6 +318,30 @@ $('#pending-byes').addEventListener('click', (e) => {
   renderAll();
 });
 
+// ---------- family / sibling groups ----------
+$('#add-family-group-btn').addEventListener('click', () => {
+  const t = cur();
+  if (!t) return;
+  const checked = [...document.querySelectorAll<HTMLInputElement>('#family-player-list input[type="checkbox"]:checked')];
+  if (checked.length < 2) { alert('Select at least 2 players to mark as a family/sibling group.'); return; }
+  const label = ($('#family-label-input') as HTMLInputElement).value.trim();
+  const ok = addFamilyGroup(t, label, checked.map((box) => parseInt(box.dataset.pid!, 10)));
+  if (!ok) { alert('Could not add that group.'); return; }
+  ($('#family-label-input') as HTMLInputElement).value = '';
+  checked.forEach((box) => (box.checked = false));
+  save();
+  renderAll();
+});
+
+$('#family-groups-list').addEventListener('click', (e) => {
+  const btn = (e.target as HTMLElement).closest('.remove-family-group-btn') as HTMLButtonElement | null;
+  const t = cur();
+  if (!btn || !t) return;
+  removeFamilyGroup(t, parseInt(btn.dataset.gid!, 10));
+  save();
+  renderAll();
+});
+
 $('#reset-tourn').addEventListener('click', () => {
   if (confirm('Delete this event (all sections) and start over?')) {
     ev = null;
@@ -366,6 +391,7 @@ function renderAll() {
   const hasE = !!ev;
   ($('#control-card') as HTMLElement).hidden = !hasE;
   ($('#bye-request-card') as HTMLElement).hidden = !hasE;
+  ($('#family-group-card') as HTMLElement).hidden = !hasE;
   ($('#setup-card') as HTMLElement).hidden = hasE;
   const t = cur();
   ($('#standings-card') as HTMLElement).hidden = !t || !t.rounds.length;
@@ -382,6 +408,7 @@ function renderAll() {
 
   renderRounds(t);
   renderByeRequestCard(t);
+  renderFamilyGroupCard(t);
   renderStandings(t);
   renderWallChart(t);
 }
@@ -418,6 +445,28 @@ function renderByeRequestCard(t: Tournament) {
   $('#bye-request-count').textContent = pending.length ? `(${pending.length} pending)` : '';
 }
 
+function renderFamilyGroupCard(t: Tournament) {
+  const active = t.players.filter((p) => !p.withdrawn && !p.isHouse).sort((a, b) => a.name.localeCompare(b.name));
+  $('#family-player-list').innerHTML = active.length
+    ? active
+        .map(
+          (p) =>
+            `<label class="bye-player-item"><input type="checkbox" data-pid="${p.id}"> ${esc(p.name)}${p.rating ? ` (${p.rating})` : ''}</label>`
+        )
+        .join('')
+    : '<p class="hint">No active players.</p>';
+
+  $('#family-groups-list').innerHTML = t.familyGroups.length
+    ? `<h3>Groups</h3><ul class="pattern-list">${t.familyGroups
+        .map((g) => {
+          const names = g.playerIds.map((id) => t.players.find((p) => p.id === id)?.name).filter(Boolean).join(', ');
+          return `<li><b>${esc(g.label)}</b>: ${esc(names)} <button class="btn-icon remove-family-group-btn" data-gid="${g.id}" title="Remove this group">✕</button></li>`;
+        })
+        .join('')}</ul>`
+    : '';
+  $('#family-group-count').textContent = t.familyGroups.length ? `(${t.familyGroups.length})` : '';
+}
+
 function renderSectionTabs() {
   const el = $('#section-tabs');
   if (!ev || ev.sections.length <= 1) { el.hidden = true; el.innerHTML = ''; return; }
@@ -431,6 +480,45 @@ function renderSectionTabs() {
   el.querySelectorAll<HTMLElement>('.sec-tab').forEach((b) =>
     b.addEventListener('click', () => { if (ev) { ev.active = parseInt(b.dataset.i!, 10); save(); renderAll(); } })
   );
+}
+
+/** Whole-round methodology diagram: every player grouped by the score they entered the round
+ *  with, a ⇣ marker on whoever floated down to complete an odd bracket, and a note for any
+ *  rematch or family-group conflict that couldn't be avoided this round. */
+function roundMethodologyHtml(t: Tournament, roundNo: number): string {
+  const summary = explainRound(t, roundNo);
+  if (!summary.groups.length) return '';
+
+  const groupsHtml = summary.groups
+    .map((g) => {
+      const chips = g.players
+        .map((p) => {
+          const floatBadge = p.floated
+            ? `<span class="float-arrow" title="Floated down from the ${g.score} group to pair against ${esc(p.opponentName ?? '')} (${p.opponentScoreBefore} pt)">⇣</span> `
+            : '';
+          const byeBadge = p.opponentName == null ? ' <span class="hint">(bye)</span>' : '';
+          return `<span class="player-chip${p.floated ? ' floated' : ''}">${floatBadge}${esc(p.name)}${byeBadge}</span>`;
+        })
+        .join('');
+      return `<div class="score-group-row"><div class="score-group-label">${g.score} pt${g.score === 1 ? '' : 's'} <span class="hint">(${g.players.length})</span></div><div class="score-group-players">${chips}</div></div>`;
+    })
+    .join('');
+
+  const notes: string[] = [];
+  for (const r of summary.forcedRematches) {
+    notes.push(`${esc(r.aName)} vs ${esc(r.bName)} — rematch from Round ${r.lastRound}, unavoidable this round.`);
+  }
+  for (const f of summary.forcedFamilyConflicts) {
+    notes.push(`${esc(f.aName)} vs ${esc(f.bName)} — both in "${esc(f.label)}", paired anyway because no conflict-free option existed.`);
+  }
+  const notesHtml = notes.length ? `<p class="hint" style="margin-top:10px;">⚠ ${notes.join(' ')}</p>` : '';
+
+  return `<details class="round-methodology">
+    <summary>📊 How this round was paired</summary>
+    <p class="hint">Players grouped by the score they entered this round with. ⇣ marks whoever floated down from a higher score group to complete an odd bracket.</p>
+    ${groupsHtml}
+    ${notesHtml}
+  </details>`;
 }
 
 function renderRounds(t: Tournament) {
@@ -543,6 +631,7 @@ function renderRounds(t: Tournament) {
         <h3>Round ${round.number} ${round.complete ? '<span class="pos">✓ complete</span>' : '<span class="hint">in progress</span>'}</h3>
         <table><thead><tr><th class="num">Bd</th><th>White</th><th>Black</th><th>Result</th></tr></thead>
         <tbody>${rows}</tbody></table>
+        ${roundMethodologyHtml(t, round.number)}
         ${advancedPanel}
       </div>`;
     })

@@ -109,6 +109,21 @@ Ian Nepomniachtchi 2758"></textarea>
         </details>
       </section>
 
+      <section class="card" id="family-group-card" hidden>
+        <details id="family-group-details">
+          <summary><h2>Family / sibling groups <span id="family-group-count" class="hint"></span></h2></summary>
+          <p class="hint">Mark players who shouldn't be paired against each other when it can be avoided — siblings, parent/child, spouses, etc. The pairing engine treats this the same way it treats rematches: avoided whenever an alternative pairing exists, but not a hard rule that could leave the round unpairable.</p>
+          <div id="family-player-list" class="bye-player-list"></div>
+          <div class="config-row" style="align-items:center;">
+            <label>Group label <span class="hint">(optional)</span>
+              <input type="text" id="family-label-input" class="text-input" placeholder="e.g. Smith family" style="width:180px;" />
+            </label>
+            <button id="add-family-group-btn" class="btn">Add group</button>
+          </div>
+          <div id="family-groups-list"></div>
+        </details>
+      </section>
+
       <section class="card" id="standings-card" hidden>
         <h2><span class="step">3</span> Standings</h2>
         <div id="standings"></div>
