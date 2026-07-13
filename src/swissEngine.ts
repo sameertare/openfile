@@ -226,7 +226,11 @@ function parsePlainList(text: string): RosterEntry[] {
     }
     const name = line.replace(/[,;|\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim().replace(/[,\s]+$/, '');
     if (!name) continue;
-    const key = name.toLowerCase();
+    // Only treat this as an accidental duplicate (e.g. the same roster pasted twice into an
+    // already-filled textarea) when BOTH the name and rating match exactly — two real players can
+    // legitimately share a name, and silently dropping one with no feedback just makes them
+    // disappear from the roster with no explanation.
+    const key = `${name.toLowerCase()} ${rating ?? ''}`;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push({ name, rating });
