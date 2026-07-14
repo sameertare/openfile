@@ -8,6 +8,7 @@ import { buildTree, childSummaries, nodeAtPath, scorePct } from './openingTree';
 import type { TreeNode, ChildSummary, GameRef } from './openingTree';
 import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
+import { downloadPgn } from './pgnExport';
 
 registerServiceWorker();
 initTheme();
@@ -452,6 +453,43 @@ function movesTableHtml(children: ChildSummary[]): string {
 }
 
 /** Formats a SAN list as a readable move-number-prefixed string, e.g. "1. e4 e5 2. Nf3 Nc6". */
+function pgnEscape(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function resultToPgnTag(result: Result, trackedColor: Color): string {
+  if (result === 'win') return trackedColor === 'w' ? '1-0' : '0-1';
+  if (result === 'loss') return trackedColor === 'w' ? '0-1' : '1-0';
+  if (result === 'draw') return '1/2-1/2';
+  return '*';
+}
+
+/** Every game reaching a position, concatenated into one multi-game PGN — headers reconstructed
+ *  from what the tree already tracks (opponent, date, link, result relative to the tracked
+ *  player) since these games came from parsed PGNs/API fetches that may not have carried full
+ *  headers of their own. */
+function buildMultiGamePgn(refs: GameRef[], username: string | null, trackedColor: Color): string {
+  return refs
+    .map((ref) => {
+      const you = pgnEscape(username || 'Player');
+      const opponent = pgnEscape(ref.opponent || 'Opponent');
+      const white = trackedColor === 'w' ? you : opponent;
+      const black = trackedColor === 'w' ? opponent : you;
+      const resultTag = resultToPgnTag(ref.result, trackedColor);
+      const headers = [
+        `[Event "OpenFile Opening Explorer"]`,
+        `[Date "${pgnEscape(ref.date || '????.??.??')}"]`,
+        `[White "${white}"]`,
+        `[Black "${black}"]`,
+        `[Result "${resultTag}"]`,
+      ];
+      if (ref.link) headers.push(`[Site "${pgnEscape(ref.link)}"]`);
+      const movetext = formatMoves(ref.sans);
+      return `${headers.join('\n')}\n\n${movetext}${movetext ? ' ' : ''}${resultTag}\n`;
+    })
+    .join('\n');
+}
+
 function formatMoves(sans: string[]): string {
   const parts: string[] = [];
   for (let i = 0; i < sans.length; i++) {
@@ -506,6 +544,7 @@ function renderGamesHere(node: TreeNode) {
         <select class="games-page-size">
           ${pageSizeOptions.map((n) => `<option value="${n}"${gamesPageSize === n ? ' selected' : ''}>${n}</option>`).join('')}
           <option value="all"${gamesPageSize === 'all' ? ' selected' : ''}>All (${refs.length})</option>
+          <option value="download">⬇ Download all ${refs.length} as PGN</option>
         </select>
       </label>
       <button class="btn btn-ghost btn-sm games-prev" ${gamesPage === 0 ? 'disabled' : ''}>◀ Prev</button>
@@ -524,6 +563,14 @@ function renderGamesHere(node: TreeNode) {
   });
   gamesHereEl.querySelectorAll<HTMLSelectElement>('.games-page-size').forEach((sel) => {
     sel.addEventListener('change', () => {
+      if (sel.value === 'download') {
+        const trackedColor = colorSelect.value as Color;
+        const pgn = buildMultiGamePgn(refs, active().username, trackedColor);
+        const safeName = (active().username || 'games').replace(/[^\w.-]/g, '_').slice(0, 60);
+        downloadPgn(`${safeName}_position_games.pgn`, pgn);
+        sel.value = gamesPageSize === 'all' ? 'all' : String(gamesPageSize); // not a real page size — snap back
+        return;
+      }
       gamesPageSize = sel.value === 'all' ? 'all' : parseInt(sel.value, 10);
       gamesPage = 0;
       renderGamesHere(node);
