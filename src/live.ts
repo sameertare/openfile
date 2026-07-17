@@ -226,9 +226,12 @@ function render() {
     }
   }
 
-  // On the engine's turn, skip the candidate-move search — it's a full-depth MultiPV search on the
-  // same position that would queue ahead of the engine's own move and delay it by seconds.
-  if (engineTurnInPlay) $('#candidates').innerHTML = '';
+  // Skip the candidate-move search on the engine's turn (it's a full-depth MultiPV search on the
+  // same position that would queue ahead of the engine's own move and delay it by seconds), and
+  // before a Play-mode game has actually started (otherwise the board shows stale hint arrows
+  // left over from whatever position was last viewed in Any Position mode).
+  const suppressCandidates = engineTurnInPlay || (mode === 'play' && !playActive);
+  if (suppressCandidates) { $('#candidates').innerHTML = ''; board.setArrows([]); }
   else void debouncedUpdateCandidates();
 }
 
@@ -997,6 +1000,7 @@ $('#play-start-btn').addEventListener('click', () => {
 
   resetLine(fen);
   playActive = true;
+  board.setOrientation(playUserColor); // your own pieces at the bottom, like every other chess site
   ($('#play-undo-btn') as HTMLElement).hidden = false;
   ($('#play-reset-btn') as HTMLElement).hidden = false;
   render();
@@ -1024,6 +1028,7 @@ $('#play-reset-btn').addEventListener('click', () => {
   const fen = fenInput || START;
   resetLine(fen);
   playActive = true;
+  board.setOrientation(playUserColor);
   render();
   void pump();
   void playEngineMove(); // engine moves first if the start position is its colour
@@ -1077,6 +1082,7 @@ async function loadLichessGameForPlay(raw: string) {
 
   playUserColor = ($('#play-color') as HTMLSelectElement).value as 'w' | 'b';
   playActive = true;
+  board.setOrientation(playUserColor);
   ($('#play-undo-btn') as HTMLElement).hidden = false;
   ($('#play-reset-btn') as HTMLElement).hidden = false;
   render();
@@ -1105,12 +1111,15 @@ document.querySelectorAll<HTMLElement>('.tab').forEach((tab) => {
       playActive = false;
       resetLine(START);
       playUserColor = 'w';
+      board.setOrientation('w');
       ($('#play-status') as HTMLElement).textContent = 'Press "Start game" or load a lichess game to begin.';
       ($('#play-undo-btn') as HTMLElement).hidden = true;
       ($('#play-reset-btn') as HTMLElement).hidden = true;
     } else {
-      // Leaving Play mode — cancel any pending engine move so it can't fire in another tab.
+      // Leaving Play mode — cancel any pending engine move and restore standard orientation so
+      // Position/Live modes never inherit a flipped board from a Black game.
       invalidatePlayEngineMove();
+      board.setOrientation('w');
     }
     render();
   });
