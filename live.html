@@ -119,16 +119,18 @@
               <input type="text" id="play-fen-input" class="text-input" placeholder="Leave empty for standard position, or paste a FEN" />
             </label>
             <div class="config-row">
-              <label>Engine depth
+              <label>Engine strength
                 <select id="depth-play">
-                  <option value="12">Depth 12</option>
-                  <option value="15" selected>Depth 15</option>
-                  <option value="18">Depth 18</option>
-                  <option value="22">Depth 22 (slow)</option>
+                  <option value="4">Beginner — depth 4 (instant)</option>
+                  <option value="8">Casual — depth 8 (fast)</option>
+                  <option value="10" selected>Club — depth 10</option>
+                  <option value="14">Strong — depth 14 (slower)</option>
+                  <option value="18">Maximum — depth 18 (very slow)</option>
                 </select>
               </label>
               <button id="play-start-btn" class="btn btn-primary">▶ Start game</button>
             </div>
+            <p class="hint">Higher depth plays stronger but takes longer per move — the engine is single-threaded in your browser, so depth 14+ can take many seconds a move.</p>
             <div class="play-or">— or continue from a lichess game —</div>
             <label class="stack">Take over a live or finished lichess game
               <input type="text" id="play-lichess-input" class="text-input" placeholder="Paste a lichess game URL/ID (or study link / FEN)" />

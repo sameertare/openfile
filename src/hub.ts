@@ -2,8 +2,6 @@
 import './style.css';
 import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
-import { initAnalytics } from './analytics';
 
 registerServiceWorker();
 initTheme();
-void initAnalytics('analytics');

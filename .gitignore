@@ -1,5 +1,4 @@
 node_modules/
 dist/
 reports/
-analytics.json
 .DS_Store

@@ -211,25 +211,31 @@ function render() {
   renderEvalGraph();
   updatePgnOutput();
 
-  // Update play mode status
+  // Update play mode status. Compare side-to-move against the user's colour using the raw FEN
+  // field ('w'/'b') — the `stm` above is the display string ("White"/"Black") and comparing that
+  // to 'w'/'b' never matched, which pinned the status to "Engine thinking…" on every render.
+  const engineTurnInPlay =
+    mode === 'play' && !c.isGameOver() && fen.split(' ')[1] !== playUserColor;
   if (mode === 'play' && line.length > 1) {
     const status = $('#play-status');
     if (c.isGameOver()) {
-      const reason = c.isCheckmate() ? 'Checkmate!' : c.isStalemate() ? 'Stalemate!' : c.isDraw() ? 'Draw!' : 'Game over!';
-      status.textContent = reason;
+      status.textContent = c.isCheckmate() ? 'Checkmate!' : c.isStalemate() ? 'Stalemate!' : c.isDraw() ? 'Draw!' : 'Game over!';
     } else {
-      const stm = fen.split(' ')[1] === 'w' ? 'White' : 'Black';
-      const isUserTurn = (stm === 'w' && playUserColor === 'w') || (stm === 'b' && playUserColor === 'b');
-      status.textContent = isUserTurn ? 'Your turn' : 'Engine thinking…';
+      status.textContent = engineTurnInPlay ? 'Engine thinking…' : 'Your turn';
     }
   }
 
-  void debouncedUpdateCandidates();
+  // On the engine's turn, skip the candidate-move search — it's a full-depth MultiPV search on the
+  // same position that would queue ahead of the engine's own move and delay it by seconds.
+  if (engineTurnInPlay) $('#candidates').innerHTML = '';
+  else void debouncedUpdateCandidates();
 }
 
 function renderEvalGraph() {
   const el = $('#eval-graph');
-  if (line.length < 2) { el.hidden = true; return; }
+  // In Play mode the full-history eval graph is intentionally not computed (see nextEvalIndex),
+  // so hide it rather than show a mostly-empty sparkline.
+  if (line.length < 2 || mode === 'play') { el.hidden = true; return; }
   el.hidden = false;
   mountInteractiveSparkline(el, evalsW, view, (i) => goto(i));
 }
@@ -373,6 +379,17 @@ function goto(i: number) {
 
 // ---------- background engine evaluation (prioritises the viewed position) ----------
 function nextEvalIndex(): number {
+  // In Play-vs-Engine mode only the position on the board matters — evaluating the whole loaded
+  // history (100+ positions at full depth) would tie up the single engine worker and starve the
+  // engine's own move, leaving it stuck "thinking" while the user can't move. So only ever
+  // evaluate the current position here.
+  if (mode === 'play') {
+    if (evalsW[view] !== null) return -1;
+    // On the engine's own turn, don't run a background eval — playEngineMove does the search, and
+    // a competing one would just delay the engine's move (leaving it stuck "thinking").
+    if (line[view].fen.split(' ')[1] !== playUserColor) return -1;
+    return view;
+  }
   let best = -1, bestD = Infinity;
   for (let i = 0; i < evalsW.length; i++) {
     if (evalsW[i] !== null) continue;
