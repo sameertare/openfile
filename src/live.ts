@@ -236,11 +236,16 @@ function renderEvalGraph() {
 
 function updatePgnOutput() {
   const el = $('#live-pgn-moves');
-  if (mode !== 'live') return;
-  if (line.length < 2) {
-    el.innerHTML = '<span class="hint live-pgn-empty">Connect to a game to see moves here</span>';
+  const label = $('#live-pgn-label');
+  // Only the Live tab shows the vertical move grid; hide it everywhere else.
+  if (mode !== 'live' || line.length < 2) {
+    el.hidden = true;
+    label.hidden = true;
+    el.innerHTML = '';
     return;
   }
+  label.hidden = false;
+  el.hidden = false;
   // Lichess-style vertical move list: one row per full move — number, White's move, Black's move.
   const rows: string[] = [];
   for (let k = 1; k < line.length; k += 2) {
@@ -260,7 +265,13 @@ function updatePgnOutput() {
   el.querySelectorAll<HTMLElement>('.lpm-move[data-ply]').forEach((m) =>
     m.addEventListener('click', () => goto(parseInt(m.dataset.ply!, 10)))
   );
-  el.querySelector('.cur')?.scrollIntoView({ block: 'nearest' });
+  // Scroll the current move into view WITHIN the grid only — never scrollIntoView, which would
+  // also scroll the whole page (that's the flicker/jump when new live moves arrive).
+  const cur = el.querySelector<HTMLElement>('.cur');
+  if (cur) {
+    const target = cur.offsetTop - el.clientHeight / 2 + cur.offsetHeight / 2;
+    el.scrollTop = Math.max(0, target);
+  }
 }
 
 function renderAssess(c: Chess, fen: string) {
@@ -306,6 +317,9 @@ function renderAssess(c: Chess, fen: string) {
 
 function renderMoveList() {
   const ml = $('#move-list');
+  // Live mode uses the vertical lichess-style move grid (renderLiveMoves) instead of this
+  // horizontal list, so keep the horizontal one out of the way there.
+  if (mode === 'live') { ml.hidden = true; ml.innerHTML = ''; return; }
   const n = line.length;
   if (n <= 1) { ml.hidden = true; ml.innerHTML = ''; return; }
   ml.hidden = false;

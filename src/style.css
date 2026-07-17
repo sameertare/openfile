@@ -401,6 +401,7 @@ a { color: var(--blue); }
 /* ---------- lichess-style vertical live move list ---------- */
 .live-pgn-label { margin-top: 12px; font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
 .live-pgn-moves {
+  position: relative; /* so a move's offsetTop is measured against this scroll container */
   margin-top: 6px; max-height: 320px; overflow-y: auto;
   background: var(--bg-inset); border: 1px solid var(--border); border-radius: 8px;
   display: grid; grid-template-columns: auto 1fr 1fr; align-content: start;
