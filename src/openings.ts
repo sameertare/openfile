@@ -84,6 +84,9 @@ const BOOK: [string, string][] = [
 // Longest prefixes first so the first match is the most specific.
 const SORTED_BOOK = [...BOOK].sort((a, b) => b[0].length - a[0].length);
 
+// Cache for opening lookups by move sequence to avoid redundant book searches.
+const openingCache = new Map<string, { eco: string; opening: string; family: string }>();
+
 function fromEcoUrl(url: string): string | null {
   const m = url.match(/\/openings\/([^/?#]+)/);
   if (!m) return null;
@@ -101,8 +104,13 @@ export function identifyOpening(
   let opening = '';
   if (headers['Opening'] && headers['Opening'] !== '?') opening = headers['Opening'];
   else if (headers['ECOUrl']) opening = fromEcoUrl(headers['ECOUrl']) ?? '';
+
   if (!opening) {
     const line = sans.slice(0, 12).join(' ');
+    // Check cache before searching the book.
+    const cached = openingCache.get(line);
+    if (cached) return cached;
+
     for (const [prefix, name] of SORTED_BOOK) {
       if (line.startsWith(prefix)) {
         opening = name;
@@ -110,7 +118,14 @@ export function identifyOpening(
       }
     }
   }
+
   if (!opening) opening = 'Unknown Opening';
   const family = opening.split(':')[0].split(',')[0].trim();
-  return { eco, opening, family };
+  const result = { eco, opening, family };
+
+  // Cache the result for this move sequence.
+  const line = sans.slice(0, 12).join(' ');
+  openingCache.set(line, result);
+
+  return result;
 }

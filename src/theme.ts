@@ -13,8 +13,12 @@ function updateButton() {
   const btn = document.getElementById('theme-toggle');
   if (!btn) return;
   const theme = currentTheme();
-  btn.textContent = theme === 'light' ? '🌙' : '☀️';
-  btn.setAttribute('title', theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
+  const isDark = theme === 'dark';
+  btn.textContent = isDark ? '🌙' : '☀️';
+  btn.setAttribute('title', isDark ? 'Switch to light theme (dark mode)' : 'Switch to dark theme (light mode)');
+  btn.setAttribute('aria-label', `Current theme: ${theme} mode`);
+  btn.classList.toggle('light-mode', theme === 'light');
+  btn.classList.toggle('dark-mode', theme === 'dark');
 }
 
 export function initTheme() {

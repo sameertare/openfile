@@ -562,6 +562,57 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
     }
   </div>`);
 
+  // Time by phase analysis
+  if (a.timeByPhase && a.timeByPhase.length > 0 && a.timeByPhase.some(p => p.totalMoves > 0)) {
+    html.push(`<div class="card"><h2>⏲️ Move time by phase</h2>
+      <table class="data-table">
+        <tr><th>Phase</th><th>Avg seconds</th><th>Range</th><th>Moves under 30s</th></tr>
+        ${a.timeByPhase.map(p => `
+          <tr>
+            <td>${p.phase.charAt(0).toUpperCase() + p.phase.slice(1)}</td>
+            <td>${p.avgSeconds}s</td>
+            <td>${p.minSeconds}s – ${p.maxSeconds}s</td>
+            <td>${p.movesUnderThreshold} / ${p.totalMoves}</td>
+          </tr>
+        `).join('')}
+      </table>
+      <p class="section-note">Time spent per phase. High pressure in a particular phase often correlates with errors there.</p>
+    </div>`);
+  }
+
+  // Blunder clustering
+  if (a.blunderClusters && a.blunderClusters.length > 0) {
+    html.push(`<div class="card"><h2>📊 Blunder clustering</h2>
+      <p class="section-note">Moves where multiple blunders occurred in nearby moves — often a sign of specific weak spots.</p>
+      <ul>${a.blunderClusters.map(c => `
+        <li><b>Moves ${c.moveRange[0]}–${c.moveRange[1]}</b> (${c.phase}): ${c.count} blunder(s)</li>
+      `).join('')}</ul>
+    </div>`);
+  }
+
+  // Opening preparation stats
+  if (a.openingPrep && a.openingPrep.length > 0) {
+    const prepTotals = a.openingPrep.reduce((acc, o) => {
+      acc.practice += o.practiceGames;
+      acc.rated += o.ratedGames;
+      acc.total += o.totalGames;
+      return acc;
+    }, { practice: 0, rated: 0, total: 0 });
+    const prepRate = prepTotals.total ? Math.round((prepTotals.practice / prepTotals.total) * 100) : 0;
+
+    html.push(`<div class="card"><h2>📖 Opening preparation</h2>
+      <p class="section-note"><b>${prepRate}%</b> of games were in studied/practice openings vs <b>${100 - prepRate}%</b> improvised.</p>
+      ${prepTotals.practice > 0 ? `
+        <p class="hint">Your most played prepared openings:</p>
+        <ul>${a.openingPrep
+          .filter(o => o.practiceGames > 0)
+          .slice(0, 5)
+          .map(o => `<li><b>${esc(o.opening)}</b>: ${o.totalGames} game(s), ${o.winRate}% score</li>`)
+          .join('')}</ul>
+      ` : ''}
+    </div>`);
+  }
+
   html.push(`<div class="card"><h2>🎯 Training recommendations</h2>
     ${
       a.recommendations.length

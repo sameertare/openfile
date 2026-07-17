@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#1b2340"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#d4af37" stroke-width="1"/>
+  <path d="M28 36 L33 21 L41 31 L50 17 L59 31 L67 21 L72 36 Z" fill="#d4af37"/>
+  <circle cx="33" cy="21" r="2.6" fill="#f2ead9"/>
+  <circle cx="50" cy="17" r="2.8" fill="#f2ead9"/>
+  <circle cx="67" cy="21" r="2.6" fill="#f2ead9"/>
+  <rect x="27" y="36" width="46" height="6" rx="1" fill="#d4af37"/>
+  <text x="50" y="76" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700" fill="#f2ead9">OF</text>
+</svg>

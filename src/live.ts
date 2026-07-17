@@ -10,6 +10,7 @@ import { mountInteractiveSparkline } from './sparkline';
 import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 import { buildPgnFromLine, downloadPgn } from './pgnExport';
+import { debounce } from './debounce';
 
 registerServiceWorker();
 initTheme();
@@ -204,7 +205,7 @@ function render() {
   renderMoveList();
   updateNav();
   renderEvalGraph();
-  void updateCandidates();
+  void debouncedUpdateCandidates();
 }
 
 function renderEvalGraph() {
@@ -379,6 +380,9 @@ async function updateCandidates() {
   if (line[view]?.fen !== fen) return; // view moved on while we were searching
   renderCandidates(fen, results);
 }
+
+// Debounce candidate updates when rapidly navigating through positions (e.g. arrow key spam).
+const debouncedUpdateCandidates = debounce(updateCandidates, 80);
 
 // ======================================================================
 // POSITION TAB — FEN / PGN / click-to-move
@@ -812,6 +816,21 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowRight') { goto(view + 1); e.preventDefault(); }
   else if (e.key === 'Home') { goto(0); e.preventDefault(); }
   else if (e.key === 'End') { goto(line.length - 1); e.preventDefault(); }
+  else if (e.key === ' ') {
+    // Play the best move if one is available.
+    e.preventDefault();
+    const fen = line[view].fen;
+    const c = new Chess(fen);
+    if (!c.isGameOver() && bestU[view]) {
+      const uci = bestU[view]!;
+      const m = c.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci.length > 4 ? uci.slice(4) : undefined });
+      if (m) {
+        truncateAfter(view);
+        appendNode(m.after, uci);
+        goto(view + 1);
+      }
+    }
+  }
 });
 
 document.querySelectorAll<HTMLElement>('.tab').forEach((tab) => {
