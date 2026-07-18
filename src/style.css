@@ -359,6 +359,18 @@ a { color: var(--blue); }
 .btn-live.following { background: var(--red); color: #fff; border-color: var(--red); font-weight: 700; animation: livepulse 1.6s ease-in-out infinite; }
 @keyframes livepulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
+/* tablebase overlay (≤7 pieces) */
+.tablebase-panel { margin-top: 8px; }
+.tb-verdict {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 6px 10px; border-radius: 7px; background: var(--bg-inset); border: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.tb-badge {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
 /* current-move assessment */
 .move-assess { margin-top: 8px; min-height: 42px; display: flex; flex-direction: column; gap: 3px; }
 .assess-move { font-size: 0.95rem; }

@@ -11,6 +11,7 @@ import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 import { buildPgnFromLine, downloadPgn } from './pgnExport';
 import { debounce } from './debounce';
+import { queryTablebase, tablebaseEligible, tbCategoryLabel, tbCategoryClass } from './tablebase';
 
 registerServiceWorker();
 initTheme();
@@ -211,6 +212,7 @@ function render() {
   updateNav();
   renderEvalGraph();
   updatePgnOutput();
+  void debouncedUpdateTablebase();
 
   // Update play mode status. Compare side-to-move against the user's colour using the raw FEN
   // field ('w'/'b') — the `stm` above is the display string ("White"/"Black") and comparing that
@@ -474,6 +476,43 @@ async function updateCandidates() {
 
 // Debounce candidate updates when rapidly navigating through positions (e.g. arrow key spam).
 const debouncedUpdateCandidates = debounce(updateCandidates, 80);
+
+// ---------- tablebase overlay (≤7 pieces) ----------
+let tablebaseToken = 0;
+let tablebaseAbort: AbortController | null = null;
+
+async function updateTablebase() {
+  const panel = $('#tablebase-panel');
+  const fen = line[view].fen;
+  if (!tablebaseEligible(fen)) { panel.hidden = true; panel.innerHTML = ''; return; }
+
+  const token = ++tablebaseToken;
+  tablebaseAbort?.abort();
+  tablebaseAbort = new AbortController();
+  panel.hidden = false;
+  panel.innerHTML = `<span class="hint">Checking tablebase…</span>`;
+
+  const result = await queryTablebase(fen, tablebaseAbort.signal);
+  if (token !== tablebaseToken) return; // superseded by a newer position
+  if (line[view]?.fen !== fen) return; // view moved on while the request was in flight
+
+  if (!result) { panel.hidden = true; panel.innerHTML = ''; return; }
+
+  // result.category and result.moves are already from the side-to-move's perspective, so no
+  // white/black conversion is needed here (unlike the engine eval, which is side-to-move cp and
+  // does need flipping to white's perspective for the eval bar).
+  const label = tbCategoryLabel(result.category);
+  const cls = tbCategoryClass(result.category);
+  const dtzStr = result.dtz != null && result.category !== 'draw' ? ` in ${Math.abs(result.dtz)}` : '';
+  const best = result.moves[0];
+  const bestStr = best ? ` · best: <b>${best.san}</b>` : '';
+  panel.innerHTML =
+    `<div class="tb-verdict"><span class="tb-badge">📚 Tablebase</span> ` +
+    `<span class="${cls}">${label}${dtzStr}</span>${bestStr}</div>`;
+}
+
+// Debounce tablebase lookups the same way as candidates, for the same reason (arrow-key spam).
+const debouncedUpdateTablebase = debounce(updateTablebase, 80);
 
 // ======================================================================
 // PLAY VS ENGINE — auto-play engine moves
