@@ -694,6 +694,26 @@ textarea {
   #plans-card { display: block !important; }
 }
 
+/* ---------- Performance Analysis report — print / PDF export ---------- */
+@media print {
+  /* Redefine the theme variables to a plain light print palette so every component built on
+     them (cards, tables, chips, rec-cards, etc.) prints legibly regardless of dark/light theme
+     and regardless of whether the browser's "print background graphics" option is on. */
+  :root, :root[data-theme="light"] {
+    --bg: #fff; --bg-card: #fff; --bg-inset: #f4f5f7; --border: #ccc;
+    --text: #000; --text-dim: #444; --accent: #3a612c; --accent-dark: #2c4a21;
+    --gold: #8a6110; --red: #a8321f; --blue: #1f5590;
+  }
+  .topnav, .app-footer, .app-header .tagline,
+  #load-card, #config-card, #export-card { display: none !important; }
+  .card { border: 1px solid #ccc; box-shadow: none; break-inside: avoid; }
+  table { break-inside: auto; }
+  tr, .rec-card, .stat-card { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+  body { margin: 0; }
+  #app { max-width: 100%; padding: 0; }
+}
+
 @media (max-width: 640px) {
   .config-row { flex-direction: column; align-items: stretch; }
   .swiss-guide-grid { grid-template-columns: 1fr; }

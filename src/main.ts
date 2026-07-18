@@ -679,6 +679,18 @@ $('#download-md').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+$('#export-pdf').addEventListener('click', () => {
+  if (resultsEl.hidden) return;
+  // The browser's print-to-PDF flow uses document.title as the default save filename — set it to
+  // something meaningful for the duration of the print dialog, then restore it once the dialog
+  // closes. window.print() isn't reliably synchronous across browsers, so restoring the title
+  // right after calling it (rather than on 'afterprint') can race the dialog capturing the title.
+  const originalTitle = document.title;
+  document.title = `chess-report-${detectedUsername || 'player'}-${new Date().toISOString().slice(0, 10)}`;
+  window.addEventListener('afterprint', () => { document.title = originalTitle; }, { once: true });
+  window.print();
+});
+
 $('#save-server').addEventListener('click', async () => {
   if (!currentMarkdown) return;
   const name = `${detectedUsername || 'player'}`.replace(/[^\w.-]/g, '_');
