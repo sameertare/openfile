@@ -42,7 +42,6 @@ const progressFill = $('#progress-fill');
 const progressText = $('#progress-text');
 const resultsEl = $('#results');
 const exportCard = $('#export-card');
-const serverMsg = $('#server-msg');
 
 function isPlayerNameMatch(name: string | undefined, matchKeys: Set<string>): boolean {
   return !!name && name !== '?' && matchKeys.has(nameKey(name));
@@ -693,42 +692,3 @@ $('#export-pdf').addEventListener('click', () => {
   window.print();
 });
 
-$('#save-server').addEventListener('click', async () => {
-  if (!currentMarkdown) return;
-  const name = `${detectedUsername || 'player'}`.replace(/[^\w.-]/g, '_');
-  try {
-    const resp = await fetch('/api/reports/' + encodeURIComponent(name), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'text/markdown' },
-      body: currentMarkdown,
-    });
-    serverMsg.textContent = resp.ok
-      ? `Saved on server as "${name}.md" (${new Date().toLocaleTimeString()}).`
-      : `Server save failed: ${resp.status}`;
-  } catch (e) {
-    serverMsg.textContent = 'Server not reachable — use "Download report.md" instead.';
-  }
-});
-
-$('#load-server').addEventListener('click', async () => {
-  try {
-    const resp = await fetch('/api/reports');
-    const list = (await resp.json()) as { name: string; mtime: string }[];
-    if (!list.length) {
-      serverMsg.textContent = 'No reports saved on the server yet.';
-      return;
-    }
-    const pick = prompt(
-      'Saved reports:\n' + list.map((r, i) => `${i + 1}. ${r.name} (${r.mtime.slice(0, 10)})`).join('\n') + '\n\nEnter a number to load:',
-      '1'
-    );
-    const idx = pick ? parseInt(pick, 10) - 1 : -1;
-    if (idx < 0 || idx >= list.length) return;
-    const md = await (await fetch('/api/reports/' + encodeURIComponent(list[idx].name))).text();
-    const file = new File([md], list[idx].name + '.md');
-    await handleFiles([file]);
-    serverMsg.textContent = `Loaded "${list[idx].name}" — add PGN files (or just re-run) and Analyze to update it.`;
-  } catch (e) {
-    serverMsg.textContent = 'Server not reachable.';
-  }
-});

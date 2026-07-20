@@ -29,8 +29,6 @@ const rosterGrid = $('#roster-grid');
 const rosterCount = $('#roster-count');
 const sortSelect = $('#sort-select') as HTMLSelectElement;
 const clearBtn = $('#clear-roster') as HTMLButtonElement;
-const loadServerAllBtn = $('#load-server-all') as HTMLButtonElement;
-const serverStatus = $('#server-status');
 
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
@@ -97,28 +95,6 @@ clearBtn.addEventListener('click', () => {
   renderRoster();
 });
 
-loadServerAllBtn.addEventListener('click', async () => {
-  serverStatus.textContent = 'Loading…';
-  try {
-    const listResp = await fetch('/api/reports');
-    if (!listResp.ok) { serverStatus.textContent = `Server returned ${listResp.status}.`; return; }
-    const list = (await listResp.json()) as { name: string; mtime: string }[];
-    if (!list.length) { serverStatus.textContent = 'No reports saved on the server yet.'; return; }
-    let ok = 0;
-    for (const item of list) {
-      try {
-        const r = await fetch(`/api/reports/${encodeURIComponent(item.name)}`);
-        if (!r.ok) continue;
-        const text = await r.text();
-        if (!ingestReportText(text, item.name)) ok++;
-      } catch { /* skip a single bad fetch, keep going */ }
-    }
-    serverStatus.textContent = `Loaded ${ok} of ${list.length} saved report(s).`;
-    renderRoster();
-  } catch {
-    serverStatus.textContent = 'Server not reachable — this feature needs the optional Node backend running.';
-  }
-});
 
 sortSelect.addEventListener('change', renderRoster);
 

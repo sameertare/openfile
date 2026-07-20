@@ -1,60 +1,18 @@
 /**
- * OpenFile backend (optional) — serves the built SPA and persists markdown reports.
- * The app also runs fully static; this backend only adds server-side report storage.
+ * OpenFile backend (optional) — serves the built SPA and relays a live lichess game as SSE for
+ * environments that prefer a server-side proxy over the frontend's direct browser fetch.
+ * The app also runs fully static; this backend is not required for any core feature.
  */
 import express from 'express';
-import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
-const REPORTS_DIR = path.join(ROOT, 'reports');
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
 
 const app = express();
-app.use(express.json());
-app.use(express.text({ type: ['text/markdown', 'text/plain'], limit: '20mb' }));
-
-const safeName = (name) => /^[\w.-]{1,80}$/.test(name);
-
-app.get('/api/reports', async (_req, res) => {
-  try {
-    await fs.mkdir(REPORTS_DIR, { recursive: true });
-    const files = await fs.readdir(REPORTS_DIR);
-    const out = [];
-    for (const f of files) {
-      if (!f.endsWith('.md')) continue;
-      const stat = await fs.stat(path.join(REPORTS_DIR, f));
-      out.push({ name: f.replace(/\.md$/, ''), mtime: stat.mtime.toISOString() });
-    }
-    out.sort((a, b) => b.mtime.localeCompare(a.mtime));
-    res.json(out);
-  } catch (e) {
-    res.status(500).json({ error: String(e) });
-  }
-});
-
-app.get('/api/reports/:name', async (req, res) => {
-  const { name } = req.params;
-  if (!safeName(name)) return res.status(400).send('bad name');
-  try {
-    const md = await fs.readFile(path.join(REPORTS_DIR, name + '.md'), 'utf8');
-    res.type('text/markdown').send(md);
-  } catch {
-    res.status(404).send('not found');
-  }
-});
-
-app.put('/api/reports/:name', async (req, res) => {
-  const { name } = req.params;
-  if (!safeName(name)) return res.status(400).send('bad name');
-  if (typeof req.body !== 'string' || !req.body.length) return res.status(400).send('empty body');
-  await fs.mkdir(REPORTS_DIR, { recursive: true });
-  await fs.writeFile(path.join(REPORTS_DIR, name + '.md'), req.body, 'utf8');
-  res.json({ ok: true, name });
-});
 
 // ---- Live lichess game relay (NDJSON -> SSE) ----
 app.get('/api/live/:id', async (req, res) => {

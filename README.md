@@ -1,6 +1,6 @@
 # ♖ OpenFile
 
-A local-first chess toolkit with **eight tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. An optional Node/Express backend adds server-side report storage, but the whole app also runs as a pure static site (e.g. GitHub Pages).
+A local-first chess toolkit with **eight tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. The whole app runs as a pure static site (e.g. GitHub Pages); an optional Node/Express backend is only there for hosting it non-statically (e.g. Render/Railway/Fly) or relaying a live lichess game server-side instead of via a direct browser fetch.
 
 | Page | Tool | What it does |
 |---|---|---|
@@ -44,7 +44,6 @@ The player the report is for is **auto-detected**, not picked from a dropdown: w
 - **Download report.md** — a self-contained Markdown file. Human-readable tables *and* an embedded machine-readable data block.
 - **Export as PDF** — the **🖨️ Export as PDF** button opens the browser's native print dialog (pick "Save as PDF" as the destination) with a dedicated print stylesheet, so the full report prints cleanly regardless of dark/light theme — no bundled PDF library.
 - **Re-open it later** — drop the `.md` back in **together with new PGN files**. Already-analyzed games are kept as-is; only the new games are analyzed, and the report accumulates a session history.
-- **Save on / load from server** — optional server-side storage so reports persist between machines.
 - **Multiple files at once** — drop any number of `.pgn` files (and a report `.md`) in a single input.
 
 ---
@@ -61,13 +60,13 @@ Then open **http://localhost:8787**, drop in your PGN(s), pick an engine depth, 
 For development with hot reload:
 
 ```bash
-npm run start        # terminal 1 — backend API on :8787 (optional, for server report storage)
+npm run start        # terminal 1 — backend API on :8787 (optional — static hosting + a live-game SSE relay, not required)
 npm run dev          # terminal 2 — Vite dev server with hot reload
 ```
 
 ## Deploy to GitHub Pages
 
-OpenFile is built to run as a **pure static site** — Stockfish runs in the browser, live games stream directly from lichess (CORS-allowed), Swiss uses `localStorage`, and reports are saved via file download/upload. The only feature that needs the Node backend is *server-side* report storage, which is optional.
+OpenFile is built to run as a **pure static site** — Stockfish runs in the browser, live games stream directly from lichess (CORS-allowed), Swiss uses `localStorage`, and reports are saved via file download/upload. No feature needs the Node backend; it's entirely optional.
 
 A workflow is included at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). To publish:
 
@@ -78,7 +77,7 @@ gh repo create openfile --public --source=. --push   # or create the repo in the
 
 Then in the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Every push to `main` builds and deploys automatically. The workflow sets Vite's `--base` to your repo name, so assets resolve correctly at `https://<you>.github.io/<repo>/` (the 7 MB engine `.wasm` is committed and served with the right MIME type; single-threaded Stockfish means no special cross-origin-isolation headers are needed).
 
-Prefer the backend features (server report storage) live too? Deploy the whole thing on Render/Railway/Fly from the same repo with build `npm run build` and start `npm start` — no code changes.
+Prefer to run the optional backend live too (non-static hosting, or a server-side live-game relay)? Deploy the whole thing on Render/Railway/Fly from the same repo with build `npm run build` and start `npm start` — no code changes.
 
 ### Getting your PGN
 
@@ -137,7 +136,7 @@ src/
   fideRating.ts     FIDE Rating Estimator UI
   about.ts          About page (static content, no logic of its own)
 server/
-  server.mjs      Express: static hosting, /api/reports save/load, /api/live/:id SSE relay
+  server.mjs      Express: static hosting, /api/live/:id SSE relay
 public/engine/    Stockfish 18 (lite) worker + wasm
 public/manifest.webmanifest, sw.js, icon.svg, icon-192.png, icon-512.png, apple-touch-icon.png   PWA manifest, service worker, and app icons
 samples/          example PGNs (bundled "try the sample" button)
@@ -257,7 +256,6 @@ Pure comparison logic lives in `src/reportCompare.ts` (no DOM), separate from th
 Track several players at once instead of opening one Performance Analysis report at a time — built for a coach or tournament director following multiple students.
 
 - **Input:** drop any number of saved `report.md` files at once, or add more later. One card per player — dropping a newer report for a player already in the roster replaces their card rather than adding a duplicate, keyed by username (case-insensitive) and compared by `meta.updatedAt`.
-- **Server option:** "📂 Load all from server" fetches every report saved via Performance Analysis's "💾 Save on server" (`GET /api/reports`, then each report's markdown), so a coach using the optional backend doesn't need to re-upload files by hand.
 - **Cards show:** games, score %, accuracy, and blunder count, plus the player's weakest opening (2+ games) and their top training-recommendation area, when the underlying report has that data (both need an engine-analyzed report — a report loaded/re-analyzed with "No engine" won't have accuracy or recommendations to show).
 - **Sort by:** score % (either direction), accuracy, name, or last updated — defaults to lowest score first, surfacing whoever most needs attention.
 
