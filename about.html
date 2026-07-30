@@ -41,13 +41,14 @@
         <div class="stat-card"><span class="big">PWA</span><span class="label">Installs, works offline</span></div>
       </div>
 
-      <section class="card">
+      <div class="card-grid">
+      <section class="card span-2">
         <h2>What this is</h2>
         <p>OpenFile is a hub of eight small, focused chess tools covering the full arc of competitive improvement: understanding your own games, training against an engine, preparing an opening repertoire, running a tournament, and tracking a rating. Each is its own page, reachable from the <a href="index.html">home hub</a> — a player, a coach, and a tournament director each land on the page built for them, rather than one sprawling app to learn.</p>
         <p>Everything — including a full chess engine — runs in the browser. Game analysis uses <strong>Stockfish 18 (lite)</strong> compiled to WebAssembly and executed on your own machine; your PGNs and reports are never uploaded anywhere. Live games stream directly from the public lichess API straight to your browser, with no OpenFile server in that path. Reports save and load as plain files on your own machine — nothing is ever uploaded to any server.</p>
       </section>
 
-      <section class="card">
+      <section class="card span-2">
         <h2>The eight tools</h2>
 
         <div class="plan-section">
@@ -89,7 +90,7 @@
       <section class="card">
         <h2>How it's built</h2>
         <ul class="pattern-list">
-          <li><strong>Private by construction.</strong> Game data and the chess engine both run on-device. Nothing is uploaded unless you turn on optional cloud report storage.</li>
+          <li><strong>Private by construction.</strong> Game data and the chess engine both run on-device. Nothing is ever uploaded to a server.</li>
           <li><strong>Zero marginal infrastructure.</strong> Ships as a static site. No server, database, or hosting bill is required to run any core tool.</li>
           <li><strong>Installs like a native app.</strong> A Progressive Web App — add it to a home screen, and keep analyzing games with no connection at all once the engine has loaded, useful in a tournament hall with bad wifi. Live game streaming and account lookups still need a connection, since those come from lichess's/chess.com's public APIs.</li>
           <li><strong>No account, no paywall.</strong> Every tool is free and open the moment the page loads — nothing to sign up for before getting value.</li>
@@ -102,6 +103,7 @@
           <p>The current feature set — tablebase lookups, PDF export, opponent scouting reports, the coach dashboard, and the spaced-repetition opening trainer — shipped in a single focused push. A photo-based tournament-results reader was also built and tested, then removed after real-world photos (handwritten sheets, dense multi-column wall charts) proved unreliable to parse — a deliberate call to cut a feature that didn't clear the bar rather than ship something flaky.</p>
         </div>
       </section>
+      </div>
 
       <footer class="app-footer">
         OpenFile · runs entirely in your browser · Stockfish 18 (lite) · your games never leave your machine

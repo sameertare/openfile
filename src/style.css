@@ -58,6 +58,19 @@ body {
 }
 .card h2 { margin: 0 0 14px; font-size: 1.15rem; }
 
+/* Two-column layout for a page's top-level cards. Each card keeps its own natural height
+   (align-items: start) rather than stretching to match its row-mate — these are information cards
+   of very different lengths, not equal-content dashboard tiles, so stretching would just leave
+   awkward empty space in the shorter one. A card that needs the full row (a wide table, the main
+   input form, a long explanatory section) gets `.span-2` to opt out of pairing up. Collapses to a
+   single column below 900px, same breakpoint the rest of the site already treats as "narrow". */
+.card-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.card-grid > .card { margin-bottom: 0; min-width: 0; overflow-x: auto; }
+.card-grid > .span-2 { grid-column: 1 / -1; }
+@media (max-width: 900px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+
 .step {
   display: inline-flex; align-items: center; justify-content: center;
   width: 26px; height: 26px; border-radius: 50%;
@@ -223,7 +236,10 @@ a { color: var(--blue); }
 .privacy-banner strong { color: var(--accent); }
 
 /* ---------- hub ---------- */
-.hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 700px) {
+  .hub-grid { grid-template-columns: 1fr; }
+}
 .hub-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 24px; text-decoration: none; color: var(--text);

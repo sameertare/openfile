@@ -34,7 +34,8 @@
         <p class="tagline">Run a full Swiss tournament: paste or upload a roster, generate pairings each round, enter results, and track standings with tiebreaks.</p>
       </header>
 
-      <section class="card" id="setup-card">
+      <div class="card-grid">
+      <section class="card span-2" id="setup-card">
         <h2><span class="step">1</span> Roster</h2>
         <div class="config-row">
           <label class="stack" style="flex:1; min-width:220px;">Tournament name
@@ -75,7 +76,7 @@ Ian Nepomniachtchi 2758"></textarea>
         <div id="roster-preview" class="roster-preview"></div>
       </section>
 
-      <section class="card" id="control-card" hidden>
+      <section class="card span-2" id="control-card" hidden>
         <h2><span class="step">2</span> Rounds</h2>
         <div class="config-row" style="align-items:center;">
           <button id="pair-btn" class="btn btn-primary">➕ Pair next round</button>
@@ -187,17 +188,18 @@ Ian Nepomniachtchi 2758"></textarea>
         </details>
       </section>
 
-      <section class="card" id="standings-card" hidden>
+      <section class="card span-2" id="standings-card" hidden>
         <h2><span class="step">3</span> Standings</h2>
         <div id="standings"></div>
         <p class="hint">Tiebreaks: <b>Buchholz</b> (sum of opponents' scores) then <b>Sonneborn-Berger</b>. Byes score a full point.</p>
       </section>
 
-      <section class="card" id="wallchart-card" hidden>
+      <section class="card span-2" id="wallchart-card" hidden>
         <h2>🗺 Wall Chart</h2>
         <div id="wallchart"></div>
         <p class="hint">Each cell is the opponent's current standings number, color, and result — <b>w</b>/<b>b</b> for White/Black, <b>+</b>/<b>−</b>/<b>=</b> for win/loss/draw. Opponent numbers update as standings change.</p>
       </section>
+      </div>
 
       <div id="print-area"></div>
 

@@ -412,7 +412,7 @@ function gamesTableHtml(games: GameRecord[], openingsByFamily?: Map<string, Open
 function renderGamesSection(games: GameRecord[], openings: OpeningRow[]): string {
   if (!games.length) return '';
   const openingsByFamily = new Map(openings.map((o) => [o.family, o]));
-  return `<div class="card"><h2>📈 Games</h2>
+  return `<div class="card span-2"><h2>📈 Games</h2>
     ${gamesTableHtml(games, openingsByFamily)}
     <p class="hint">The eval graph tracks the position's evaluation (white's perspective) across the whole game. Click ▶ to open a game in Live &amp; Engine and step through it move by move. Click ⬇ to download that game as a standard PGN with engine evals and flagged-move notes baked in as comments. Click 🩺 for a strengths/weaknesses breakdown of that game's opening, middlegame, and endgame.</p>
   </div>`;
@@ -444,7 +444,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
   const opponents = opponentList(records);
   if (opponents.length > 0) {
     const topOpponent = opponents[0].opponent;
-    html.push(`<div class="card"><h2>🤝 Head-to-head</h2>
+    html.push(`<div class="card span-2"><h2>🤝 Head-to-head</h2>
       <label class="stack">Opponent
         <select id="opponent-select">
           ${opponents.map((o) => `<option value="${esc(o.opponent)}">${esc(o.opponent)} (${o.games} game${o.games === 1 ? '' : 's'})</option>`).join('')}
@@ -455,7 +455,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
   }
 
   const rc = a.repertoireCoverage;
-  html.push(`<div class="card"><h2>♟ Opening performance</h2>
+  html.push(`<div class="card span-2"><h2>♟ Opening performance</h2>
     ${
       rc.coveragePct !== null
         ? `<div class="summary-cards">
@@ -478,7 +478,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
   </div>`);
 
   if (a.openingsByTimeClass.length > 1) {
-    html.push(`<div class="card"><h2>♟⏱ Openings by time control</h2>
+    html.push(`<div class="card span-2"><h2>♟⏱ Openings by time control</h2>
       <p class="section-note">The same opening can score very differently depending on speed — a repertoire built for Rapid may fall apart in Bullet. Each table below only reflects games played at that time control.</p>
       ${a.openingsByTimeClass
         .map((tc) => `<h3>${esc(tc.timeClass)}</h3>${openingTableHtml(tc.openings, 'No games at this time control.')}`)
@@ -487,7 +487,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
   }
 
   const egRows = Object.entries(p.endgameTypeCounts).sort((x, y) => y[1].games - x[1].games);
-  html.push(`<div class="card"><h2>📊 Game-phase breakdown</h2>
+  html.push(`<div class="card span-2"><h2>📊 Game-phase breakdown</h2>
     <table><thead><tr><th>Phase</th><th class="num">Accuracy</th><th class="num">Inaccuracies</th><th class="num">Mistakes</th><th class="num">Blunders</th><th class="num">Blunders/game</th><th class="num">Losses decided here</th></tr></thead><tbody>
     ${a.phases
       .map(
@@ -517,7 +517,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
     }
   </div>`);
 
-  html.push(`<div class="card"><h2>⚔ Tactics: strengths &amp; misses</h2>
+  html.push(`<div class="card span-2"><h2>⚔ Tactics: strengths &amp; misses</h2>
     <div class="summary-cards">
       <div class="stat-card"><span class="big neg">${a.tactics.blundersTotal}</span><span class="label">Blunders</span></div>
       <div class="stat-card"><span class="big neg">${a.tactics.missedWins}</span><span class="label">Missed wins</span></div>
@@ -545,7 +545,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
   const mistakesTotal = a.phases.reduce((s, ph) => s + ph.mistakes, 0);
   const errorDenom = a.tactics.blundersTotal + mistakesTotal;
   const timePct = errorDenom > 0 ? Math.round((p.timePressureBlunders / errorDenom) * 100) : null;
-  html.push(`<div class="card"><h2>⏱ Time trouble</h2>
+  html.push(`<div class="card span-2"><h2>⏱ Time trouble</h2>
     ${
       p.clockGames > 0
         ? `<div class="summary-cards">
@@ -614,7 +614,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
     </div>`);
   }
 
-  html.push(`<div class="card"><h2>🎯 Training recommendations</h2>
+  html.push(`<div class="card span-2"><h2>🎯 Training recommendations</h2>
     ${
       a.recommendations.length
         ? a.recommendations
@@ -632,7 +632,7 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
     <p class="hint">Puzzle links open lichess.org training themes (free). The same themes exist in the chess.com puzzle trainer under Puzzles → Custom.</p>
   </div>`);
 
-  resultsEl.innerHTML = html.join('');
+  resultsEl.innerHTML = `<div class="card-grid">${html.join('')}</div>`;
   resultsEl.hidden = false;
   resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
