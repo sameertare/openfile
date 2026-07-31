@@ -38,6 +38,25 @@
         <button class="tab active" data-mode="position">♟ Any position</button>
         <button class="tab" data-mode="play">🎮 Play vs Engine</button>
         <button class="tab" data-mode="live">📡 Live lichess game</button>
+        <button class="tab" data-mode="drill">🎓 Endgame Drill</button>
+      </div>
+
+      <div class="explorer-layout" id="drill-layout" hidden>
+        <div class="explorer-board-col">
+          <div id="drill-board"></div>
+          <div id="drill-tb-feedback" class="drill-feedback"></div>
+        </div>
+        <div class="explorer-side-col">
+          <section class="card">
+            <h2>🎓 Endgame Drill</h2>
+            <p class="hint">Random tablebase-eligible endgame positions (7 pieces or fewer). Find a move that keeps the best result — hold the win, hold the draw, or put up the toughest defense — checked live against the Syzygy tablebase.</p>
+            <div class="btn-row">
+              <button id="drill-new-btn" class="btn btn-primary">🎲 New position</button>
+            </div>
+            <div id="drill-position-label" class="hint"></div>
+            <div id="drill-progress" class="hint"></div>
+          </section>
+        </div>
       </div>
 
       <div class="live-layout">

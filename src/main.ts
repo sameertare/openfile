@@ -1,4 +1,5 @@
 import './style.css';
+import { Chess } from 'chess.js';
 import type { ParsedGame, ParseFailure } from './pgn';
 import { gameId, splitPgn, tryParseGame } from './pgn';
 import { Engine } from './engine';
@@ -14,6 +15,11 @@ import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 import { groupPlayerNames, nameKey } from './playerMatch';
 import { buildAnnotatedPgn, downloadPgn } from './pgnExport';
+import { Board } from './board';
+import { derivePuzzles } from './puzzles';
+import type { Puzzle } from './puzzles';
+import { newCard, isDue, review } from './srs';
+import type { SrsCard } from './srs';
 
 registerServiceWorker();
 initTheme();
@@ -26,12 +32,24 @@ let currentMarkdown = '';
 let currentAgg: Aggregates | null = null;
 let detectedUsername: string | null = null;
 let detectedMatchKeys: Set<string> | null = null;
+// Every username explicitly fetched via the lichess/chess.com account-fetch below — a self-declared
+// "this is me" that detectMainPlayer() folds into the primary identity's matchKeys even when it's a
+// different literal handle than the other platform, so one report can combine both.
+let fetchedUsernames: Set<string> = new Set();
 
 // ---------- dom ----------
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const fileInput = $('#file-input') as HTMLInputElement;
 const dropzone = $('#dropzone');
 const fileSummary = $('#file-summary');
+const lichessUsernameInput = $('#lichess-username') as HTMLInputElement;
+const lichessMaxSelect = $('#lichess-max') as HTMLSelectElement;
+const lichessFetchBtn = $('#lichess-fetch-btn') as HTMLButtonElement;
+const lichessStatusEl = $('#lichess-status');
+const chesscomUsernameInput = $('#chesscom-username') as HTMLInputElement;
+const chesscomMonthsSelect = $('#chesscom-months') as HTMLSelectElement;
+const chesscomFetchBtn = $('#chesscom-fetch-btn') as HTMLButtonElement;
+const chesscomStatusEl = $('#chesscom-status');
 const configCard = $('#config-card');
 const detectedPlayerName = $('#detected-player-name');
 const detectedPlayerCount = $('#detected-player-count');
@@ -42,6 +60,18 @@ const progressFill = $('#progress-fill');
 const progressText = $('#progress-text');
 const resultsEl = $('#results');
 const exportCard = $('#export-card');
+const puzzleCard = $('#puzzle-card');
+const puzzleDueCount = $('#puzzle-due-count');
+const puzzleStartBtn = $('#puzzle-start-btn') as HTMLButtonElement;
+const puzzleIntro = $('#puzzle-intro');
+const puzzleSession = $('#puzzle-session');
+const puzzleFeedback = $('#puzzle-feedback');
+const puzzleContext = $('#puzzle-context');
+const puzzleProgress = $('#puzzle-progress');
+const puzzleNextBtn = $('#puzzle-next-btn') as HTMLButtonElement;
+const puzzleStopBtn = $('#puzzle-stop-btn') as HTMLButtonElement;
+const puzzleSummary = $('#puzzle-summary');
+const puzzleBoard = new Board($('#puzzle-board'));
 
 function isPlayerNameMatch(name: string | undefined, matchKeys: Set<string>): boolean {
   return !!name && name !== '?' && matchKeys.has(nameKey(name));
@@ -190,7 +220,19 @@ function detectMainPlayer(): { name: string; count: number; matchKeys: Set<strin
   const weight = (g: (typeof groups)[number]) => g.count + (baseKey && g.keys.has(baseKey) ? 10000 : 0);
   groups.sort((a, b) => weight(b) - weight(a));
   const best = groups[0];
-  return { name: best.display, count: best.count, matchKeys: best.keys };
+
+  // Fold in every explicitly-fetched username's group, even ones groupPlayerNames wouldn't treat
+  // as a variant of the primary name (e.g. a chess.com handle that looks nothing like the lichess
+  // one) — fetching an account here is an explicit "this is me" the frequency heuristic can't infer.
+  const matchKeys = new Set(best.keys);
+  for (const uname of fetchedUsernames) {
+    const key = nameKey(uname);
+    matchKeys.add(key);
+    for (const g of groups) {
+      if (g !== best && g.keys.has(key)) for (const k of g.keys) matchKeys.add(k);
+    }
+  }
+  return { name: best.display, count: best.count, matchKeys };
 }
 
 fileInput.addEventListener('change', () => {
@@ -213,6 +255,106 @@ $('#load-sample').addEventListener('click', async () => {
   const file = new File([text], 'sample-games.pgn');
   await handleFiles([file]);
 });
+
+// ---------- lichess / chess.com account fetch (cross-platform merge) ----------
+lichessFetchBtn.addEventListener('click', () => void fetchFromLichess());
+lichessUsernameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') void fetchFromLichess();
+});
+
+async function fetchFromLichess() {
+  const username = lichessUsernameInput.value.trim();
+  if (!username) {
+    lichessStatusEl.textContent = 'Enter a lichess username first.';
+    return;
+  }
+  const max = lichessMaxSelect.value;
+  lichessFetchBtn.disabled = true;
+  lichessStatusEl.textContent = `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
+  try {
+    const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=false&clocks=false&evals=false&opening=false`;
+    const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
+    if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
+    if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text = await resp.text();
+    if (!text.trim()) {
+      lichessStatusEl.textContent = `${username} has no games matching this request.`;
+      return;
+    }
+    fetchedUsernames.add(username);
+    const file = new File([text], `${username}-lichess.pgn`);
+    await handleFiles([file]);
+    lichessStatusEl.textContent = `Loaded games for ${username} from lichess.`;
+  } catch (e) {
+    lichessStatusEl.textContent = `Could not fetch from lichess: ${e instanceof Error ? e.message : String(e)}`;
+  } finally {
+    lichessFetchBtn.disabled = false;
+  }
+}
+
+// Chess.com's public "Published Data API" has no single all-games endpoint like lichess — games
+// are grouped into monthly archives, so this fetches the archive list, then the N most recent
+// months in parallel, and concatenates each game's own `pgn` field into one blob for the existing
+// splitPgn/tryParseGame pipeline.
+interface ChessComArchivesResponse { archives: string[]; }
+interface ChessComGamesResponse { games: { pgn?: string; url?: string }[]; }
+
+chesscomFetchBtn.addEventListener('click', () => void fetchFromChessCom());
+chesscomUsernameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') void fetchFromChessCom();
+});
+
+async function fetchFromChessCom() {
+  const username = chesscomUsernameInput.value.trim();
+  if (!username) {
+    chesscomStatusEl.textContent = 'Enter a chess.com username first.';
+    return;
+  }
+  const monthsBack = parseInt(chesscomMonthsSelect.value, 10);
+  chesscomFetchBtn.disabled = true;
+  chesscomStatusEl.textContent = `Fetching up to ${monthsBack} month(s) of games for ${username} from chess.com…`;
+  try {
+    const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
+    if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
+    if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status}`);
+    const archivesData: ChessComArchivesResponse = await archivesResp.json();
+    const archives = archivesData.archives ?? [];
+    if (!archives.length) {
+      chesscomStatusEl.textContent = `${username} has no game archives on chess.com.`;
+      return;
+    }
+    const selected = archives.slice(-monthsBack); // archives are oldest-first; take the most recent N
+    const monthResults = await Promise.all(
+      selected.map(async (url) => {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) return [];
+          const data: ChessComGamesResponse = await r.json();
+          return (data.games ?? [])
+            .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
+            .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn));
+        } catch {
+          return []; // one bad month shouldn't sink the whole fetch
+        }
+      })
+    );
+    const allPgns = monthResults.flat();
+    if (!allPgns.length) {
+      chesscomStatusEl.textContent = `No games found for ${username} in the selected range.`;
+      return;
+    }
+    fetchedUsernames.add(username);
+    const text = allPgns.join('\n\n');
+    const file = new File([text], `${username}-chesscom.pgn`);
+    await handleFiles([file]);
+    chesscomStatusEl.textContent = `Loaded ${allPgns.length} game(s) for ${username} from chess.com.`;
+  } catch (e) {
+    chesscomStatusEl.textContent = `Could not fetch from chess.com: ${e instanceof Error ? e.message : String(e)}`;
+  } finally {
+    chesscomFetchBtn.disabled = false;
+  }
+}
 
 // ---------- analysis ----------
 analyzeBtn.addEventListener('click', () => void runAnalysis());
@@ -290,6 +432,7 @@ async function runAnalysis() {
     currentMarkdown = renderMarkdown(currentAgg, records, meta);
     renderResults(currentAgg, username, newRecords.length, oldGames.length);
     exportCard.hidden = false;
+    updatePuzzleCard();
     progressFill.style.width = '100%';
     progressText.textContent = `Done — ${newRecords.length} new game(s) analyzed, ${records.length} total in report.`;
   } catch (err) {
@@ -300,6 +443,164 @@ async function runAnalysis() {
     analyzeBtn.disabled = false;
   }
 }
+
+// ---------- puzzle trainer (blunders/missed wins/missed mates → SRS drill) ----------
+const PUZZLE_SESSION_CAP = 20;
+let puzzles: Puzzle[] = [];
+let puzzleSrsData: Record<string, SrsCard> = {};
+let puzzleQueue: Puzzle[] = [];
+let puzzleCurrent: Puzzle | null = null;
+let puzzleStats = { correct: 0, incorrect: 0 };
+let puzzleAwaitingNext = false;
+
+function puzzleSrsStorageKey(): string | null {
+  if (!detectedUsername) return null;
+  return `openfile-puzzle-srs:${detectedUsername.trim().toLowerCase()}`;
+}
+
+function loadPuzzleSrsData(): Record<string, SrsCard> {
+  const key = puzzleSrsStorageKey();
+  if (!key) return {};
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePuzzleSrsData(data: Record<string, SrsCard>) {
+  const key = puzzleSrsStorageKey();
+  if (!key) return;
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // localStorage unavailable/full — drilling still works for this session, just won't persist
+  }
+}
+
+function updatePuzzleCard() {
+  puzzles = derivePuzzles(records);
+  if (!puzzles.length) {
+    puzzleCard.hidden = true;
+    return;
+  }
+  puzzleCard.hidden = false;
+  puzzleSrsData = loadPuzzleSrsData();
+  const now = new Date();
+  const dueCount = puzzles.filter((p) => {
+    const card = puzzleSrsData[p.id];
+    return !card || isDue(card, now);
+  }).length;
+  puzzleDueCount.textContent = `${dueCount} of ${puzzles.length} puzzle(s) due for review.`;
+  puzzleIntro.hidden = false;
+  puzzleSession.hidden = true;
+  puzzleSummary.hidden = true;
+}
+
+const PUZZLE_KIND_LABEL: Record<Puzzle['kind'], string> = {
+  blunder: 'Blunder',
+  mistake: 'Mistake',
+  'missed win': 'Missed win',
+  'missed mate': 'Missed mate',
+};
+
+puzzleStartBtn.addEventListener('click', () => {
+  const now = new Date();
+  puzzleSrsData = loadPuzzleSrsData();
+  const withDue = puzzles.map((p) => ({ p, card: puzzleSrsData[p.id] }));
+  puzzleQueue = withDue.filter((x) => !x.card || isDue(x.card, now)).slice(0, PUZZLE_SESSION_CAP).map((x) => x.p);
+  if (!puzzleQueue.length) {
+    // nothing due — drill anyway so "Start drilling" never does nothing
+    puzzleQueue = withDue.slice(0, PUZZLE_SESSION_CAP).map((x) => x.p);
+  }
+  puzzleStats = { correct: 0, incorrect: 0 };
+  puzzleIntro.hidden = true;
+  puzzleSummary.hidden = true;
+  puzzleSession.hidden = false;
+  nextPuzzle();
+});
+
+function nextPuzzle() {
+  puzzleFeedback.className = 'drill-feedback';
+  puzzleFeedback.innerHTML = '';
+  puzzleNextBtn.hidden = true;
+  puzzleAwaitingNext = false;
+  puzzleBoard.setSelected(null);
+  puzzleBoard.setArrow(null);
+  puzzleBoard.setLastMove(null);
+
+  const next = puzzleQueue.shift();
+  if (!next) {
+    puzzleSession.hidden = true;
+    puzzleSummary.hidden = false;
+    const total = puzzleStats.correct + puzzleStats.incorrect;
+    puzzleSummary.innerHTML = `
+      <div class="drill-summary-stats">
+        <div class="stat-card"><span class="big pos">${puzzleStats.correct}</span><span class="label">Correct</span></div>
+        <div class="stat-card"><span class="big neg">${puzzleStats.incorrect}</span><span class="label">Missed</span></div>
+      </div>
+      <p class="hint">${total} puzzle(s) drilled this session.</p>
+      <button id="puzzle-restart-btn" class="btn btn-primary">▶ Drill again</button>
+    `;
+    $('#puzzle-restart-btn').addEventListener('click', () => { updatePuzzleCard(); puzzleStartBtn.click(); });
+    return;
+  }
+  puzzleCurrent = next;
+  puzzleBoard.setOrientation(next.color);
+  puzzleBoard.setFen(next.fen);
+  const dateStr = next.date ? new Date(next.date).toLocaleDateString() : '';
+  puzzleContext.textContent = `${PUZZLE_KIND_LABEL[next.kind]} vs ${next.opponent}${dateStr ? ` · ${dateStr}` : ''} · move ${next.moveNo} — find the move you missed.`;
+  puzzleProgress.textContent = `${puzzleQueue.length + 1} puzzle(s) left this session · ${puzzleStats.correct} correct, ${puzzleStats.incorrect} missed so far`;
+}
+
+function answerPuzzle(playedSan: string) {
+  if (!puzzleCurrent || puzzleAwaitingNext) return;
+  puzzleAwaitingNext = true;
+  const correct = playedSan === puzzleCurrent.best;
+  const prior = puzzleSrsData[puzzleCurrent.id] ?? newCard();
+  puzzleSrsData[puzzleCurrent.id] = review(prior, correct);
+  savePuzzleSrsData(puzzleSrsData);
+
+  if (correct) {
+    puzzleStats.correct++;
+    puzzleFeedback.className = 'drill-feedback correct';
+    puzzleFeedback.innerHTML = `<b>✓ Correct</b> — ${esc(puzzleCurrent.best)} was the move. You played ${esc(puzzleCurrent.played)} in the actual game.`;
+  } else {
+    puzzleStats.incorrect++;
+    puzzleFeedback.className = 'drill-feedback incorrect';
+    puzzleFeedback.innerHTML = `<b>✗ Not quite</b> — you played ${esc(playedSan)}. The engine's move was <b>${esc(puzzleCurrent.best)}</b> (in the actual game you played ${esc(puzzleCurrent.played)}).`;
+    if (puzzleCurrent) puzzleQueue.push(puzzleCurrent);
+  }
+  puzzleNextBtn.hidden = false;
+}
+
+puzzleBoard.onSquareClick = (sq) => {
+  if (!puzzleCurrent || puzzleAwaitingNext) return;
+  const c = new Chess(puzzleCurrent.fen);
+  const piece = c.get(sq as any);
+  const sel = puzzleBoard.getSelected();
+  if (sel && sel !== sq) {
+    const moves = c.moves({ square: sel as any, verbose: true }) as any[];
+    const m = moves.find((x) => x.to === sq);
+    if (m) {
+      puzzleBoard.setSelected(null);
+      puzzleBoard.setLastMove([m.from, m.to]);
+      answerPuzzle(m.san);
+      return;
+    }
+    if (!(piece && piece.color === c.turn())) puzzleBoard.flashIllegal(sq);
+  }
+  if (piece && piece.color === c.turn()) puzzleBoard.setSelected(sq);
+  else puzzleBoard.setSelected(null);
+};
+
+puzzleNextBtn.addEventListener('click', nextPuzzle);
+puzzleStopBtn.addEventListener('click', () => {
+  puzzleQueue = [];
+  puzzleCurrent = null;
+  updatePuzzleCard();
+});
 
 // ---------- rendering ----------
 function pct(v: number | null, cls = true): string {
