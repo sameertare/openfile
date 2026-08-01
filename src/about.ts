@@ -38,10 +38,16 @@ function latToY(lat: number): number {
   return Math.max(MAP_VIEWBOX.y, Math.min(MAP_VIEWBOX.y + MAP_VIEWBOX.h, y));
 }
 
+function esc(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+}
+
 async function loadVisitorMap() {
   const totalEl = document.querySelector('#visitor-total') as HTMLElement;
   const mapEl = document.querySelector('#visitor-map') as HTMLElement;
   const noteEl = document.querySelector('#visitor-note') as HTMLElement;
+  const tableWrapEl = document.querySelector('#visitor-table-wrap') as HTMLElement;
+  const tableBodyEl = document.querySelector('#visitor-table-body') as HTMLElement;
 
   if (!VISIT_API_URL) {
     noteEl.textContent = 'Not set up yet — this card needs a small Cloudflare Worker deployed to your own account. See worker/README.md in the repo for the one-time setup steps.';
@@ -89,6 +95,13 @@ async function loadVisitorMap() {
     title.textContent = `${loc.city}, ${loc.country} — ${loc.count.toLocaleString()} view${loc.count === 1 ? '' : 's'}`;
     circle.appendChild(title);
     svg.appendChild(circle);
+  }
+
+  if (data.locations.length) {
+    tableWrapEl.hidden = false;
+    tableBodyEl.innerHTML = data.locations
+      .map((loc) => `<tr><td>${esc(loc.city)}</td><td>${esc(loc.country)}</td><td class="num">${loc.count.toLocaleString()}</td></tr>`)
+      .join('');
   }
 
   noteEl.textContent = `${data.locations.length.toLocaleString()} distinct location(s). Location is your city, derived from your network's approximate location, not your exact address — nothing more precise is collected or stored, and no cookie or ID ties visits to you personally.`;
