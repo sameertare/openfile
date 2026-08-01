@@ -33,7 +33,9 @@ export interface RepertoireTree {
   nodeCount: number; // distinct positions in the tree, excluding root
   leafCount: number; // number of lines that terminate (end of prepared theory)
   maxDepthPly: number;
-  skippedChunks: number; // chunks that parsed to zero moves (garbled / empty)
+  skippedChunks: number; // chunks with zero usable moves (garbled / empty / illegal first move)
+  truncatedLines: number; // chunks that added some moves, then hit an unrecognized move and stopped
+  warnings: string[]; // human-readable detail for skipped/truncated chunks, worst offenders first
 }
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -63,16 +65,26 @@ function tokenizeMovetext(movetext: string): Token[] {
   return tokens;
 }
 
+/** Per-chunk parse bookkeeping, threaded through the recursive descent below so a single pass can
+ *  tell a fully-clean line apart from one that merely duplicated an existing line (both play moves,
+ *  neither is a failure) from one that hit something unparseable partway through. */
+interface ParseStats {
+  played: number; // moves successfully played in this chunk, new node or not
+  failedAt: string | null; // first unrecognized move token, if any
+}
+
 /** Plays one SAN token from the current board position (assumed to equal `parent.fenAfter`),
  *  merging into an existing child if some earlier line already reached the same position via the
  *  same move. Returns null (leaving the board untouched) if the move is illegal here. */
-function findOrAddChild(parent: RepertoireNode, chess: Chess, sanToken: string): RepertoireNode | null {
+function findOrAddChild(parent: RepertoireNode, chess: Chess, sanToken: string, stats: ParseStats): RepertoireNode | null {
   let move;
   try {
     move = chess.move(sanToken);
   } catch {
+    if (stats.failedAt === null) stats.failedAt = sanToken;
     return null;
   }
+  stats.played++;
   const uci = move.from + move.to + (move.promotion ?? '');
   const existing = parent.children.find((c) => c.uci === uci);
   if (existing) return existing;
@@ -95,13 +107,31 @@ function skipVariation(tokens: Token[], idx: number): number {
   return i;
 }
 
+/** Scans forward from an unparseable move to the close-paren that ends the *current* sequence
+ *  (depth 0 relative to `idx`), without consuming it — or to end of input if there isn't one. Used
+ *  so one bad move deep inside a variation discards only that variation's remaining tokens, instead
+ *  of leaving them to be misread as a continuation of whatever sequence called us. */
+function skipToSequenceEnd(tokens: Token[], idx: number): number {
+  let depth = 0;
+  let i = idx;
+  while (i < tokens.length) {
+    if (tokens[i].type === 'open') depth++;
+    else if (tokens[i].type === 'close') {
+      if (depth === 0) return i;
+      depth--;
+    }
+    i++;
+  }
+  return i;
+}
+
 /** Walks a token stream starting at `idx`, playing moves from `parentNode` onward. The board must
  *  already be positioned at `parentNode.fenAfter` when called. A "(" branches an alternative off
  *  the move that was just played (i.e. off `current`'s parent, per standard PGN RAV semantics),
  *  reloading that FEN as the current position rather than using a chess.js move/undo stack, so
  *  nested branches at any depth need no manual bookkeeping. Returns the index just past the token
  *  that ended this sequence (end of input, or an unconsumed close-paren left for the caller). */
-function parseSequence(tokens: Token[], idx: number, parentNode: RepertoireNode, chess: Chess): number {
+function parseSequence(tokens: Token[], idx: number, parentNode: RepertoireNode, chess: Chess, stats: ParseStats): number {
   let i = idx;
   let current = parentNode;
   while (i < tokens.length) {
@@ -116,14 +146,18 @@ function parseSequence(tokens: Token[], idx: number, parentNode: RepertoireNode,
         continue;
       }
       chess.load(branchParent.fenAfter);
-      i = parseSequence(tokens, i + 1, branchParent, chess);
+      i = parseSequence(tokens, i + 1, branchParent, chess, stats);
       if (tokens[i]?.type === 'close') i++;
       chess.load(current.fenAfter); // restore position to continue the outer line
       continue;
     }
-    const child = findOrAddChild(current, chess, tok.value);
+    const child = findOrAddChild(current, chess, tok.value, stats);
+    if (!child) {
+      // Illegal/unparseable move. Jump to this sequence's own boundary rather than just stopping,
+      // so the leftover tokens of an aborted variation aren't misread as belonging to the caller.
+      return skipToSequenceEnd(tokens, i + 1);
+    }
     i++;
-    if (!child) break; // illegal move for this position - stop rather than inventing a branch
     current = child;
   }
   return i;
@@ -145,21 +179,38 @@ function stripHeaderBlock(chunk: string): string {
   return m ? chunk.slice(m[0].length) : chunk;
 }
 
+function firstLine(chunk: string): string {
+  return chunk.split('\n', 1)[0]?.slice(0, 80) ?? '';
+}
+
+const MAX_WARNINGS = 8;
+
 export function buildRepertoireTree(text: string): RepertoireTree {
   const chunks = splitRepertoireChunks(text);
   const root = newNode(null);
   const chess = new Chess();
   let lineCount = 0;
   let skippedChunks = 0;
+  let truncatedLines = 0;
+  const warnings: string[] = [];
+  const addWarning = (msg: string) => { if (warnings.length < MAX_WARNINGS) warnings.push(msg); };
 
   for (const chunk of chunks) {
     const tokens = tokenizeMovetext(stripHeaderBlock(chunk));
     if (!tokens.length) { skippedChunks++; continue; }
     chess.load(START_FEN);
-    const before = countNodes(root);
-    parseSequence(tokens, 0, root, chess);
-    if (countNodes(root) > before) lineCount++;
-    else skippedChunks++;
+    const stats: ParseStats = { played: 0, failedAt: null };
+    parseSequence(tokens, 0, root, chess, stats);
+    if (stats.played === 0) {
+      skippedChunks++;
+      if (stats.failedAt) addWarning(`Couldn't use "${firstLine(chunk)}" — "${stats.failedAt}" isn't a legal first move there.`);
+    } else {
+      lineCount++;
+      if (stats.failedAt) {
+        truncatedLines++;
+        addWarning(`Stopped partway through "${firstLine(chunk)}" at unrecognized move "${stats.failedAt}" — the rest of that line wasn't added.`);
+      }
+    }
   }
 
   let nodeCount = 0, leafCount = 0, maxDepthPly = 0;
@@ -169,18 +220,7 @@ export function buildRepertoireTree(text: string): RepertoireTree {
     for (const c of n.children) walk(c, depth + 1);
   })(root, 0);
 
-  return { root, lineCount, nodeCount, leafCount, maxDepthPly, skippedChunks };
-}
-
-function countNodes(n: RepertoireNode): number {
-  let total = 0;
-  const stack = [n];
-  while (stack.length) {
-    const cur = stack.pop()!;
-    total += cur.children.length;
-    stack.push(...cur.children);
-  }
-  return total;
+  return { root, lineCount, nodeCount, leafCount, maxDepthPly, skippedChunks, truncatedLines, warnings };
 }
 
 // ---------- comparing a real game against the tree ----------

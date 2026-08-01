@@ -51,7 +51,13 @@ function loadRepertoireText(text: string, sourceLabel: string) {
   const skippedNote = tree.skippedChunks
     ? ` <span class="chip">⚠ ${tree.skippedChunks} chunk(s) in the file had no usable moves and were skipped</span>`
     : '';
-  repSummaryEl.innerHTML = `<span class="chip">✓ ${tree.lineCount} line(s) loaded — ${tree.nodeCount} distinct position(s), up to ${tree.maxDepthPly} ply deep, ${tree.leafCount} line-ending(s)</span>${skippedNote}`;
+  const truncatedNote = tree.truncatedLines
+    ? ` <span class="chip">⚠ ${tree.truncatedLines} line(s) stopped early at an unrecognized move</span>`
+    : '';
+  const warningsBlock = tree.warnings.length
+    ? `<details class="parse-errors"><summary>Why some of the file was skipped</summary><ul>${tree.warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></details>`
+    : '';
+  repSummaryEl.innerHTML = `<span class="chip">✓ ${tree.lineCount} line(s) loaded — ${tree.nodeCount} distinct position(s), up to ${tree.maxDepthPly} ply deep, ${tree.leafCount} line-ending(s)</span>${skippedNote}${truncatedNote}${warningsBlock}`;
   render();
 }
 
