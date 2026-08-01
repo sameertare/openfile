@@ -86,8 +86,12 @@ export function generateTrainingPlan(
     }
 
     // detailed: one task per drill (evidence text attached to the first), plus a puzzle-practice
-    // task, plus (every 4th day) a general-resource task so the plan isn't 100% puzzles.
-    rec.drills.forEach((drill, i) => {
+    // task, plus (every 4th day) a general-resource task so the plan isn't 100% puzzles. A
+    // recommendation with no drills (the interface doesn't forbid `drills: []`, even though today's
+    // only producer, recommend() in aggregate.ts, always fills it) would otherwise push zero tasks
+    // and silently vanish that day from the plan entirely — fall back to a generic task instead.
+    const drills = rec.drills.length ? rec.drills : [`Targeted practice: ${rec.area}`];
+    drills.forEach((drill, i) => {
       tasks.push({
         id: `${day}:${i}`,
         day,

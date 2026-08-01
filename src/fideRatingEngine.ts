@@ -88,8 +88,14 @@ export function estimateFideRating(input: FideEstimateInput): FideEstimateOutcom
   const { k, label } = kFactorFor(currentRating);
 
   const we = opponents.reduce((sum, opp) => sum + winExpectancy(currentRating, opp), 0);
-  const ratingChange = k * (totalScore - we);
-  const newRating = currentRating + ratingChange;
+  const uncappedRatingChange = k * (totalScore - we);
+  // Clamp first, then derive the reported change from the clamped value — otherwise a rating that
+  // would land outside [MIN_RATING, MAX_RATING] (e.g. a shutout loss to a much-higher-rated field
+  // for a low-rated player, or a perfect score against a high-rated field near MAX_RATING) shows a
+  // "new rating" that's been silently pulled back in bounds while the "change" figure next to it
+  // still reflects the uncapped math, so the two numbers stop adding up.
+  const newRating = clamp(Math.round(currentRating + uncappedRatingChange), MIN_RATING, MAX_RATING);
+  const ratingChange = newRating - currentRating;
 
   if (newRating < FIDE_PUBLISH_FLOOR) {
     notes.push(`FIDE does not publish Standard ratings below ${FIDE_PUBLISH_FLOOR} — this estimate is shown for reference only.`);

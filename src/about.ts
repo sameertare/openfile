@@ -58,7 +58,15 @@ async function loadVisitorMap() {
   try {
     const resp = await fetch(VISIT_API_URL, { cache: 'no-store' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    data = await resp.json();
+    const parsed = await resp.json();
+    // A 200 response doesn't guarantee the expected shape — validate before use so an unexpected
+    // body (e.g. an empty object) shows the same friendly fallback as a network failure, rather
+    // than throwing on `data.total.toLocaleString()` below as an unhandled rejection (this runs via
+    // `void loadVisitorMap()`, so nothing would catch it) and leaving the card silently stuck.
+    if (typeof parsed?.total !== 'number' || !Array.isArray(parsed?.locations)) {
+      throw new Error('unexpected response');
+    }
+    data = parsed;
   } catch (e) {
     noteEl.textContent = `Visitor counter unavailable right now (${e instanceof Error ? e.message : 'network error'}).`;
     return;

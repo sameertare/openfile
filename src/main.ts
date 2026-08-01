@@ -432,10 +432,14 @@ async function runAnalysis() {
     const now = new Date().toISOString();
     const meta: ReportMeta = {
       username,
-      createdAt: baseReport?.meta.createdAt ?? now,
+      // Gated the same way oldGames/knownIds are above — otherwise loading a report.md for a
+      // different player alongside new PGNs (wrong file, shared machine, etc.) correctly keeps
+      // their games out of this report but still leaks that other player's creation date and
+      // session history into it.
+      createdAt: baseReportIsSamePlayer ? baseReport!.meta.createdAt : now,
       updatedAt: now,
       sessions: [
-        ...(baseReport?.meta.sessions ?? []),
+        ...(baseReportIsSamePlayer ? baseReport!.meta.sessions : []),
         ...(newRecords.length
           ? [{ date: now.slice(0, 10), gamesAdded: newRecords.length, source: 'PGN upload' }]
           : []),

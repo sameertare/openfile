@@ -71,10 +71,18 @@ export interface AnalyzeOptions {
   onPosition?: () => void; // progress tick per evaluated position
 }
 
+/** True if enough moves already carry a PGN [%eval] annotation that engine analysis can be
+ *  skipped — tolerates at most one gap (some exporters omit the very last move's eval), but for a
+ *  1-move game `moves.length - 1` is 0, so a bare `>= moves.length - 1` check would pass trivially
+ *  even with zero real evals; require at least one actual eval to guard that boundary. */
+function hasPgnEvals(game: ParsedGame): boolean {
+  const withEval = game.moves.filter((m) => m.evalCp !== null).length;
+  return withEval > 0 && withEval >= game.moves.length - 1;
+}
+
 /** How many engine evaluations analyzing this game will need (for progress bars). */
 export function positionsNeeded(game: ParsedGame, useEngine: boolean): number {
-  const hasPgnEvals = game.moves.filter((m) => m.evalCp !== null).length >= game.moves.length - 1;
-  if (!useEngine || hasPgnEvals) return 0;
+  if (!useEngine || hasPgnEvals(game)) return 0;
   return game.moves.length + 1;
 }
 
@@ -104,7 +112,6 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
   const fens = game.moves.map((m) => m.before).concat(game.moves[game.moves.length - 1].after);
 
   // ---- Obtain an eval (white perspective, cp) for every position ----
-  const hasPgnEvals = game.moves.filter((m) => m.evalCp !== null).length >= game.moves.length - 1;
   let evalSource: GameRecord['evalSource'] = 'none';
   let evals: (number | null)[] = new Array(fens.length).fill(null);
   let bestmoves: (string | null)[] = new Array(fens.length).fill(null);
@@ -113,7 +120,7 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
   const finalChess = new Chess(fens[fens.length - 1]);
   const finalMate = finalChess.isCheckmate();
 
-  if (hasPgnEvals) {
+  if (hasPgnEvals(game)) {
     evalSource = 'pgn';
     evals[0] = 20; // nominal starting eval
     game.moves.forEach((m, i) => {
@@ -122,6 +129,19 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
     // fill occasional gaps by carrying the previous eval
     for (let i = 1; i < evals.length; i++) if (evals[i] === null) evals[i] = evals[i - 1];
     if (finalMate) evals[evals.length - 1] = fens[fens.length - 1].includes(' w ') ? -10000 : 10000;
+    // PGN [%eval #n] annotations already carry mate distance, encoded into the same white-
+    // perspective cp number as evalToCp() does (pgn.ts): ±(10000 - n). Decode it back into the
+    // side-to-move-perspective `mates` array here too, the same shape the engine branch below
+    // produces — otherwise missed-mate detection (which reads `mates[i]`, not `evals[i]`) can never
+    // fire for a PGN-eval-only analysis, even though the mate data was present in the source PGN.
+    for (let i = 0; i < evals.length; i++) {
+      const v = evals[i];
+      if (v === null || Math.abs(v) <= 9000) continue;
+      const whiteHasMate = v > 0;
+      const pliesToMate = 10000 - Math.abs(v);
+      const sideToMoveIsWhite = fens[i].includes(' w ');
+      mates[i] = whiteHasMate === sideToMoveIsWhite ? pliesToMate : -pliesToMate;
+    }
   } else if (opts.engine && opts.depth > 0) {
     evalSource = 'engine';
     for (let i = 0; i < fens.length; i++) {

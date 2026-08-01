@@ -423,7 +423,8 @@ async function pump() {
         evalsW[i] = c.isCheckmate() ? (fen.split(' ')[1] === 'w' ? -10000 : 10000) : 0;
         bestU[i] = null; mateN[i] = null;
       } else {
-        const r = await eng.evaluate(fen, curDepth());
+        const depth = curDepth();
+        const r = await eng.evaluate(fen, depth);
         // line/evalsW may have been reassigned (a new PGN/game loaded, or the position reset)
         // while this search was in flight. Unlike updateCandidates/updateTablebase (which discard
         // one stale result and return), pump() loops — so a stale write here wouldn't just show one
@@ -432,6 +433,15 @@ async function pump() {
         // that no longer exists. Bail the whole loop; whatever triggered the reassignment already
         // calls pump() again for the new line.
         if (line[i]?.fen !== fen) break;
+        // engine.cancelPending() (e.g. the user moving in Play mode while this background "hint"
+        // eval was still running) sends UCI `stop`, which makes evaluate() resolve early with
+        // whatever partial, shallower-than-requested result Stockfish had reached — not reject. The
+        // fen check above doesn't catch this (the position itself is unchanged), so without this
+        // depth check a truncated search would get cached as if it were the final, full-depth eval
+        // for that position, permanently. Leaving it unset here is safe: in Play mode nextEvalIndex
+        // only ever targets the *current* position, so a historical one left null here simply stays
+        // "no data" rather than showing a misleadingly confident but shallow number.
+        if (r.depth < depth) break;
         evalsW[i] = whiteCp(fen, r.cp); bestU[i] = r.bestmove; mateN[i] = r.mateIn;
       }
       // refresh anything that depends on this newly-evaluated index
@@ -988,15 +998,26 @@ async function connectLive(id: string) {
     if (r.ok) {
       const built = buildLineFromPgn(await r.text());
       if (built && built.line.length > 1) {
-        const anchorFen = line[0]?.fen;
-        const anchorIdx = anchorFen ? built.line.findIndex((n) => n.fen === anchorFen) : -1;
-        if (anchorIdx !== -1) {
-          const prependedCount = anchorIdx;
-          line = built.line.slice(0, anchorIdx).concat(line);
+        if (line.length === 1 && line[0].fen === START) {
+          // The stream hasn't delivered its first message yet (still rebased to the plain start
+          // sentinel from resetLine), so there's no independent stream progress to splice around —
+          // built.line[0] is also always the start position, which would otherwise make the anchor
+          // search below match at index 0 and discard the entire fetched history. Adopt it directly.
+          line = built.line;
           evalsW = line.map(() => null); bestU = line.map(() => null); mateN = line.map(() => null);
           if (liveFollow) view = line.length - 1;
-          else view += prependedCount;
           status.innerHTML = `Loaded ${line.length - 1} moves. Following live — step back any time with ◀ ▶.`;
+        } else {
+          const anchorFen = line[0]?.fen;
+          const anchorIdx = anchorFen ? built.line.findIndex((n) => n.fen === anchorFen) : -1;
+          if (anchorIdx !== -1) {
+            const prependedCount = anchorIdx;
+            line = built.line.slice(0, anchorIdx).concat(line);
+            evalsW = line.map(() => null); bestU = line.map(() => null); mateN = line.map(() => null);
+            if (liveFollow) view = line.length - 1;
+            else view += prependedCount;
+            status.innerHTML = `Loaded ${line.length - 1} moves. Following live — step back any time with ◀ ▶.`;
+          }
         }
         pgnLoaded = true;
         setPlayers(built.white, built.black, built.wr, built.br);
@@ -1237,6 +1258,8 @@ $('#play-reset-btn').addEventListener('click', () => {
 
 /** Fetch a lichess game/study/FEN and hand its latest position to Play-vs-Engine mode, so the
  *  user can take over and continue playing against the engine from that point. */
+let playLoadToken = 0;
+
 async function loadLichessGameForPlay(raw: string) {
   const status = $('#play-status');
   const parsed = classifyLichessInput(raw);
@@ -1244,6 +1267,12 @@ async function loadLichessGameForPlay(raw: string) {
     status.textContent = 'Enter a lichess game URL/ID, a study link, or a FEN.';
     return;
   }
+
+  // If the user fires off a second load before this one resolves (a different URL, or just an
+  // impatient retry), only the load that was started LAST should ever be allowed to apply its
+  // result — otherwise whichever network request happens to resolve last wins, even if it's the
+  // stale one, silently overwriting a newer load or moves the user has already made against it.
+  const myToken = ++playLoadToken;
 
   let built: BuiltLine | null = null;
   status.textContent = 'Loading from lichess…';
@@ -1273,6 +1302,7 @@ async function loadLichessGameForPlay(raw: string) {
   }
 
   if (!built || built.line.length === 0) { status.textContent = 'Could not read a position from that.'; return; }
+  if (myToken !== playLoadToken) return; // a newer load was started while this one was in flight
 
   // Adopt the loaded line and jump to its latest position — that's where the user takes over.
   invalidatePlayEngineMove(); // discard any search still running for the previous position/game

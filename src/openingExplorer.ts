@@ -219,7 +219,11 @@ function finalizeAfterLoad(profile: Profile, forceUsername?: string) {
   p.explorerGames = p.matchKeys ? buildExplorerGames(p.parsedGames, p.matchKeys) : [];
 
   configCard.hidden = false;
-  configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // A background lichess/chess.com fetch can resolve after the user has already switched tabs —
+  // syncUiToActiveProfile() below correctly re-hides configCard in that case, but without this
+  // guard the page would still jump to scroll it into view an instant beforehand, a disorienting
+  // flash/scroll under whatever the user is currently looking at instead of the tab that loaded.
+  if (profile === active()) configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   syncUiToActiveProfile();
 }
 
@@ -247,6 +251,13 @@ function buildExplorerGames(parsedGames: ParsedGame[], matchKeys: Set<string>): 
   const out: ExplorerGame[] = [];
   for (const g of parsedGames) {
     const h = g.headers;
+    // buildTree() (openingTree.ts) replays each game's SANs from a fresh standard starting
+    // position to rebuild the tree — unlike pgn.ts's own parse (which correctly honors a [FEN]/
+    // [SetUp] header via chess.js), it has no way to know a game didn't start from the standard
+    // position. A Chess960/"fromPosition" game's SANs replayed from the wrong start either land on
+    // a fabricated position it was never actually in, or throw partway through and truncate the
+    // line — either way silently corrupting the tree with data that doesn't reflect real games.
+    if (h['FEN'] || (h['Variant'] && !/^(standard|chess)$/i.test(h['Variant'].trim()))) continue;
     const hasWhiteName = !!h['White'] && h['White'] !== '?';
     const hasBlackName = !!h['Black'] && h['Black'] !== '?';
     const userIsWhite =

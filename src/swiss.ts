@@ -22,7 +22,30 @@ interface SwissEvent { name: string; sections: Tournament[]; active: number; }
 let ev: SwissEvent | null = null;
 
 function cur(): Tournament | null { return ev ? ev.sections[ev.active] : null; }
-function save() { if (ev) localStorage.setItem(STORE_KEY, JSON.stringify(ev)); }
+
+// Every mutating handler in this file follows `mutate(); save(); render...()` — if setItem throws
+// (storage quota exceeded after many rounds/sections, or Safari private browsing where it always
+// throws) an uncaught exception here would silently abort the rest of that handler, skipping the
+// render calls that follow. The in-memory `ev` mutation already happened, so the UI would show the
+// change as if it worked while nothing was actually persisted — and a page refresh loses it with no
+// warning. Catch it, keep rendering working, and tell the TD once rather than failing silently.
+let saveWarningShown = false;
+function save() {
+  if (!ev) return;
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(ev));
+  } catch (e) {
+    console.error('Failed to save tournament to localStorage', e);
+    if (!saveWarningShown) {
+      saveWarningShown = true;
+      const banner = document.createElement('div');
+      banner.className = 'format-warning';
+      banner.style.margin = '0 0 14px';
+      banner.textContent = '⚠ Could not save your changes to this browser (storage may be full, or private/incognito browsing blocks it) — edits will be lost on refresh until this is resolved.';
+      document.querySelector('#app')?.prepend(banner);
+    }
+  }
+}
 
 // A cheap structural check on imported/loaded data — catches the common cases (a hand-edited or
 // wrong-schema file missing a field every render function assumes is an array) before it's ever
@@ -30,12 +53,22 @@ function save() { if (ev) localStorage.setItem(STORE_KEY, JSON.stringify(ev)); }
 // actual render-and-rollback, and boot wraps its initial render too, so neither path can leave the
 // app permanently stuck on a shape this check didn't anticipate.
 function isValidTournament(t: any): t is Tournament {
-  return !!t && typeof t === 'object' &&
+  if (!(!!t && typeof t === 'object' &&
     typeof t.name === 'string' &&
     Array.isArray(t.players) &&
     Array.isArray(t.rounds) &&
     Array.isArray(t.familyGroups) &&
-    typeof t.totalRounds === 'number';
+    typeof t.totalRounds === 'number')) return false;
+  // Every player lookup site-wide (nameOf, wall chart, TRF export, withdrawn-status checks) resolves
+  // by `id`, and never checks for a match failure beyond falling back to a placeholder — a
+  // non-numeric or duplicate id doesn't crash anything, it just silently resolves to the wrong
+  // player (or none), which is worse than rejecting the file outright.
+  const ids = new Set<number>();
+  for (const p of t.players) {
+    if (typeof p?.id !== 'number' || !Number.isFinite(p.id) || ids.has(p.id)) return false;
+    ids.add(p.id);
+  }
+  return true;
 }
 function isValidEvent(data: any): data is SwissEvent {
   return !!data && typeof data === 'object' && Array.isArray(data.sections) && data.sections.every(isValidTournament);
@@ -636,7 +669,18 @@ function renderSectionTabs() {
     })
     .join('');
   el.querySelectorAll<HTMLElement>('.sec-tab').forEach((b) =>
-    b.addEventListener('click', () => { if (ev) { ev.active = parseInt(b.dataset.i!, 10); save(); renderAll(); } })
+    b.addEventListener('click', () => {
+      if (!ev) return;
+      ev.active = parseInt(b.dataset.i!, 10);
+      // Both are keyed only by round/board/byeId, not by section — since board numbers and bye
+      // player ids restart independently per section, a panel left open in one section's Round 3
+      // Board 2 would otherwise reopen for a completely different pairing after switching to
+      // another section that happens to also have a Round 3 Board 2.
+      addingExtraFor = null;
+      explainingFor = null;
+      save();
+      renderAll();
+    })
   );
 }
 
