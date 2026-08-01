@@ -51,7 +51,15 @@ function render() {
     return;
   }
 
-  if (shownSection >= ev.sections.length) shownSection = ev.active;
+  // Resolve the section to show without ever trusting a stored index blindly. The editor writes
+  // `active` and never deletes sections, so it's normally in range — but this page has no way to
+  // know that, and unlike swiss.ts's boot path there's no render-and-reset backstop here to recover
+  // from a bad value. An out-of-range index would make `t` below undefined and throw on t.rounds,
+  // blanking a display that's typically on a projector in a tournament hall with no UI to fix it.
+  const inRange = (i: unknown): i is number =>
+    typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < ev.sections.length;
+  shownSection = inRange(shownSection) ? shownSection : inRange(ev.active) ? ev.active : 0;
+
   sectionSelect.hidden = ev.sections.length < 2;
   if (ev.sections.length > 1) {
     sectionSelect.innerHTML = ev.sections
@@ -71,9 +79,23 @@ function render() {
   </div>`;
 }
 
+/** This page runs unattended on a projector/second screen — an uncaught render error would leave a
+ *  blank or frozen board in front of a whole tournament hall, with no controls to recover and
+ *  nobody at a keyboard. Show what went wrong instead, and keep the refresh loop alive so the
+ *  display self-heals as soon as the TD's next edit lands. */
+function safeRender() {
+  try {
+    render();
+  } catch (e) {
+    console.error('Wall display render failed:', e);
+    metaEl.textContent = '';
+    bodyEl.innerHTML = `<div class="walldisplay-empty">Could not display this tournament. Check it in <a href="swiss.html">Swiss Pairings</a> — this screen updates again automatically once it's fixed.</div>`;
+  }
+}
+
 sectionSelect.addEventListener('change', () => {
   shownSection = parseInt(sectionSelect.value, 10) || 0;
-  render();
+  safeRender();
 });
 
 fullscreenBtn.addEventListener('click', () => {
@@ -91,7 +113,7 @@ document.addEventListener('fullscreenchange', () => {
 // pairings/results in Swiss Pairings) writes to the same localStorage key. Doesn't fire for writes
 // made in this same tab, which is fine — this page never writes to STORE_KEY itself.
 window.addEventListener('storage', (e) => {
-  if (e.key === STORE_KEY || e.key === null) render();
+  if (e.key === STORE_KEY || e.key === null) safeRender();
 });
 
 // Belt-and-suspenders poll, in case a browser/kiosk shell doesn't deliver storage events reliably
@@ -100,9 +122,9 @@ setInterval(() => {
   const raw = localStorage.getItem(STORE_KEY);
   if (raw !== lastRaw) {
     lastRaw = raw;
-    render();
+    safeRender();
   }
 }, 4000);
 
 lastRaw = localStorage.getItem(STORE_KEY);
-render();
+safeRender();

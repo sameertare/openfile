@@ -21,6 +21,10 @@ interface VisitLocation {
 interface VisitResponse {
   total: number;
   locations: VisitLocation[];
+  /** Total distinct cities. `locations` is capped server-side, so once that cap is reached its
+   *  length understates the real figure. Optional because a Worker deployed before this field was
+   *  added won't send it — the read below falls back to the array length in that case. */
+  distinctLocations?: number;
 }
 
 // Calibrated against public/world-map.svg's own coordinate space (viewBox "30.767 241.591
@@ -112,7 +116,9 @@ async function loadVisitorMap() {
       .join('');
   }
 
-  noteEl.textContent = `${data.locations.length.toLocaleString()} distinct location(s). Location is your city, derived from your network's approximate location, not your exact address — nothing more precise is collected or stored, and no cookie or ID ties visits to you personally.`;
+  const distinct = typeof data.distinctLocations === 'number' ? data.distinctLocations : data.locations.length;
+  const cappedNote = distinct > data.locations.length ? ` Showing the top ${data.locations.length.toLocaleString()}.` : '';
+  noteEl.textContent = `${distinct.toLocaleString()} distinct location(s).${cappedNote} Location is your city, derived from your network's approximate location, not your exact address — nothing more precise is collected or stored, and no cookie or ID ties visits to you personally.`;
 }
 
 void loadVisitorMap();

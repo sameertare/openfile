@@ -31,6 +31,23 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// How long a navigation waits for the network before falling back to the cached page. "Offline"
+// isn't the only failure mode that matters here — the venue this app is explicitly built for (a
+// tournament hall on saturated wifi) more often produces a connection that accepts the request and
+// then stalls, which `fetch` will sit on for the browser's own timeout (tens of seconds) without
+// ever rejecting. Without this bound, network-first means the page hangs on a white screen in
+// exactly the situation the offline cache exists for.
+const DOC_NETWORK_TIMEOUT_MS = 4000;
+
+/** cache.put() rejects on a 206 Partial Content response and on QuotaExceededError (plausible here
+ *  — the cached engine alone is ~7MB). Both were previously floating promises, surfacing as
+ *  unhandled rejections in the SW rather than being ignored as intended. Caching is best-effort by
+ *  design, so swallow the failure and let the response through untouched either way. */
+function cachePut(cache, req, res) {
+  if (!res.ok || res.status === 206) return;
+  cache.put(req, res.clone()).catch(() => {});
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -44,10 +61,23 @@ self.addEventListener('fetch', (event) => {
   if (isDocument) {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
-        try {
-          const fresh = await fetch(req);
-          if (fresh.ok) cache.put(req, fresh.clone());
+        const network = fetch(req).then((fresh) => {
+          cachePut(cache, req, fresh);
           return fresh;
+        });
+        try {
+          // Race the network against the timeout, but only let the timeout win when there's
+          // actually something cached to fall back to — with no cached copy, a slow response is
+          // still infinitely better than an error page, so keep waiting for it.
+          const cached = await cache.match(req);
+          if (!cached) return await network;
+          const timeout = new Promise((resolve) => setTimeout(() => resolve(null), DOC_NETWORK_TIMEOUT_MS));
+          const winner = await Promise.race([network.catch(() => null), timeout]);
+          if (winner) return winner;
+          // Timed out or failed — serve the cached page now and keep the request alive so the
+          // fresh copy still lands in the cache for next time.
+          event.waitUntil(network.catch(() => {}));
+          return cached;
         } catch {
           const cached = await cache.match(req);
           return cached || new Response('Offline and not cached yet.', { status: 503, statusText: 'Offline' });
@@ -62,7 +92,7 @@ self.addEventListener('fetch', (event) => {
       const cached = await cache.match(req);
       const networkFetch = fetch(req)
         .then((res) => {
-          if (res.ok) cache.put(req, res.clone());
+          cachePut(cache, req, res);
           return res;
         })
         .catch(() => null);
