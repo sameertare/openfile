@@ -1,14 +1,15 @@
 # ♖ OpenFile
 
-A local-first chess toolkit with **eight tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. The whole app runs as a pure static site (e.g. GitHub Pages); an optional Node/Express backend is only there for hosting it non-statically (e.g. Render/Railway/Fly) or relaying a live lichess game server-side instead of via a direct browser fetch.
+A local-first chess toolkit with **nine tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. The whole app runs as a pure static site (e.g. GitHub Pages); an optional Node/Express backend is only there for hosting it non-statically (e.g. Render/Railway/Fly) or relaying a live lichess game server-side instead of via a direct browser fetch.
 
 | Page | Tool | What it does |
 |---|---|---|
-| `index.html` | **Hub** | Landing page linking to the eight tools |
+| `index.html` | **Hub** | Landing page linking to the nine tools |
 | `analyze.html` | **Performance Analysis** | Deep performance report from chess.com / lichess PGNs |
 | `live.html` | **Live & Engine** | Watch a live lichess game with move feedback; best-move suggestion from any position; play vs. Stockfish |
 | `swiss.html` | **Swiss Pairings** | Run a full Swiss tournament from a roster |
 | `opening-explorer.html` | **Opening Explorer** | Branching opening tree from your own PGNs; opponent scouting report |
+| `opening-deviation.html` | **Openings Deviation** | Move-by-move check of your games against a prepared repertoire PGN |
 | `compare-reports.html` | **Compare Reports** | Side-by-side metric delta between two saved Performance Analysis reports |
 | `roster.html` | **Coach Roster** | Track several players' saved reports at once as summary cards |
 | `rating.html` | **USCF Rating Estimator** | Estimate a new US Chess rating after an event |
@@ -237,7 +238,19 @@ Not in v1 (noted as future work): variant support and master-game comparison —
 
 ---
 
-## Tool 5 — Compare Reports (`/compare-reports.html`)
+## Tool 5 — Openings Deviation (`/opening-deviation.html`)
+
+Upload a prepared repertoire and your own games, and see — move by move, game by game — exactly where each game left the book.
+
+- **Repertoire input:** a PGN file, or pasted text, of your prepared lines — either several separate games (one full line each, the common export format) or a single PGN with recursive variations in parentheses (`2. Nf3 Nc6 (2... Nf6 3. Nxe5 ...)`), or a mix of both. Since chess.js's own `loadPgn` discards RAVs and only keeps the main line, `src/repertoire.ts` tokenizes the movetext itself (stripping comments/NAGs/glyphs/move numbers, keeping parentheses as structural tokens) and walks it with a `Chess` instance, reloading the branch point's FEN whenever a `(` opens an alternative — no manual move/undo stack needed even for deeply nested variations. Every uploaded line, however supplied, merges into one shared tree by shared opening prefix.
+- **Parse diagnostics:** a chunk with zero usable moves, or one that plays some real moves before hitting an unrecognized token partway through, is reported rather than silently dropped or silently truncated — a duplicate line that fully re-treads existing tree nodes is *not* flagged as a failure, only a genuine parse problem is, with the actual offending move token named.
+- **Which color:** a White/Black selector, since the tree itself is symmetric (it doesn't know which side it was prepared for) — games where the auto-detected player had the other color are skipped with a note rather than compared nonsensically.
+- **Comparison:** every ply of every relevant game is walked against the tree. Three outcomes per game: stayed in book the whole way; a real **deviation** (a move was played that contradicts a branch the repertoire actually covers); or simply ran **past the end of prepared theory** (not a mistake — the tree just didn't go that deep). The distinction matters enough to label separately rather than lumping both under "left book."
+- **Output:** per-game in-repertoire/out-of-repertoire move counts and the exact move the game first left prep, plus an expandable move-by-move list (reusing the same lichess-style move-pair grid as Live & Engine) color-coding book moves, the deviation itself, and everything after it.
+
+---
+
+## Tool 6 — Compare Reports (`/compare-reports.html`)
 
 Upload two saved Performance Analysis `report.md` files and see every metric compared side by side, with the delta highlighted.
 
@@ -251,7 +264,7 @@ Pure comparison logic lives in `src/reportCompare.ts` (no DOM), separate from th
 
 ---
 
-## Tool 6 — Coach Roster (`/roster.html`)
+## Tool 7 — Coach Roster (`/roster.html`)
 
 Track several players at once instead of opening one Performance Analysis report at a time — built for a coach or tournament director following multiple students.
 
@@ -263,7 +276,7 @@ A malformed or unexpectedly old-schema `report.md` is skipped with an inline err
 
 ---
 
-## Tool 7 — USCF Rating Estimator (`/rating.html`)
+## Tool 8 — USCF Rating Estimator (`/rating.html`)
 
 Estimate a new US Chess (USCF) rating after an event, using the published rating formula.
 
@@ -276,7 +289,7 @@ This is an **unofficial estimate**, clearly labeled as such in the tool — US C
 
 ---
 
-## Tool 8 — FIDE Rating Estimator (`/fide-rating.html`)
+## Tool 9 — FIDE Rating Estimator (`/fide-rating.html`)
 
 Estimate a new FIDE **Standard** rating after an event (Rapid/Blitz use separate rating pools and aren't covered).
 
