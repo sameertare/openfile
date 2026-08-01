@@ -46,14 +46,36 @@ const GENERAL_RESOURCES: PlanLink[] = [
 
 const SEVERITY_WEIGHT: Record<Recommendation['severity'], number> = { high: 3, medium: 2, low: 1 };
 
-/** A repeating rotation of the recommendations, weighted so a 'high' severity area comes up 3x as
- *  often as a 'low' one across the plan, 'medium' 2x — higher-priority weaknesses get more days. */
-function weightedRotation(recs: Recommendation[]): Recommendation[] {
-  const queue: Recommendation[] = [];
-  for (const r of recs) {
-    for (let i = 0; i < SEVERITY_WEIGHT[r.severity]; i++) queue.push(r);
+/** Assigns one recommendation to each of `duration` day-slots, weighted so 'high' severity areas
+ *  come up ~3x as often as 'low' ones (2x for 'medium') — but *interleaved*, not clustered.
+ *
+ *  The previous approach built a queue of repeated-in-place copies (e.g. [A,A,A,B,B,C]) and walked
+ *  it with `day % queue.length` — which is exactly what produces the bug this replaced: for a
+ *  typical 2-3 recommendation report, that queue is short enough that consecutive days land on the
+ *  literal same array slot, so the plan shows the identical focus area (and in detailed mode, the
+ *  identical drill text) for several days straight before jumping to the next.
+ *
+ *  This is the "smooth weighted round-robin" scheduling algorithm instead (the same one load
+ *  balancers use to spread weighted backends evenly rather than in bursts): each candidate has a
+ *  running "current" score that accumulates its weight every slot; whichever candidate has the
+ *  highest current score wins the slot, then has the total weight subtracted back off. Weighted by
+ *  long-run frequency exactly like the old version, but spreads repeats out instead of bunching
+ *  them — see the tie-break note below for why iteration order still matters even here. */
+function smoothWeightedSchedule(recs: Recommendation[], duration: number): Recommendation[] {
+  const weights = recs.map((r) => SEVERITY_WEIGHT[r.severity]);
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const current = weights.map(() => 0);
+  const schedule: Recommendation[] = [];
+  for (let day = 0; day < duration; day++) {
+    for (let i = 0; i < recs.length; i++) current[i] += weights[i];
+    // Ties (equal current score) resolve to the earlier recommendation, which is already
+    // severity-sorted (recommend() in aggregate.ts) — so a tie favors the higher-priority area.
+    let best = 0;
+    for (let i = 1; i < recs.length; i++) if (current[i] > current[best]) best = i;
+    schedule.push(recs[best]);
+    current[best] -= totalWeight;
   }
-  return queue;
+  return schedule;
 }
 
 export function generateTrainingPlan(
@@ -64,14 +86,26 @@ export function generateTrainingPlan(
   const generatedAt = new Date().toISOString();
   if (!recommendations.length) return { duration, detailLevel, generatedAt, tasks: [] };
 
-  const rotation = weightedRotation(recommendations);
+  const schedule = smoothWeightedSchedule(recommendations, duration);
+  // How many times each area has come up so far — used to rotate which specific drill is featured
+  // on a revisit, so a weak area recurring across the plan (by design — that's the point of
+  // weighting) shows different concrete work each time instead of literally repeating itself.
+  const visitCount = new Map<string, number>();
   const tasks: PlanTask[] = [];
   let resourceCycle = 0;
 
   for (let day = 1; day <= duration; day++) {
-    const rec = rotation[(day - 1) % rotation.length];
+    const rec = schedule[day - 1];
+    const visit = visitCount.get(rec.area) ?? 0;
+    visitCount.set(rec.area, visit + 1);
+
     const maxLinks = detailLevel === 'detailed' ? 4 : 2;
     const puzzleLinks = rec.themes.slice(0, maxLinks).map((t) => ({ label: `Puzzles: ${t.label}`, url: themeUrl(t.name) }));
+    // A recommendation with no drills (the interface doesn't forbid `drills: []`, even though
+    // today's only producer, recommend() in aggregate.ts, always fills it) falls back to a generic
+    // task rather than pushing nothing and silently vanishing that day from the plan.
+    const drills = rec.drills.length ? rec.drills : [`Targeted practice: ${rec.area}`];
+    const drill = drills[visit % drills.length];
 
     if (detailLevel === 'high-level') {
       tasks.push({
@@ -79,29 +113,36 @@ export function generateTrainingPlan(
         day,
         area: rec.area,
         severity: rec.severity,
-        title: `Focus: ${rec.area} — ${rec.drills[0] ?? 'targeted practice'}`,
+        title: `Focus: ${rec.area} — ${drill}`,
         links: puzzleLinks,
       });
       continue;
     }
 
-    // detailed: one task per drill (evidence text attached to the first), plus a puzzle-practice
-    // task, plus (every 4th day) a general-resource task so the plan isn't 100% puzzles. A
-    // recommendation with no drills (the interface doesn't forbid `drills: []`, even though today's
-    // only producer, recommend() in aggregate.ts, always fills it) would otherwise push zero tasks
-    // and silently vanish that day from the plan entirely — fall back to a generic task instead.
-    const drills = rec.drills.length ? rec.drills : [`Targeted practice: ${rec.area}`];
-    drills.forEach((drill, i) => {
+    // detailed: the specific drill for this visit (evidence text attached only the first time this
+    // area comes up, so it isn't repeated verbatim on every revisit), plus a puzzle-practice task
+    // reusing the same puzzle-theme links every visit — drilling the actual puzzle set is a valid
+    // thing to do again even when the featured drill sentence has already rotated once — plus
+    // (every 4th day) a general-resource task so the plan isn't 100% puzzles.
+    tasks.push({
+      id: `${day}:0`,
+      day,
+      area: rec.area,
+      severity: rec.severity,
+      title: drill,
+      detail: visit === 0 ? rec.why : undefined,
+      links: [],
+    });
+    if (puzzleLinks.length) {
       tasks.push({
-        id: `${day}:${i}`,
+        id: `${day}:1`,
         day,
         area: rec.area,
         severity: rec.severity,
-        title: drill,
-        detail: i === 0 ? rec.why : undefined,
-        links: i === 0 ? puzzleLinks : [],
+        title: `Puzzle practice: ${rec.area}`,
+        links: puzzleLinks,
       });
-    });
+    }
     if (day % 4 === 0) {
       const resource = GENERAL_RESOURCES[resourceCycle % GENERAL_RESOURCES.length];
       resourceCycle++;
