@@ -90,8 +90,8 @@
       <section class="card">
         <h2>How it's built</h2>
         <ul class="pattern-list">
-          <li><strong>Private by construction.</strong> Game data and the chess engine both run on-device. Nothing is ever uploaded to a server.</li>
-          <li><strong>Zero marginal infrastructure.</strong> Ships as a static site. No server, database, or hosting bill is required to run any core tool.</li>
+          <li><strong>Private by construction.</strong> Game data and the chess engine both run on-device — none of it is ever uploaded to a server. The one exception is this page itself: loading it logs a page view and your approximate (city-level) location for the visitor map below, nothing more precise, and it's never tied to anything else you do on the site.</li>
+          <li><strong>Zero marginal infrastructure.</strong> Ships as a static site — no server, database, or hosting bill is required for any core tool. The visitor counter above is the one add-on that isn't, running on a small separate Cloudflare Worker.</li>
           <li><strong>Installs like a native app.</strong> A Progressive Web App — add it to a home screen, and keep analyzing games with no connection at all once the engine has loaded, useful in a tournament hall with bad wifi. Live game streaming and account lookups still need a connection, since those come from lichess's/chess.com's public APIs.</li>
           <li><strong>No account, no paywall.</strong> Every tool is free and open the moment the page loads — nothing to sign up for before getting value.</li>
         </ul>
@@ -102,6 +102,15 @@
           <h4>Development note</h4>
           <p>The current feature set — tablebase lookups, PDF export, opponent scouting reports, the coach dashboard, and the spaced-repetition opening trainer — shipped in a single focused push. A photo-based tournament-results reader was also built and tested, then removed after real-world photos (handwritten sheets, dense multi-column wall charts) proved unreliable to parse — a deliberate call to cut a feature that didn't clear the bar rather than ship something flaky.</p>
         </div>
+      </section>
+
+      <section class="card span-2" id="visitor-card">
+        <h2>🌍 Site visitors</h2>
+        <div class="summary-cards">
+          <div class="stat-card"><span class="big" id="visitor-total">—</span><span class="label">Page views, all time</span></div>
+        </div>
+        <div id="visitor-map" class="visitor-map" aria-label="World map showing where visitors to this page have come from"></div>
+        <p class="hint" id="visitor-note">Loading…</p>
       </section>
       </div>
 

@@ -1,0 +1,15 @@
+{
+  "name": "openfile-visits-worker",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute openfile-visits --remote --file=./schema.sql",
+    "db:init:local": "wrangler d1 execute openfile-visits --local --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0",
+    "@cloudflare/workers-types": "^4.20241004.0"
+  }
+}

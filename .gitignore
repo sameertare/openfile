@@ -2,3 +2,5 @@ node_modules/
 dist/
 reports/
 .DS_Store
+worker/node_modules/
+worker/.wrangler/

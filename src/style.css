@@ -204,6 +204,15 @@ a { color: var(--blue); }
 
 .app-footer { text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-top: 30px; }
 
+/* ---------- About page visitor map ---------- */
+.visitor-map {
+  margin-top: 6px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-inset); overflow: hidden;
+}
+.visitor-map svg { display: block; width: 100%; height: auto; }
+.visitor-map svg path { fill: var(--border); stroke: var(--bg-inset); stroke-width: 0.5; }
+.visitor-map .visit-dot { fill: var(--accent); fill-opacity: 0.75; stroke: var(--bg); stroke-width: 0.6; }
+
 /* ---------- big-screen wall display (wallchart-display.html) ---------- */
 /* Everything else in this file sizes off rem, so bumping the root font-size scales the whole page
    proportionally — the simplest way to get a projector-legible view without a parallel style sheet. */
