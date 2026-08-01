@@ -121,7 +121,19 @@ function syncUiToActiveProfile() {
   loadCardTitle.textContent = mode === 'me' ? 'Load your games' : "Load the opponent's games";
   profileStatusEl.innerHTML = `${profileSummary(profiles.me, '🧑 My Repertoire')} &nbsp;·&nbsp; ${profileSummary(profiles.opponent, '🎯 Opponent Prep')}`;
 
-  fileSummary.innerHTML = (p.parsedGames.length ? `<span class="chip">♟ ${p.parsedGames.length} game(s) loaded</span>` : '') + p.lastLoadNote;
+  const downloadBtn = p.parsedGames.length
+    ? ` <button class="btn btn-ghost btn-sm dl-loaded-pgn-btn" title="Download every currently loaded game as one PGN file">⬇ Download PGN</button>`
+    : '';
+  fileSummary.innerHTML = (p.parsedGames.length ? `<span class="chip">♟ ${p.parsedGames.length} game(s) loaded</span>${downloadBtn}` : '') + p.lastLoadNote;
+  fileSummary.querySelector('.dl-loaded-pgn-btn')?.addEventListener('click', () => {
+    // Use each game's own original raw PGN text (headers exactly as fetched — real ratings, event
+    // names, site URLs) rather than reconstructing synthetic ones, since the whole point here is a
+    // faithful copy of what was actually loaded, not a re-derived summary of it.
+    const activeProfile = active(); // this button belongs to whichever profile was active when clicked
+    const pgn = activeProfile.parsedGames.map((g) => g.raw.trim()).join('\n\n');
+    const safeName = (activeProfile.username || 'games').replace(/[^\w.-]/g, '_').slice(0, 60);
+    downloadPgn(`${safeName}_${activeProfile.parsedGames.length}games.pgn`, pgn);
+  });
   detectedPlayerName.textContent = p.username ?? '—';
   detectedPlayerCount.textContent = p.explorerGames.length
     ? ` — ${p.explorerGames.length} game${p.explorerGames.length === 1 ? '' : 's'} available`
