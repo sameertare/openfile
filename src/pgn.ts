@@ -166,6 +166,23 @@ export function gameLink(headers: Record<string, string>): string | null {
   return link && /^https?:\/\//.test(link) ? link : null;
 }
 
+/** A game against the lichess built-in AI, a lichess BOT-titled account, or chess.com's "Vs.
+ *  Computer" mode — not a real opponent, so it skews win-rate/opening/rating-adjacent stats if it
+ *  slips into aggregate analysis. Detection is based on verified real export headers rather than
+ *  guessed username patterns: lichess names its AI opponent literally "lichess AI level N" (Elo
+ *  "?"), tags bot accounts with WhiteTitle/BlackTitle "BOT", and chess.com marks every computer
+ *  game with Event "Vs. Computer" regardless of which bot persona was picked (those personas have
+ *  ordinary human-sounding names, so matching on White/Black there would be unreliable). */
+export function isBotOrComputerGame(headers: Record<string, string>): boolean {
+  const event = headers['Event'] ?? '';
+  if (/computer/i.test(event)) return true; // chess.com "Vs. Computer"
+  const white = headers['White'] ?? '';
+  const black = headers['Black'] ?? '';
+  if (/^lichess ai level \d+$/i.test(white) || /^lichess ai level \d+$/i.test(black)) return true;
+  if (/^bot$/i.test(headers['WhiteTitle'] ?? '') || /^bot$/i.test(headers['BlackTitle'] ?? '')) return true;
+  return false;
+}
+
 /** Stable id for deduping across sessions: prefer the game URL, else a content hash. */
 export function gameId(g: ParsedGame): string {
   const link = gameLink(g.headers);

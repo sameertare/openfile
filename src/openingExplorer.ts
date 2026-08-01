@@ -1,6 +1,6 @@
 import './style.css';
 import type { ParsedGame, ParseFailure } from './pgn';
-import { gameId, gameLink, splitPgn, tryParseGame } from './pgn';
+import { gameId, gameLink, isBotOrComputerGame, splitPgn, tryParseGame } from './pgn';
 import { groupPlayerNames, nameKey, inferOwnerColorFromTitle } from './playerMatch';
 import type { Color, Result } from './types';
 import { Board } from './board';
@@ -31,9 +31,13 @@ interface Profile {
   username: string | null;
   matchKeys: Set<string> | null;
   explorerGames: ExplorerGame[];
+  // Extra chip HTML from the most recent load (parse failures, bot/computer games excluded) —
+  // syncUiToActiveProfile() rebuilds fileSummary from scratch on every call (tab switch, fetch
+  // completion, etc.), so this has to live on the profile to survive past the load that set it.
+  lastLoadNote: string;
 }
 function newProfile(): Profile {
-  return { parsedGames: [], username: null, matchKeys: null, explorerGames: [] };
+  return { parsedGames: [], username: null, matchKeys: null, explorerGames: [], lastLoadNote: '' };
 }
 type Mode = 'me' | 'opponent';
 let mode: Mode = 'me';
@@ -117,7 +121,7 @@ function syncUiToActiveProfile() {
   loadCardTitle.textContent = mode === 'me' ? 'Load your games' : "Load the opponent's games";
   profileStatusEl.innerHTML = `${profileSummary(profiles.me, '🧑 My Repertoire')} &nbsp;·&nbsp; ${profileSummary(profiles.opponent, '🎯 Opponent Prep')}`;
 
-  fileSummary.innerHTML = p.parsedGames.length ? `<span class="chip">♟ ${p.parsedGames.length} game(s) loaded</span>` : '';
+  fileSummary.innerHTML = (p.parsedGames.length ? `<span class="chip">♟ ${p.parsedGames.length} game(s) loaded</span>` : '') + p.lastLoadNote;
   detectedPlayerName.textContent = p.username ?? '—';
   detectedPlayerCount.textContent = p.explorerGames.length
     ? ` — ${p.explorerGames.length} game${p.explorerGames.length === 1 ? '' : 's'} available`
@@ -147,6 +151,7 @@ function syncUiToActiveProfile() {
 async function handleFiles(files: FileList | File[], profile: Profile, forceUsername?: string) {
   const p = profile;
   let failed = 0;
+  let botExcluded = 0;
   const failureCounts = new Map<string, { count: number; sample: string }>();
   const recordFailure = (f: ParseFailure) => {
     const existing = failureCounts.get(f.reason);
@@ -160,6 +165,10 @@ async function handleFiles(files: FileList | File[], profile: Profile, forceUser
     for (const chunk of chunks) {
       const { game, error } = tryParseGame(chunk);
       if (game) {
+        if (isBotOrComputerGame(game.headers)) {
+          botExcluded++;
+          continue;
+        }
         p.parsedGames.push(game);
       } else {
         failed++;
@@ -175,17 +184,21 @@ async function handleFiles(files: FileList | File[], profile: Profile, forceUser
     return true;
   });
 
-  let html = p.parsedGames.length ? `<span class="chip">♟ ${p.parsedGames.length} game(s) loaded</span>` : '';
-  if (failed) html += ` <span class="chip">⚠ ${failed} item(s) could not be parsed</span>`;
+  // syncUiToActiveProfile() (called at the end of finalizeAfterLoad, below, and again on every tab
+  // switch) rebuilds fileSummary from scratch with just the "N games loaded" chip — stash the rest
+  // here so it survives that overwrite instead of flashing and disappearing.
+  let note = '';
+  if (failed) note += ` <span class="chip">⚠ ${failed} item(s) could not be parsed</span>`;
+  if (botExcluded) note += ` <span class="chip">🤖 ${botExcluded} game(s) vs a bot/computer excluded</span>`;
   if (failureCounts.size) {
     const rows = [...failureCounts.entries()]
       .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 6)
       .map(([reason, { count, sample }]) => `<li><b>${count}×</b> ${esc(reason)} <span class="hint">— e.g. "${esc(sample)}"</span></li>`)
       .join('');
-    html += `<details class="parse-errors"><summary>Why ${failed} item(s) failed to parse</summary><ul>${rows}</ul></details>`;
+    note += `<details class="parse-errors"><summary>Why ${failed} item(s) failed to parse</summary><ul>${rows}</ul></details>`;
   }
-  fileSummary.innerHTML = html;
+  p.lastLoadNote = note;
 
   finalizeAfterLoad(p, forceUsername);
 }

@@ -204,6 +204,29 @@ a { color: var(--blue); }
 
 .app-footer { text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-top: 30px; }
 
+/* ---------- big-screen wall display (wallchart-display.html) ---------- */
+/* Everything else in this file sizes off rem, so bumping the root font-size scales the whole page
+   proportionally — the simplest way to get a projector-legible view without a parallel style sheet. */
+html.walldisplay { font-size: 26px; }
+.walldisplay-topbar {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  padding: 18px 32px; border-bottom: 1px solid var(--border);
+}
+.walldisplay-topbar h1 { margin: 0; font-size: 1.6rem; }
+.walldisplay-meta { color: var(--text-dim); font-size: 0.7rem; }
+.walldisplay-controls { display: flex; gap: 10px; align-items: center; }
+.walldisplay-controls select { font-size: 0.7rem; padding: 6px 10px; }
+.walldisplay-controls button { font-size: 0.7rem; }
+.walldisplay-grid {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; padding: 24px 32px 40px; align-items: start;
+}
+@media (max-width: 1400px) { .walldisplay-grid { grid-template-columns: 1fr; } }
+.walldisplay-panel {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 26px;
+}
+.walldisplay-panel h2 { margin: 0 0 14px; font-size: 1.15rem; }
+.walldisplay-panel td, .walldisplay-panel th { padding: 9px 12px; }
+.walldisplay-empty { padding: 60px 32px; text-align: center; color: var(--text-dim); font-size: 1rem; }
 
 /* ---------- top nav ---------- */
 .topnav {
@@ -508,6 +531,13 @@ a { color: var(--blue); }
 .sec-tab:hover { filter: brightness(1.15); }
 .sec-tab.active { background: var(--accent); color: #10140c; border-color: var(--accent-dark); font-weight: 600; }
 .sec-tab.active .hint { color: #204010; }
+.round-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 16px; }
+.round-tab {
+  background: var(--bg-inset); border: 1px solid var(--border); color: var(--text);
+  padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-variant-numeric: tabular-nums;
+}
+.round-tab:hover { filter: brightness(1.15); }
+.round-tab.active { background: var(--accent); color: #10140c; border-color: var(--accent-dark); font-weight: 600; }
 #print-area { display: none; }
 /* ---------- sparklines (Analyze games list + Live board) ---------- */
 .sparkline { display: block; width: 100%; height: 100%; }

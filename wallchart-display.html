@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" class="walldisplay">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wall Display — OpenFile</title>
+    <link rel="icon" href="/logo-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
+  </head>
+  <body>
+    <div class="walldisplay-topbar">
+      <div>
+        <h1 id="wd-title">🏆 Wall Display</h1>
+        <div class="walldisplay-meta" id="wd-meta"></div>
+      </div>
+      <div class="walldisplay-controls">
+        <select id="wd-section-select" hidden></select>
+        <button id="wd-fullscreen-btn" class="btn btn-primary">⛶ Fullscreen</button>
+        <a href="swiss.html" class="btn btn-ghost">← Back to Swiss Pairings</a>
+      </div>
+    </div>
+    <div id="wd-body"></div>
+    <script type="module" src="/src/wallchartDisplay.ts"></script>
+  </body>
+</html>

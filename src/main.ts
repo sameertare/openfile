@@ -1,7 +1,7 @@
 import './style.css';
 import { Chess } from 'chess.js';
 import type { ParsedGame, ParseFailure } from './pgn';
-import { gameId, splitPgn, tryParseGame } from './pgn';
+import { gameId, isBotOrComputerGame, splitPgn, tryParseGame } from './pgn';
 import { Engine } from './engine';
 import { analyzeGame, positionsNeeded } from './analyze';
 import { aggregate, scorePct, themeUrl, opponentList, headToHeadWithOpponent } from './aggregate';
@@ -113,6 +113,7 @@ async function handleFiles(files: FileList | File[]) {
   let newGames = 0;
   let mdLoaded = 0;
   let failed = 0;
+  let botExcluded = 0;
   const failureCounts = new Map<string, { count: number; sample: string }>();
   const recordFailure = (f: ParseFailure) => {
     const existing = failureCounts.get(f.reason);
@@ -143,6 +144,10 @@ async function handleFiles(files: FileList | File[]) {
     for (const chunk of chunks) {
       const { game, error } = tryParseGame(chunk);
       if (game) {
+        if (isBotOrComputerGame(game.headers)) {
+          botExcluded++;
+          continue;
+        }
         parsedGames.push(game);
         newGames++;
       } else {
@@ -173,6 +178,7 @@ async function handleFiles(files: FileList | File[]) {
   if (parsedGames.length) chips.push(`<span class="chip">♟ ${parsedGames.length} game(s) loaded from PGN</span>`);
   if (baseReport) chips.push(`<span class="chip">📄 previous report: ${baseReport.games.length} analyzed game(s) for <b>${esc(baseReport.meta.username)}</b></span>`);
   if (failed) chips.push(`<span class="chip">⚠ ${failed} item(s) could not be parsed</span>`);
+  if (botExcluded) chips.push(`<span class="chip">🤖 ${botExcluded} game(s) vs a bot/computer excluded</span>`);
   if (mdLoaded && !parsedGames.length) chips.push(`<span class="chip">Tip: add new PGN files to extend this report</span>`);
   if (ambiguousExcluded) chips.push(`<span class="chip">⚠ ${ambiguousExcluded} game(s) with only one player named — not matching <b>${esc(detectedUsername!)}</b> — were excluded</span>`);
   let html = chips.join(' ');

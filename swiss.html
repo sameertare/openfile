@@ -48,11 +48,19 @@
               <option value="nwchess">NWChess RosterTable.csv</option>
             </select>
           </label>
+          <label class="stack">Tournament type
+            <select id="tourney-format-select">
+              <option value="swiss" selected>Swiss</option>
+              <option value="round-robin">Round-robin (everyone plays everyone)</option>
+              <option value="knockout">Knockout (single elimination)</option>
+            </select>
+          </label>
           <label class="stack">Number of rounds
             <input type="number" id="rounds-input" class="text-input" min="1" max="30" placeholder="auto" style="width:90px;" />
           </label>
         </div>
         <p class="hint" id="format-hint"></p>
+        <p class="hint" id="tourney-format-hint"></p>
         <p class="hint" id="rounds-hint"></p>
         <label class="stack">Paste players (one per line — <code>Name</code>, <code>Name Rating</code>, or <code>Name, Rating</code>) — or upload an <b>NWChess RosterTable.csv</b>
           <textarea id="roster-text" class="text-area" rows="8" placeholder="1. Magnus Carlsen, 2839
@@ -80,6 +88,7 @@ Ian Nepomniachtchi 2758"></textarea>
         <h2><span class="step">2</span> Rounds</h2>
         <div class="config-row" style="align-items:center;">
           <button id="pair-btn" class="btn btn-primary">➕ Pair next round</button>
+          <a href="wallchart-display.html" target="_blank" class="btn" title="Open a big-screen standings/pairings view for a projector or hall monitor">🖥 Wall display</a>
           <span id="round-info" class="hint"></span>
         </div>
         <details class="swiss-guide">
@@ -134,7 +143,8 @@ Ian Nepomniachtchi 2758"></textarea>
         <details class="more-menu">
           <summary>⋯ More options</summary>
           <div class="config-row" style="align-items:center;">
-            <button id="export-json" class="btn">⬇ Export</button>
+            <button id="export-json" class="btn" title="Full event save file — reload it here later to continue">⬇ Export JSON</button>
+            <button id="export-trf" class="btn" title="FIDE TRF format — for submitting results to a federation or importing into other TD software">⬇ Export TRF (FIDE/USCF)</button>
             <label class="btn" for="import-json">📂 Import</label>
             <input type="file" id="import-json" accept=".json" hidden />
             <button id="print-btn" class="btn">🖨 Print all standings</button>
@@ -143,6 +153,7 @@ Ian Nepomniachtchi 2758"></textarea>
           </div>
         </details>
         <div id="section-tabs" class="section-tabs" hidden></div>
+        <div id="round-tabs" class="round-tabs" hidden></div>
         <div id="rounds"></div>
       </section>
 
@@ -189,9 +200,9 @@ Ian Nepomniachtchi 2758"></textarea>
       </section>
 
       <section class="card span-2" id="standings-card" hidden>
-        <h2><span class="step">3</span> Standings</h2>
+        <h2><span class="step">3</span> <span id="standings-title">Standings</span></h2>
         <div id="standings"></div>
-        <p class="hint">Tiebreaks: <b>Buchholz</b> (sum of opponents' scores) then <b>Sonneborn-Berger</b>. Byes score a full point.</p>
+        <p class="hint" id="standings-tiebreak-note">Tiebreaks: <b>Buchholz</b> (sum of opponents' scores) then <b>Sonneborn-Berger</b>. Byes score a full point.</p>
       </section>
 
       <section class="card span-2" id="wallchart-card" hidden>

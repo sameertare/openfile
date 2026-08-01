@@ -38,6 +38,8 @@ export interface FamilyGroup {
   playerIds: number[];
 }
 
+export type TournamentFormat = 'swiss' | 'round-robin' | 'knockout';
+
 export interface Tournament {
   name: string;
   players: Player[];
@@ -45,6 +47,14 @@ export interface Tournament {
   createdAt: string;
   totalRounds: number; // TD-chosen (or auto-recommended) round count for this event
   familyGroups: FamilyGroup[]; // players who shouldn't face each other when avoidable (siblings, etc.)
+  // Optional (not `swiss`) so tournaments saved before this field existed still load correctly —
+  // read via tournamentFormat(t) rather than t.format directly, everywhere but createTournament.
+  format?: TournamentFormat;
+}
+
+/** t.format, defaulting to 'swiss' for tournaments saved before the field existed. */
+export function tournamentFormat(t: Tournament): TournamentFormat {
+  return t.format ?? 'swiss';
 }
 
 // ---------------- roster parsing ----------------
@@ -290,9 +300,16 @@ export function parseRoster(text: string, format: RosterFormat = 'auto'): Roster
   }
 }
 
-export function createTournament(name: string, roster: RosterEntry[], totalRounds?: number): Tournament {
+export function createTournament(
+  name: string,
+  roster: RosterEntry[],
+  totalRounds?: number,
+  format: TournamentFormat = 'swiss'
+): Tournament {
+  const defaultName = format === 'round-robin' ? 'Round-Robin Tournament' : format === 'knockout' ? 'Knockout Tournament' : 'Swiss Tournament';
   return {
-    name: name || 'Swiss Tournament',
+    name: name || defaultName,
+    format,
     createdAt: new Date().toISOString(),
     players: roster.map((r, i) => ({
       id: i + 1,
@@ -307,9 +324,231 @@ export function createTournament(name: string, roster: RosterEntry[], totalRound
       withdrawn: false,
     })),
     rounds: [],
-    totalRounds: totalRounds && totalRounds > 0 ? totalRounds : recommendedRounds(roster.length),
+    totalRounds:
+      totalRounds && totalRounds > 0
+        ? totalRounds
+        : format === 'round-robin'
+          ? recommendedRoundsRoundRobin(roster.length)
+          : format === 'knockout'
+            ? recommendedRoundsKnockout(roster.length)
+            : recommendedRounds(roster.length),
     familyGroups: [],
   };
+}
+
+/** A single round-robin needs one round per player if the field is odd (someone sits out the bye
+ *  each round) or n-1 rounds if it's even — every player still meets every other exactly once. */
+export function recommendedRoundsRoundRobin(n: number): number {
+  if (n < 2) return 0;
+  return n % 2 === 0 ? n - 1 : n;
+}
+
+/** Circle/polygon method: player 0 stays fixed, everyone else rotates one seat each round, so every
+ *  pair of ids meets exactly once across the returned rounds. -1 marks the bye seat for an odd
+ *  field (padded to even length first). Pure function of the id list — round-robin pairings don't
+ *  depend on scores, so this can be (and is) recomputed on demand rather than stored on Tournament. */
+export function roundRobinSchedule(ids: number[]): [number, number][][] {
+  const arr = [...ids];
+  if (arr.length % 2 === 1) arr.push(-1);
+  const m = arr.length;
+  if (m < 2) return [];
+  const rounds: [number, number][][] = [];
+  let cur = [...arr];
+  for (let r = 0; r < m - 1; r++) {
+    const pairs: [number, number][] = [];
+    for (let i = 0; i < m / 2; i++) pairs.push([cur[i], cur[m - 1 - i]]);
+    rounds.push(pairs);
+    const fixed = cur[0];
+    const rest = cur.slice(1);
+    rest.unshift(rest.pop()!);
+    cur = [fixed, ...rest];
+  }
+  return rounds;
+}
+
+/** Round-robin's counterpart to the Swiss pairing logic above — no score groups, floaters, or
+ *  rematch avoidance to compute, since the whole schedule is fixed by roster order at creation
+ *  time. A withdrawn player's scheduled opponent gets a forfeit bye instead of a game; if both
+ *  sides of a pairing have withdrawn, that board is simply dropped. Color alternates by a fixed
+ *  (round, seat) rule rather than tracked running balance, since there's no per-round pairing
+ *  decision left to weight it against. */
+function pairNextRoundRoundRobin(t: Tournament): Round {
+  const nextRoundNo = t.rounds.length + 1;
+  const allIds = t.players.filter((p) => !p.isHouse).map((p) => p.id);
+  const schedule = roundRobinSchedule(allIds);
+  const roundPairs = schedule[nextRoundNo - 1] ?? [];
+  const byId = new Map(t.players.map((p) => [p.id, p]));
+
+  const pairings: Pairing[] = [];
+  for (const [a, b] of roundPairs) {
+    if (a === -1 || b === -1) {
+      const p = byId.get(a === -1 ? b : a);
+      if (p && !p.withdrawn) pairings.push({ board: pairings.length + 1, whiteId: null, blackId: null, byeId: p.id, byePoints: 1, result: null });
+      continue;
+    }
+    const pa = byId.get(a);
+    const pb = byId.get(b);
+    if (!pa || !pb || (pa.withdrawn && pb.withdrawn)) continue;
+    if (pa.withdrawn) { pairings.push({ board: pairings.length + 1, whiteId: null, blackId: null, byeId: pb.id, byePoints: 1, result: null }); continue; }
+    if (pb.withdrawn) { pairings.push({ board: pairings.length + 1, whiteId: null, blackId: null, byeId: pa.id, byePoints: 1, result: null }); continue; }
+    const idxA = allIds.indexOf(a);
+    const whiteIsA = (nextRoundNo + idxA) % 2 === 0;
+    pairings.push({
+      board: pairings.length + 1,
+      whiteId: whiteIsA ? pa.id : pb.id,
+      blackId: whiteIsA ? pb.id : pa.id,
+      byeId: null,
+      result: null,
+    });
+  }
+  return { number: nextRoundNo, pairings, complete: false };
+}
+
+/** A single-elimination bracket needs one round per doubling of the field. */
+export function recommendedRoundsKnockout(n: number): number {
+  if (n < 2) return 0;
+  return Math.ceil(Math.log2(n));
+}
+
+/** The next power of 2 at or above n (bracket must be a full power of 2, padded with byes for the
+ *  gap between n and that size). */
+function nextPow2(n: number): number {
+  let p = 1;
+  while (p < n) p *= 2;
+  return p;
+}
+
+/**
+ * Classic recursive bracket-seeding order: for a size-2^k bracket, returns the seed numbers
+ * (1-indexed) in slot order such that seed 1 and seed 2 can only meet in the final, seeds 1-4 can
+ * only meet from the semifinal on, and so on — the same seeding real single-elimination brackets
+ * use. E.g. seedOrder(8) = [1,8,4,5,2,7,3,6], i.e. round-1 boards 1v8, 4v5, 2v7, 3v6.
+ */
+export function seedOrder(size: number): number[] {
+  if (size < 2) return size === 1 ? [1] : [];
+  let rounds: number[] = [1, 2];
+  while (rounds.length < size) {
+    const sum = rounds.length * 2 + 1;
+    const next: number[] = [];
+    for (const s of rounds) next.push(s, sum - s);
+    rounds = next;
+  }
+  return rounds;
+}
+
+/** Round 1 of a knockout bracket: players seeded by rating (highest first), bracket padded to the
+ *  next power of 2 with byes handed to the top seeds via the standard seeding order above — no
+ *  special-casing needed since the algorithm already pairs high seeds against the lowest (padding)
+ *  seeds first. */
+function pairFirstRoundKnockout(t: Tournament): Round {
+  const active = t.players.filter((p) => !p.withdrawn && !p.isHouse);
+  const seeded = [...active].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || a.id - b.id);
+  const bracketSize = nextPow2(seeded.length);
+  const order = seedOrder(bracketSize);
+  const pairings: Pairing[] = [];
+  for (let i = 0; i < order.length; i += 2) {
+    const p1 = seeded[order[i] - 1] ?? null;
+    const p2 = seeded[order[i + 1] - 1] ?? null;
+    if (p1 && p2) {
+      const { whiteId, blackId } = assignColors(p1, p2);
+      pairings.push({ board: pairings.length + 1, whiteId, blackId, byeId: null, result: null });
+    } else if (p1 || p2) {
+      pairings.push({ board: pairings.length + 1, whiteId: null, blackId: null, byeId: (p1 ?? p2)!.id, byePoints: 1, result: null });
+    }
+  }
+  return { number: 1, pairings, complete: false };
+}
+
+/** Round 2+ of a knockout bracket: the winner of previous-round board N and board N+1 meet at
+ *  board ceil((N+1)/2) — standard bracket advancement. A board whose previous-round result isn't
+ *  in yet contributes no pairing (rather than guessing); the UI's own "unfinished games" confirm
+ *  is what should stop a TD from pairing past an incomplete round in the first place. */
+function pairNextRoundKnockout(t: Tournament): Round {
+  const nextRoundNo = t.rounds.length + 1;
+  const prevRound = t.rounds[nextRoundNo - 2];
+  const byId = new Map(t.players.map((p) => [p.id, p]));
+  const winners: (number | null)[] = [...prevRound.pairings]
+    .sort((a, b) => a.board - b.board)
+    .map((pr) => {
+      if (pr.byeId != null) return pr.byeId;
+      if (pr.result === '1-0') return pr.whiteId;
+      if (pr.result === '0-1') return pr.blackId;
+      return null;
+    });
+  const pairings: Pairing[] = [];
+  for (let i = 0; i < winners.length; i += 2) {
+    const a = winners[i];
+    const b = winners[i + 1];
+    if (a != null && b != null) {
+      const pa = byId.get(a);
+      const pb = byId.get(b);
+      if (!pa || !pb) continue;
+      const { whiteId, blackId } = assignColors(pa, pb);
+      pairings.push({ board: pairings.length + 1, whiteId, blackId, byeId: null, result: null });
+    } else if (a != null || b != null) {
+      pairings.push({ board: pairings.length + 1, whiteId: null, blackId: null, byeId: (a ?? b)!, byePoints: 1, result: null });
+    }
+  }
+  return { number: nextRoundNo, pairings, complete: false };
+}
+
+export interface KnockoutPlacement {
+  rank: number; // ties (e.g. both semifinal losers) share a rank
+  player: Player;
+  eliminatedRound: number | null; // null = champion, or still alive mid-event
+  isChampion: boolean;
+}
+
+/** Final standings for a knockout event — there's no running score to rank by, so placement comes
+ *  from how far each player got: the round they lost in (later loss = better placement), with the
+ *  standard tied-ranking convention (both semifinal losers share 3rd, etc.). Players still alive
+ *  mid-event (not yet eliminated, not champion) rank just behind the champion by how far they've
+ *  already gotten, same as a finished bracket would once they lose. */
+export function knockoutPlacements(t: Tournament): KnockoutPlacement[] {
+  const eliminatedInRound = new Map<number, number>();
+  for (const round of t.rounds) {
+    for (const pr of round.pairings) {
+      if (pr.byeId != null) continue;
+      if (pr.result === '1-0' && pr.blackId != null) eliminatedInRound.set(pr.blackId, round.number);
+      else if (pr.result === '0-1' && pr.whiteId != null) eliminatedInRound.set(pr.whiteId, round.number);
+    }
+  }
+  let champion: number | null = null;
+  const finalRound = t.rounds.find((r) => r.number === t.totalRounds);
+  if (finalRound && finalRound.pairings.length === 1) {
+    const pr = finalRound.pairings[0];
+    if (pr.result === '1-0') champion = pr.whiteId;
+    else if (pr.result === '0-1') champion = pr.blackId;
+    else if (pr.byeId != null) champion = pr.byeId;
+  }
+
+  const out: KnockoutPlacement[] = t.players
+    .filter((p) => !p.isHouse)
+    .map((p) => ({
+      rank: 0,
+      player: p,
+      eliminatedRound: p.id === champion ? null : (eliminatedInRound.get(p.id) ?? null),
+      isChampion: p.id === champion,
+    }));
+
+  out.sort((a, b) => {
+    if (a.isChampion !== b.isChampion) return a.isChampion ? -1 : 1;
+    const aOut = a.eliminatedRound ?? Infinity; // still alive (no result yet) ranks like "not eliminated"
+    const bOut = b.eliminatedRound ?? Infinity;
+    if (aOut !== bOut) return bOut - aOut;
+    return (b.player.rating ?? 0) - (a.player.rating ?? 0);
+  });
+
+  let rank = 1;
+  for (let i = 0; i < out.length; i++) {
+    if (i > 0 && out[i].eliminatedRound === out[i - 1].eliminatedRound && out[i].isChampion === out[i - 1].isChampion) {
+      out[i].rank = out[i - 1].rank;
+    } else {
+      out[i].rank = rank;
+    }
+    rank++;
+  }
+  return out;
 }
 
 /** Marks 2+ players as related (siblings, parent/child, spouses, …) so the pairing engine avoids
@@ -795,6 +1034,10 @@ export function cancelByeRequest(t: Tournament, playerId: number, roundNo: numbe
 }
 
 export function pairNextRound(t: Tournament): Round {
+  if (tournamentFormat(t) === 'round-robin') return pairNextRoundRoundRobin(t);
+  if (tournamentFormat(t) === 'knockout') {
+    return t.rounds.length === 0 ? pairFirstRoundKnockout(t) : pairNextRoundKnockout(t);
+  }
   const nextRoundNo = t.rounds.length + 1;
   const active = t.players.filter((p) => !p.withdrawn && !p.isHouse);
   const isFamilyConflict = (a: Player, b: Player) => sameFamilyGroup(t, a.id, b.id);

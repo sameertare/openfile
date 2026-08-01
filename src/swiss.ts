@@ -2,10 +2,12 @@ import './style.css';
 import {
   addExtraGameForBye, addFamilyGroup, cancelByeRequest, commitRound, createTournament, estimatedCurrentRating,
   explainPairing, explainPairingDetail, explainRound, isNwchessRoster, nextRoundNumber, pairNextRound, parseRoster,
-  recommendedRounds, redoLatestRound, removeFamilyGroup, requestByeForRound, setResult, standings,
-  swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
+  recommendedRounds, recommendedRoundsKnockout, recommendedRoundsRoundRobin, redoLatestRound, removeFamilyGroup,
+  requestByeForRound, setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards, tournamentFormat,
 } from './swissEngine';
-import type { GameResult, RosterEntry, RosterFormat, Tournament } from './swissEngine';
+import type { GameResult, Round, RosterEntry, RosterFormat, Tournament, TournamentFormat } from './swissEngine';
+import { knockoutPlacementsTableHtml, standingsTableHtml, wallChartHtml } from './swissViews';
+import { downloadTrf } from './trfExport';
 import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 
@@ -68,6 +70,15 @@ function nameWithRatingOf(t: Tournament, id: number | null, showEstimate = false
 // ---------- setup ----------
 function currentFormat(): RosterFormat {
   return (($('#format-select') as HTMLSelectElement).value as RosterFormat) || 'plain';
+}
+function currentTourneyFormat(): TournamentFormat {
+  return (($('#tourney-format-select') as HTMLSelectElement).value as TournamentFormat) || 'swiss';
+}
+/** Round-robin and knockout both pair strictly by a fixed schedule/bracket, with no per-round
+ *  score-group decision to explain, avoid a rematch in, or steer with a bye/family-group request. */
+function isFixedFormat(t: Tournament): boolean {
+  const fmt = tournamentFormat(t);
+  return fmt === 'round-robin' || fmt === 'knockout';
 }
 
 const FORMAT_HINT: Record<string, string> = {
@@ -163,6 +174,7 @@ $('#sample-roster').addEventListener('click', () => {
   previewRoster();
 });
 ($('#format-select') as HTMLSelectElement).addEventListener('change', () => { applyFormatHint(); previewRoster(); });
+($('#tourney-format-select') as HTMLSelectElement).addEventListener('change', previewRoster);
 ($('#roster-text') as HTMLTextAreaElement).addEventListener('input', previewRoster);
 $('#roster-file').addEventListener('change', async () => {
   const f = ($('#roster-file') as HTMLInputElement).files?.[0];
@@ -224,9 +236,24 @@ function previewRoster() {
   }
   const secs = syncSectionUI(all);
   const roster = previewSelection(all);
-  const rr = recommendedRounds(roster.length);
+  const tfmt = currentTourneyFormat();
+  const rr =
+    tfmt === 'round-robin' ? recommendedRoundsRoundRobin(roster.length)
+    : tfmt === 'knockout' ? recommendedRoundsKnockout(roster.length)
+    : recommendedRounds(roster.length);
   ($('#rounds-input') as HTMLInputElement).placeholder = String(rr);
-  $('#rounds-hint').textContent = `Leave blank to use the recommended ${rr} rounds for ${roster.length} players, or set your own.`;
+  $('#rounds-hint').textContent =
+    tfmt === 'round-robin'
+      ? `A single round-robin with ${roster.length} players needs ${rr} rounds so everyone meets once — leave blank to use that, or set a different count for a double round-robin etc.`
+      : tfmt === 'knockout'
+        ? `A single-elimination bracket for ${roster.length} players needs ${rr} rounds. Byes (if the field isn't a power of 2) go to the highest-rated players in round 1.`
+        : `Leave blank to use the recommended ${rr} rounds for ${roster.length} players, or set your own.`;
+  $('#tourney-format-hint').textContent =
+    tfmt === 'round-robin'
+      ? 'Round-robin: pairings for every round are fixed by roster order up front — no bye requests or family-group avoidance (there\'s no dynamic pairing to steer). Withdrawing a player still works; their remaining opponents get a walkover.'
+      : tfmt === 'knockout'
+      ? 'Knockout: round 1 is seeded by rating; later rounds pair whoever won each side of the bracket. Drawn games aren\'t allowed on the result — settle a tie with a playoff/Armageddon game before entering the result here. No bye requests or family-group avoidance.'
+      : '';
   const note = fmt === 'nwchess'
     ? `<p class="hint">📋 NWChess format — FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded.` +
       (secs.length > 1 ? ` Creating sets up all <b>${secs.length}</b> sections; “Pair next round” pairs them together.` : '') + `</p>`
@@ -288,7 +315,8 @@ $('#parse-btn').addEventListener('click', () => {
   if (!usable.length) { $('#roster-preview').innerHTML = `<p class="neg">Each section needs at least 2 players.</p>`; return; }
   const roundsRaw = ($('#rounds-input') as HTMLInputElement).value.trim();
   const roundsOverride = roundsRaw ? Math.max(1, Math.min(30, parseInt(roundsRaw, 10))) : undefined;
-  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride)), active: 0 };
+  const tfmt = currentTourneyFormat();
+  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride, tfmt)), active: 0 };
   save();
   renderAll();
   if (skipped.length) {
@@ -316,6 +344,7 @@ $('#pair-btn').addEventListener('click', () => {
     const round = pairNextRound(s);
     commitRound(s, round);
   }
+  viewingRoundNo = null; // jump the round-tab strip to the freshly paired round
   save();
   renderAll();
 });
@@ -427,6 +456,13 @@ $('#export-json').addEventListener('click', () => {
   a.click();
   URL.revokeObjectURL(url);
 });
+$('#export-trf').addEventListener('click', () => {
+  const t = cur();
+  if (!t) return;
+  // TRF is a single-tournament format — for a multi-section event, this exports whichever
+  // section is currently active; switch sections (above) and export again for the others.
+  downloadTrf(t, `${(t.name || 'tournament').replace(/[^\w.-]/g, '_')}.trf`);
+});
 $('#import-json').addEventListener('change', async () => {
   const input = $('#import-json') as HTMLInputElement;
   const f = input.files?.[0];
@@ -500,6 +536,16 @@ function renderAll() {
   renderPlayerStatusCard(t);
   renderStandings(t);
   renderWallChart(t);
+
+  // Round-robin's whole schedule is fixed by roster order up front, and knockout only ever pairs
+  // the winners of the previous round — neither has a per-round pairing decision left for a
+  // requested bye or family-group avoidance to steer, so those controls (and the Swiss-only
+  // pairing-logic guide) would just be dead UI for these formats.
+  const locked = isFixedFormat(t);
+  ($('#bye-request-card') as HTMLElement).hidden = ($('#bye-request-card') as HTMLElement).hidden || locked;
+  ($('#family-group-card') as HTMLElement).hidden = ($('#family-group-card') as HTMLElement).hidden || locked;
+  const guide = document.querySelector<HTMLElement>('.swiss-guide');
+  if (guide) guide.hidden = locked;
 }
 
 function renderByeRequestCard(t: Tournament) {
@@ -705,6 +751,7 @@ function pairingDiagramHtml(t: Tournament, roundNo: number, board: number): stri
  *  with, a ⇣ marker on whoever floated down to complete an odd bracket, and a note for any
  *  rematch or family-group conflict that couldn't be avoided this round. */
 function roundMethodologyHtml(t: Tournament, roundNo: number): string {
+  if (isFixedFormat(t)) return ''; // fixed/bracket schedule — no score-group reasoning to show
   const summary = explainRound(t, roundNo);
   if (!summary.groups.length) return '';
 
@@ -740,11 +787,13 @@ function roundMethodologyHtml(t: Tournament, roundNo: number): string {
   </details>`;
 }
 
-function renderRounds(t: Tournament) {
-  const el = $('#rounds');
-  if (!t.rounds.length) { el.innerHTML = `<p class="hint">No rounds yet — click “Pair next round”.</p>`; return; }
-  el.innerHTML = t.rounds
-    .map((round) => {
+/** Round-tab strip so a long event doesn't force scrolling past every earlier round to see the
+ *  current one (or vice versa) — defaults to the latest round, remembers whichever round the TD
+ *  last picked across re-renders (e.g. after entering a result), and snaps back to latest once a
+ *  new round is paired past whatever was being viewed. */
+let viewingRoundNo: number | null = null;
+
+function roundBlockHtml(t: Tournament, round: Round): string {
       const isLatestRound = round.number === t.rounds.length;
       // Players currently in an unplayed real game this round — the only valid swap-with-a-bye
       // candidates, since swapping after a result is entered would require un-scoring it. Also
@@ -761,7 +810,10 @@ function renderRounds(t: Tournament) {
       const rows = round.pairings
         .map((pr) => {
           const isExplaining = explainingFor?.round === round.number && explainingFor?.board === pr.board;
-          const explainBtn = `<button class="btn-icon explain-btn" data-round="${round.number}" data-board="${pr.board}" title="Why this pairing?">ⓘ</button>`;
+          // Round-robin/knockout boards aren't dynamically decided, so there's no reasoning to explain.
+          const explainBtn = isFixedFormat(t)
+            ? ''
+            : `<button class="btn-icon explain-btn" data-round="${round.number}" data-board="${pr.board}" title="Why this pairing?">ⓘ</button>`;
           const explainRow = isExplaining
             ? `<tr class="explain-row"><td></td><td colspan="3">
                 ${pairingDiagramHtml(t, round.number, pr.board)}
@@ -788,6 +840,9 @@ function renderRounds(t: Tournament) {
             return `<tr><td class="num">${pr.board}</td><td colspan="2"><b>${esc(nameWithRatingOf(t, pr.byeId, isLatestRound))}</b></td><td class="mid">${label} ${explainBtn}</td></tr>${explainRow}`;
           }
           const sel = (val: string, cur: GameResult) => `<option value="${val}"${cur === val ? ' selected' : ''}>`;
+          // Knockout needs a decisive winner to advance — no draw option, so a tie has to be
+          // settled with a playoff/Armageddon game before a result can be entered here at all.
+          const isKnockout = tournamentFormat(t) === 'knockout';
           return `<tr>
             <td class="num">${pr.board}</td>
             <td>♔ ${esc(nameWithRatingOf(t, pr.whiteId, isLatestRound))}</td>
@@ -796,7 +851,7 @@ function renderRounds(t: Tournament) {
               <select class="result-sel" data-round="${round.number}" data-board="${pr.board}">
                 <option value=""${pr.result == null ? ' selected' : ''}>— result —</option>
                 ${sel('1-0', pr.result)}White wins (1-0)</option>
-                ${sel('1/2-1/2', pr.result)}Draw (½-½)</option>
+                ${isKnockout ? '' : `${sel('1/2-1/2', pr.result)}Draw (½-½)</option>`}
                 ${sel('0-1', pr.result)}Black wins (0-1)</option>
               </select>
               ${explainBtn}
@@ -864,9 +919,35 @@ function renderRounds(t: Tournament) {
         ${roundMethodologyHtml(t, round.number)}
         ${advancedPanel}
       </div>`;
-    })
-    .reverse()
+}
+
+function renderRounds(t: Tournament) {
+  const el = $('#rounds');
+  const tabsEl = $('#round-tabs');
+  if (!t.rounds.length) {
+    el.innerHTML = `<p class="hint">No rounds yet — click “Pair next round”.</p>`;
+    tabsEl.hidden = true;
+    tabsEl.innerHTML = '';
+    return;
+  }
+  const latestNo = t.rounds.length;
+  const shown = viewingRoundNo != null && t.rounds.some((r) => r.number === viewingRoundNo) ? viewingRoundNo : latestNo;
+  viewingRoundNo = shown;
+
+  tabsEl.hidden = t.rounds.length < 2;
+  tabsEl.innerHTML = t.rounds
+    .map((r) => `<button class="round-tab${r.number === shown ? ' active' : ''}" data-round="${r.number}">R${r.number}${r.number === latestNo ? ' •' : ''}</button>`)
     .join('');
+  tabsEl.querySelectorAll<HTMLButtonElement>('.round-tab').forEach((b) => {
+    b.addEventListener('click', () => {
+      viewingRoundNo = parseInt(b.dataset.round!, 10);
+      const t2 = cur();
+      if (t2) renderRounds(t2);
+    });
+  });
+
+  const round = t.rounds.find((r) => r.number === shown)!;
+  el.innerHTML = roundBlockHtml(t, round);
 
   el.querySelectorAll<HTMLSelectElement>('.result-sel').forEach((s) => {
     s.addEventListener('change', () => {
@@ -991,70 +1072,13 @@ function renderRounds(t: Tournament) {
   });
 }
 
-function standingsTableHtml(t: Tournament): string {
-  const rows = standings(t);
-  return `<table><thead><tr>
-      <th class="num">#</th><th>Player</th><th class="num">Rating</th><th class="num">Score</th>
-      <th class="num">W</th><th class="num">D</th><th class="num">L</th>
-      <th class="num">Buchholz</th><th class="num">S-B</th><th class="num">Colors</th>
-    </tr></thead><tbody>
-    ${rows.map((r) => `<tr>
-        <td class="num">${r.rank}</td>
-        <td>${esc(r.player.name)}${r.player.withdrawn ? ' <span class="hint">(wd)</span>' : ''}</td>
-        <td class="num">${r.player.rating ?? '—'}</td>
-        <td class="num"><b>${r.score}</b></td>
-        <td class="num pos">${r.wins}</td><td class="num mid">${r.draws}</td><td class="num neg">${r.losses}</td>
-        <td class="num">${r.buchholz}</td><td class="num">${r.sonnebornBerger}</td>
-        <td class="num">${r.colorBalance > 0 ? '+' : ''}${r.colorBalance}</td>
-      </tr>`).join('')}
-    </tbody></table>`;
-}
-
 function renderStandings(t: Tournament) {
   if (!t.rounds.length) { ($('#standings-card') as HTMLElement).hidden = true; return; }
   ($('#standings-card') as HTMLElement).hidden = false;
-  $('#standings').innerHTML = standingsTableHtml(t);
-}
-
-/**
- * A crosstable: one row per player (in current standings order), one column per round, each cell
- * showing who they played and the outcome — the single most-requested view at an in-person
- * tournament for spotting repeat opponents or checking a specific player's path at a glance.
- */
-function wallChartHtml(t: Tournament): string {
-  const rows = standings(t);
-  const rankById = new Map(rows.map((r) => [r.player.id, r.rank]));
-  const header = t.rounds.map((r) => `<th class="num">R${r.number}</th>`).join('');
-  const body = rows
-    .map((r) => {
-      const cells = t.rounds
-        .map((round) => {
-          const pr = round.pairings.find(
-            (p) => p.whiteId === r.player.id || p.blackId === r.player.id || p.byeId === r.player.id
-          );
-          if (!pr) return `<td class="num hint">—</td>`;
-          if (pr.byeId != null) {
-            const pts = pr.byePoints ?? 1;
-            return `<td class="num mid">bye ${pts === 0.5 ? '½' : '1'}</td>`;
-          }
-          const isWhite = pr.whiteId === r.player.id;
-          const oppId = isWhite ? pr.blackId! : pr.whiteId!;
-          const oppRank = rankById.get(oppId) ?? '?';
-          const color = isWhite ? 'w' : 'b';
-          let sym = '';
-          let cls = 'hint';
-          if (pr.result === '1-0') { sym = isWhite ? '+' : '−'; cls = isWhite ? 'pos' : 'neg'; }
-          else if (pr.result === '0-1') { sym = isWhite ? '−' : '+'; cls = isWhite ? 'neg' : 'pos'; }
-          else if (pr.result === '1/2-1/2') { sym = '='; cls = 'mid'; }
-          return `<td class="num ${cls}">${oppRank}${color}${sym}</td>`;
-        })
-        .join('');
-      return `<tr><td class="num">${r.rank}</td><td>${esc(r.player.name)}</td>${cells}</tr>`;
-    })
-    .join('');
-  return `<div class="games-table-wrap wallchart-wrap"><table class="wallchart-table"><thead><tr>
-      <th class="num">#</th><th>Player</th>${header}
-    </tr></thead><tbody>${body}</tbody></table></div>`;
+  const isKnockout = tournamentFormat(t) === 'knockout';
+  $('#standings-title').textContent = isKnockout ? 'Bracket results' : 'Standings';
+  $('#standings-tiebreak-note').hidden = isKnockout;
+  $('#standings').innerHTML = isKnockout ? knockoutPlacementsTableHtml(t) : standingsTableHtml(t);
 }
 
 function renderWallChart(t: Tournament) {
