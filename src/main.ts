@@ -20,6 +20,8 @@ import { derivePuzzles } from './puzzles';
 import type { Puzzle } from './puzzles';
 import { newCard, isDue, review } from './srs';
 import type { SrsCard } from './srs';
+import { generateTrainingPlan, tasksByDay } from './trainingPlan';
+import type { PlanDetail, PlanDuration, PlanTask, TrainingPlan } from './trainingPlan';
 
 registerServiceWorker();
 initTheme();
@@ -72,6 +74,17 @@ const puzzleNextBtn = $('#puzzle-next-btn') as HTMLButtonElement;
 const puzzleStopBtn = $('#puzzle-stop-btn') as HTMLButtonElement;
 const puzzleSummary = $('#puzzle-summary');
 const puzzleBoard = new Board($('#puzzle-board'));
+const trainplanCard = $('#trainplan-card');
+const trainplanSetup = $('#trainplan-setup');
+const trainplanActive = $('#trainplan-active');
+const trainplanDurationSelect = $('#trainplan-duration') as HTMLSelectElement;
+const trainplanDetailSelect = $('#trainplan-detail') as HTMLSelectElement;
+const trainplanGenerateBtn = $('#trainplan-generate-btn') as HTMLButtonElement;
+const trainplanProgress = $('#trainplan-progress');
+const trainplanXlsxBtn = $('#trainplan-xlsx-btn') as HTMLButtonElement;
+const trainplanRegenerateBtn = $('#trainplan-regenerate-btn') as HTMLButtonElement;
+const trainplanCompareNote = $('#trainplan-compare-note');
+const trainplanDaysEl = $('#trainplan-days');
 
 function isPlayerNameMatch(name: string | undefined, matchKeys: Set<string>): boolean {
   return !!name && name !== '?' && matchKeys.has(nameKey(name));
@@ -439,6 +452,7 @@ async function runAnalysis() {
     renderResults(currentAgg, username, newRecords.length, oldGames.length);
     exportCard.hidden = false;
     updatePuzzleCard();
+    updateTrainPlanCard();
     progressFill.style.width = '100%';
     progressText.textContent = `Done — ${newRecords.length} new game(s) analyzed, ${records.length} total in report.`;
   } catch (err) {
@@ -606,6 +620,162 @@ puzzleStopBtn.addEventListener('click', () => {
   puzzleQueue = [];
   puzzleCurrent = null;
   updatePuzzleCard();
+});
+
+// ---------- training plan (turns the recommendations above into a day-by-day checklist) ----------
+interface StoredTrainingPlan {
+  plan: TrainingPlan;
+  done: Record<string, boolean>;
+  startDateISO: string; // date generated — day 1 of the plan
+}
+
+function trainPlanStorageKey(): string | null {
+  if (!detectedUsername) return null;
+  return `openfile-trainplan:${detectedUsername.trim().toLowerCase()}`;
+}
+
+function loadTrainPlan(): StoredTrainingPlan | null {
+  const key = trainPlanStorageKey();
+  if (!key) return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveTrainPlan(data: StoredTrainingPlan | null) {
+  const key = trainPlanStorageKey();
+  if (!key) return;
+  try {
+    if (data) localStorage.setItem(key, JSON.stringify(data));
+    else localStorage.removeItem(key);
+  } catch {
+    // localStorage unavailable/full — plan still works this session, just won't persist
+  }
+}
+
+function planDayDate(startISO: string, day: number): Date {
+  const d = new Date(startISO);
+  d.setDate(d.getDate() + (day - 1));
+  return d;
+}
+function fmtPlanDate(d: Date): string {
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+const SEVERITY_LABEL: Record<PlanTask['severity'], string> = {
+  high: 'high priority', medium: 'medium priority', low: 'low priority',
+};
+
+function updateTrainPlanCard() {
+  if (!currentAgg) { trainplanCard.hidden = true; return; }
+  trainplanCard.hidden = false;
+
+  const stored = loadTrainPlan();
+  if (!stored) {
+    trainplanSetup.hidden = false;
+    trainplanActive.hidden = true;
+    const hasRecs = currentAgg.recommendations.length > 0;
+    trainplanGenerateBtn.disabled = !hasRecs;
+    trainplanGenerateBtn.title = hasRecs ? '' : 'Run engine analysis to unlock personalized recommendations first.';
+    return;
+  }
+  trainplanSetup.hidden = true;
+  trainplanActive.hidden = false;
+  renderTrainPlanActive(stored);
+}
+
+function renderTrainPlanActive(stored: StoredTrainingPlan, preserveOpenDays?: Set<number>) {
+  const { plan, done, startDateISO } = stored;
+  const totalTasks = plan.tasks.length;
+  const doneCount = plan.tasks.filter((t) => done[t.id]).length;
+  const endDate = planDayDate(startDateISO, plan.duration);
+  const today = new Date();
+  const daysElapsed = Math.floor((today.getTime() - new Date(startDateISO).getTime()) / 86400000) + 1;
+  const currentDay = Math.max(1, Math.min(plan.duration, daysElapsed));
+  const isPastEnd = today.getTime() > endDate.getTime();
+  const openDays = preserveOpenDays ?? new Set([currentDay]);
+
+  trainplanProgress.textContent = `${doneCount} / ${totalTasks} tasks done · Day ${currentDay} of ${plan.duration} · ends ${fmtPlanDate(endDate)}`;
+
+  trainplanCompareNote.className = `rec-card sev-${isPastEnd ? 'high' : 'medium'}`;
+  trainplanCompareNote.innerHTML = isPastEnd
+    ? `<h4>Plan complete — see how you did</h4><p class="section-note">This plan ended ${fmtPlanDate(endDate)}. Analyze your new games (load PGNs above and re-run analysis), then use <a href="compare-reports.html">Compare Reports</a> against the report.md you saved when you started this plan to see exactly what improved.</p>`
+    : `<h4>Tracking progress</h4><p class="section-note">Make sure you've downloaded a report.md (below) as your "before" snapshot. When this plan ends on ${fmtPlanDate(endDate)}, analyze new games and use <a href="compare-reports.html">Compare Reports</a> to see your improvement.</p>`;
+
+  trainplanDaysEl.innerHTML = tasksByDay(plan)
+    .map(({ day, tasks }) => {
+      const date = planDayDate(startDateISO, day);
+      const dayDone = tasks.every((t) => done[t.id]);
+      const rows = tasks
+        .map((t) => {
+          const checked = !!done[t.id];
+          const links = t.links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join(' · ');
+          return `<li class="trainplan-task${checked ? ' done' : ''}">
+            <label>
+              <input type="checkbox" class="trainplan-check" data-task="${esc(t.id)}"${checked ? ' checked' : ''} />
+              <span class="trainplan-task-title">${esc(t.title)} <span class="hint">(${SEVERITY_LABEL[t.severity]})</span></span>
+            </label>
+            ${t.detail ? `<p class="section-note">${esc(t.detail)}</p>` : ''}
+            ${links ? `<div class="theme-links">${links}</div>` : ''}
+          </li>`;
+        })
+        .join('');
+      return `<details class="trainplan-day" data-day="${day}"${openDays.has(day) ? ' open' : ''}>
+        <summary>Day ${day} — ${fmtPlanDate(date)} ${dayDone ? '<span class="pos">✓ done</span>' : ''}</summary>
+        <ul class="trainplan-task-list">${rows}</ul>
+      </details>`;
+    })
+    .join('');
+}
+
+trainplanGenerateBtn.addEventListener('click', () => {
+  if (!currentAgg || !currentAgg.recommendations.length) return;
+  const duration = parseInt(trainplanDurationSelect.value, 10) as PlanDuration;
+  const detail = trainplanDetailSelect.value as PlanDetail;
+  const plan = generateTrainingPlan(currentAgg.recommendations, duration, detail);
+  const stored: StoredTrainingPlan = { plan, done: {}, startDateISO: new Date().toISOString() };
+  saveTrainPlan(stored);
+  updateTrainPlanCard();
+});
+
+trainplanRegenerateBtn.addEventListener('click', () => {
+  if (!confirm('Start a new plan? This discards checked-off progress on the current one.')) return;
+  saveTrainPlan(null);
+  updateTrainPlanCard();
+});
+
+trainplanDaysEl.addEventListener('change', (e) => {
+  const target = e.target as HTMLInputElement;
+  if (!target.classList.contains('trainplan-check')) return;
+  const stored = loadTrainPlan();
+  if (!stored) return;
+  const taskId = target.dataset.task!;
+  stored.done[taskId] = target.checked;
+  saveTrainPlan(stored);
+  const openDays = new Set(
+    [...trainplanDaysEl.querySelectorAll('details[open]')].map((d) => parseInt((d as HTMLElement).dataset.day!, 10))
+  );
+  renderTrainPlanActive(stored, openDays);
+});
+
+trainplanXlsxBtn.addEventListener('click', async () => {
+  const stored = loadTrainPlan();
+  if (!stored) return;
+  // The xlsx library is ~350KB — split into its own chunk and only fetched the moment someone
+  // actually clicks this, instead of bloating every Performance Analysis page load with it.
+  trainplanXlsxBtn.disabled = true;
+  const originalLabel = trainplanXlsxBtn.textContent;
+  trainplanXlsxBtn.textContent = 'Preparing file…';
+  try {
+    const { downloadTrainingPlanXlsx } = await import('./trainingPlanXlsx');
+    downloadTrainingPlanXlsx(stored.plan, stored.done, stored.startDateISO, detectedUsername ?? 'player');
+  } finally {
+    trainplanXlsxBtn.disabled = false;
+    trainplanXlsxBtn.textContent = originalLabel;
+  }
 });
 
 // ---------- rendering ----------

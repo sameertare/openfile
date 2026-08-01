@@ -130,6 +130,38 @@
         <div id="puzzle-summary" hidden></div>
       </section>
 
+      <section class="card span-2" id="trainplan-card" hidden>
+        <h2>📅 Training Plan</h2>
+        <p class="hint">Turns the recommendations above into a day-by-day plan — higher-priority weaknesses come up more often. Progress is saved in this browser, per player.</p>
+        <div id="trainplan-setup">
+          <div class="config-row" style="align-items:center;">
+            <label>Duration
+              <select id="trainplan-duration">
+                <option value="7">7 days</option>
+                <option value="14" selected>14 days</option>
+                <option value="21">21 days</option>
+              </select>
+            </label>
+            <label>Detail level
+              <select id="trainplan-detail">
+                <option value="high-level">High-level — one focus per day</option>
+                <option value="detailed" selected>Detailed — full drills &amp; resources</option>
+              </select>
+            </label>
+            <button id="trainplan-generate-btn" class="btn btn-primary">Generate plan</button>
+          </div>
+        </div>
+        <div id="trainplan-active" hidden>
+          <div class="config-row" style="align-items:center;">
+            <span id="trainplan-progress" class="hint"></span>
+            <button id="trainplan-xlsx-btn" class="btn">⬇ Download as Excel (.xlsx)</button>
+            <button id="trainplan-regenerate-btn" class="btn btn-ghost">↻ Start a new plan</button>
+          </div>
+          <div id="trainplan-compare-note" class="rec-card sev-medium" style="margin-top:12px;"></div>
+          <div id="trainplan-days"></div>
+        </div>
+      </section>
+
       <section class="card" id="export-card" hidden>
         <h2><span class="step">3</span> Save &amp; track over time</h2>
         <div class="config-row">

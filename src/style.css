@@ -192,6 +192,21 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
 .sev-high .sev-tag { background: rgba(224, 108, 92, 0.18); color: var(--red); }
 .sev-medium .sev-tag { background: rgba(224, 180, 82, 0.18); color: var(--gold); }
 .sev-low .sev-tag { background: rgba(108, 167, 224, 0.18); color: var(--blue); }
+.trainplan-day {
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-inset);
+  padding: 10px 16px; margin-bottom: 8px;
+}
+.trainplan-day summary { cursor: pointer; font-weight: 600; }
+.trainplan-day summary:hover { color: var(--accent); }
+.trainplan-task-list { list-style: none; margin: 10px 0 2px; padding: 0; }
+.trainplan-task { padding: 8px 0; border-top: 1px solid var(--border); }
+.trainplan-task:first-child { border-top: none; }
+.trainplan-task label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.trainplan-task input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; }
+.trainplan-task.done .trainplan-task-title { text-decoration: line-through; color: var(--text-dim); }
+.trainplan-task .section-note { margin: 4px 0 4px 24px; }
+.trainplan-task .theme-links { margin: 4px 0 0 24px; }
+
 .theme-links { margin: 8px 0; }
 .theme-links a {
   display: inline-block; background: var(--bg-card); border: 1px solid var(--border);
