@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Openings Deviation — OpenFile</title>
+    <link rel="icon" href="/logo-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
+  </head>
+  <body>
+    <nav class="topnav">
+      <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
+      <div class="navlinks">
+        <a href="index.html">🏠 Home</a>
+        <a href="analyze.html">Performance Analysis</a>
+        <a href="live.html">Live &amp; Engine</a>
+        <a href="swiss.html">Swiss Pairings</a>
+        <a href="opening-explorer.html">Opening Explorer</a>
+        <a href="opening-deviation.html" class="active">Openings Deviation</a>
+        <a href="compare-reports.html">Compare Reports</a>
+        <a href="roster.html">Coach Roster</a>
+        <a href="rating.html">USCF Rating</a>
+        <a href="fide-rating.html">FIDE Rating</a>
+        <a href="about.html">About</a>
+      </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
+    </nav>
+    <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
+    <div id="app">
+      <header class="app-header">
+        <h1>🧭 Openings Deviation</h1>
+        <p class="tagline">Upload a prepared repertoire (an engine line, a study export, or your own PGN with variations) and your games, and see — move by move, game by game — exactly where each game left the book.</p>
+      </header>
+
+      <section class="card" id="rep-card">
+        <h2><span class="step">1</span> Load your repertoire</h2>
+        <p class="hint">A PGN of your prepared lines. Either several separate games (one full line each) or a single PGN with variations in parentheses — <code>2. Nf3 Nc6 (2... Nf6 3. Nxe5 ...)</code> — both work, and branches are merged into one tree automatically.</p>
+        <div id="rep-dropzone" class="dropzone">
+          <p><strong>Drop a repertoire PGN here</strong> — or</p>
+          <label class="btn btn-primary" for="rep-file-input">Choose file</label>
+          <input type="file" id="rep-file-input" accept=".pgn,.txt" hidden />
+        </div>
+        <p class="hint" style="margin:14px 0 8px;"><strong>…or paste it directly</strong></p>
+        <textarea id="rep-paste" class="text-area" rows="5" placeholder="1. e4 e5 2. Nf3 Nc6 (2... Nf6 3. Nxe5 d6 4. Nf3 Nxe4) 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 ..."></textarea>
+        <div class="config-row" style="margin-top:8px;">
+          <button id="rep-load-paste-btn" class="btn">Load pasted PGN</button>
+        </div>
+        <div class="config-row" style="margin-top:14px; align-items:center;">
+          <label>This repertoire is for
+            <select id="rep-color-select">
+              <option value="w" selected>White</option>
+              <option value="b">Black</option>
+            </select>
+          </label>
+        </div>
+        <div id="rep-summary" class="file-summary"></div>
+      </section>
+
+      <section class="card" id="games-card">
+        <h2><span class="step">2</span> Load your games</h2>
+        <div id="dropzone" class="dropzone">
+          <p><strong>Drop PGN files here</strong> — or</p>
+          <label class="btn btn-primary" for="file-input">Choose files</label>
+          <input type="file" id="file-input" multiple accept=".pgn,.txt" hidden />
+          <p class="hint">Multiple files supported. The player appearing in the most games is auto-detected. Nothing is uploaded — everything runs locally.</p>
+        </div>
+        <div id="file-summary" class="file-summary"></div>
+      </section>
+
+      <section class="card span-2" id="results-card" hidden>
+        <h2>Results</h2>
+        <div id="results-summary" class="summary-cards"></div>
+        <div id="results-note" class="hint" style="margin:10px 0;"></div>
+        <div class="games-table-wrap">
+          <table id="results-table">
+            <thead>
+              <tr>
+                <th>Opponent</th>
+                <th>Result</th>
+                <th>Date</th>
+                <th class="num">In repertoire</th>
+                <th class="num">Outside repertoire</th>
+                <th>Left prep at</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="app-footer">
+        OpenFile · runs entirely in your browser · nothing is uploaded
+      </footer>
+    </div>
+    <script type="module" src="/src/openingDeviation.ts"></script>
+  </body>
+</html>

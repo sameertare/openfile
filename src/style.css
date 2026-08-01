@@ -539,6 +539,16 @@ html.walldisplay { font-size: 26px; }
 .lpm-move.m-mistake { color: #e0955c; }
 .lpm-move.m-blunder { color: var(--red); }
 .lpm-move.cur.m-blunder, .lpm-move.cur.m-mistake, .lpm-move.cur.m-inacc, .lpm-move.cur.m-best { color: #10140c; }
+.lpm-move.dev-book { color: var(--accent); }
+.lpm-move.dev-deviation { color: var(--red); font-weight: 700; }
+.lpm-move.dev-endbook { color: var(--text-dim); font-style: italic; }
+
+/* ---------- openings deviation ---------- */
+.dev-status-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--border); }
+.dev-status-chip.dev-full { color: var(--accent); border-color: var(--accent); }
+.dev-status-chip.dev-endbook { color: var(--gold); border-color: var(--gold); }
+.dev-status-chip.dev-deviation { color: var(--red); border-color: var(--red); }
+.dev-moves-wrap { margin-top: 6px; }
 
 /* ---------- swiss ---------- */
 .format-warning {
