@@ -580,6 +580,9 @@ html.walldisplay { font-size: 26px; }
 .games-table-wrap { margin-top: 8px; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
 .games-table-wrap table { width: 100%; border-collapse: collapse; margin: 0; }
 .games-table-wrap th, .games-table-wrap td { padding: 6px 12px; white-space: nowrap; }
+/* The 🩺 strengths/weaknesses detail row holds long prose, not a short data value — undo the
+   table's nowrap so it wraps within the table's own width instead of forcing horizontal scroll. */
+.games-table-wrap .assess-row td { white-space: normal; }
 .spark-cell { width: 150px; height: 32px; padding: 2px 8px !important; }
 .spark-cell svg { width: 140px; height: 28px; }
 .games-table-wrap a { text-decoration: none; font-size: 1.1rem; }
