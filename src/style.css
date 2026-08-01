@@ -667,6 +667,21 @@ html.walldisplay { font-size: 26px; }
 .swiss-guide li { margin: 5px 0; }
 .color-flow { display: grid; grid-template-columns: 1fr auto 1.25fr; gap: 7px 9px; align-items: center; font-size: .84rem; }
 .color-flow b { color: var(--accent); font-size: 1.1rem; }
+
+/* ---------- opening theory ---------- */
+.theory-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 18px; }
+.theory-toc a { background: var(--bg-inset); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; font-size: 0.88rem; text-decoration: none; color: var(--text); }
+.theory-toc a:hover { border-color: var(--accent); color: var(--accent); }
+.theory-variation { margin-top: 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-inset); }
+.theory-variation > summary { cursor: pointer; padding: 10px 13px; font-weight: 600; }
+.theory-variation > summary:hover { color: var(--accent); }
+.theory-variation-content { padding: 2px 14px 14px; }
+.theory-variation-content > p:first-child { margin-top: 0; }
+.theory-moves { display: block; margin: 6px 0; font-family: ui-monospace, monospace; font-size: 0.88rem; line-height: 1.6; word-break: break-word; }
+.theory-trap { border-left: 3px solid var(--gold); background: rgba(224, 180, 82, 0.08); border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 10px 0; }
+.theory-trap h4 { margin: 0 0 6px; font-size: 0.95rem; }
+.theory-avoid { border-left: 3px solid var(--red); background: rgba(224, 108, 92, 0.08); border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 10px 0; }
+.theory-avoid h4 { margin: 0 0 6px; font-size: 0.95rem; }
 .color-flow span { padding: 5px 7px; border-radius: 6px; background: var(--bg-inset); }
 .swiss-limit { margin-top: 14px; border-left: 4px solid var(--gold); }
 .swiss-limit p { margin: 0; font-size: .9rem; }

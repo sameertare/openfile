@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Opening Theory — OpenFile</title>
+    <link rel="icon" href="/logo-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
+  </head>
+  <body>
+    <nav class="topnav">
+      <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
+      <div class="navlinks">
+        <a href="index.html">🏠 Home</a>
+        <a href="analyze.html">Performance Analysis</a>
+        <a href="live.html">Live &amp; Engine</a>
+        <a href="swiss.html">Swiss Pairings</a>
+        <a href="opening-explorer.html">Opening Explorer</a>
+        <a href="opening-deviation.html">Openings Deviation</a>
+        <a href="opening-theory.html" class="active">Opening Theory</a>
+        <a href="compare-reports.html">Compare Reports</a>
+        <a href="roster.html">Coach Roster</a>
+        <a href="rating.html">USCF Rating</a>
+        <a href="fide-rating.html">FIDE Rating</a>
+        <a href="getting-started.html">Getting Started</a>
+        <a href="about.html">About</a>
+      </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
+    </nav>
+    <div id="app">
+      <header class="app-header">
+        <h1>📖 Opening Theory</h1>
+        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Starting with the King's Gambit; more will be added over time. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
+      </header>
+
+      <nav class="theory-toc" aria-label="Openings covered">
+        <a href="#kings-gambit">King's Gambit (as White)</a>
+      </nav>
+
+      <div class="card-grid">
+        <section class="card span-2" id="kings-gambit">
+          <h2>♞ King's Gambit — as White</h2>
+          <p><strong>1.e4 e5 2.f4</strong> (ECO C30–C39). White offers the f-pawn to pull Black's e-pawn away from the center, open the f-file for a rook once castled, and aim straight at f7 — the square only Black's king defends. It's the most aggressive way to meet 1...e5, at the cost of White's own king safety and a permanent pawn deficit if the attack doesn't land.</p>
+
+          <h3>Move order &amp; the major branches</h3>
+          <p>After 2.f4, Black's two main replies are <strong>accepting</strong> the pawn (2...exf4, the King's Gambit Accepted) or <strong>declining</strong> it. Each branch below is collapsed by default — click to expand a line.</p>
+
+          <p><strong>King's Gambit Accepted — 2...exf4</strong></p>
+
+          <details class="theory-variation" open>
+            <summary>3.Nf3 g5 — Classical Variation, main tabiya</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 g5</code>
+              <p>Black defends the extra f4-pawn immediately. This is the starting point for most of the sharpest King's Gambit theory. White's main tries from here are 4.h4 (attacking the g5-pawn's defender) and 4.Bc4 (ignoring it and developing toward f7).</p>
+
+              <p><strong>4.h4 g4 5.Ne5 — Kieseritzky Gambit</strong>, the main line of the whole opening.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 g5 4.h4 g4 5.Ne5</code>
+              <p>The most-analyzed line in King's Gambit theory. After 5...Nf6 (Berlin Defense), the main continuation runs 6.Bc4 d5 7.exd5 Bd6 8.d4 Nh5 9.O-O Qxh4 10.Qe1 Qxe1 11.Rxe1, reaching a well-known, roughly equal position (the Anderssen Defense line) with play for both sides.</p>
+              <code class="theory-moves">6.Bc4 d5 7.exd5 Bd6 8.d4 Nh5 9.O-O Qxh4 10.Qe1 Qxe1 11.Rxe1</code>
+
+              <div class="theory-trap">
+                <h4>⚡ Trap for White</h4>
+                <p>If Black deviates with 6...Bg7 instead of 6...d5, White gets a free pawn and the initiative: <strong>7.Bxf7+! Kf8 8.Bb3</strong> — Black's king is stuck in the center, unable to castle, for no compensation.</p>
+                <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 g5 4.h4 g4 5.Ne5 Nf6 6.Bc4 Bg7 7.Bxf7+ Kf8 8.Bb3</code>
+              </div>
+
+              <p>4.h4 g4 5.Ng5?! is the <strong>Allgaier Gambit</strong> — a piece sacrifice generally considered unsound by modern engines, though still dangerous over the board against an unprepared opponent.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>4.Bc4 g4 5.O-O — Muzio Gambit</summary>
+            <div class="theory-variation-content">
+              <p>One of the most theoretically extreme lines in chess: White sacrifices a whole knight, not just a pawn, for a mating attack.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 g5 4.Bc4 g4 5.O-O gxf3 6.Qxf3</code>
+              <p>Instead of retreating the attacked knight, White castles and lets Black capture it. After 6.Qxf3, White is down a full piece but has three attackers (queen, bishop, and soon a rook) converging on f7, with Black's king still in the center and no time to consolidate. It requires very precise defense from Black — a single slip and the attack is often decisive within 15 moves. Not a line to play without preparation on both sides of the resulting sacrifice.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>4.Nc3 g4 5.Ne5 — Quaade Gambit</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 g5 4.Nc3</code>
+              <p>A quieter try than the Kieseritzky/Muzio family. White's main idea is to challenge the f4-pawn with g2-g3 while keeping the c3-knight ready to jump to d5.</p>
+              <div class="theory-trap">
+                <h4>⚡ Trap for White</h4>
+                <p>If Black grabs material too greedily after the g3 break, White's queen breaks through decisively:</p>
+                <code class="theory-moves">4...g4 5.Ne5 Qh4+ 6.g3 fxg3 7.Qxg4 g2+ 8.Qxh4 gxh1=Q 9.Qh5!</code>
+                <p>Black has won a rook and promoted a pawn, but is completely undeveloped with the queen about to be lost to threats around the king — White is winning.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>3...d6 — Fischer Defense</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 d6</code>
+              <p>Named for Bobby Fischer's approach from his essay "A Bust to the King's Gambit" — a patient waiting move rather than the committal 3...g5. Play often continues 4.d4 g5 5.h4 g4 6.Ng1, an unusual-looking position where neither side develops a piece for several moves, or 4.Bc4, which is played at least as often in practice.</p>
+              <div class="theory-trap">
+                <h4>⚡ Trap for White</h4>
+                <p>A classic error for Black is repeating the Classical Variation's ...g5 push here without the same tactical justification (historically associated with a Morphy game, Morphy–Tilghman, 1859):</p>
+                <code class="theory-moves">4.Bc4 g5? 5.h4! g4 6.Ng5 Nh6 7.d4 f6 8.Bxf4!</code>
+                <p>White ignores the attack on the g5-knight and instead recaptures the f4-pawn with a large advantage — Black's kingside is full of holes and the g5-knight, Bc4, and newly active dark-squared bishop are all bearing down on a king that can't easily get safe.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>3...Nf6 — Schallopp Defense</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 Nf6</code>
+              <p>Develops immediately and defends f4 indirectly via a later ...Nh5. Seen at the top level as recently as the 2020 Magnus Carlsen Invitational.</p>
+              <code class="theory-moves">4.e5 Nh5</code>
+              <div class="theory-trap">
+                <h4>⚡ Trap for White</h4>
+                <p>The h5-knight is Black's one real weakness in this line — misplaying the follow-up loses it outright:</p>
+                <code class="theory-moves">5.d4 d6 6.Qe2 Be7? 7.exd6 Qxd6 8.Qb5+</code>
+                <p>The check forces Black to block or move the king, and once it's parried, White's queen swings back to h5 and simply wins the trapped knight. Black's correct try instead is 6...d5, keeping the position balanced.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>Other Accepted lines: 3...h6, 3...d5, 3...Be7</summary>
+            <div class="theory-variation-content">
+              <p><strong>Becker Defense — 3...h6</strong>, preparing to build the pawn chain h6–g5–f4 without ever needing ...g4. Usually met with 4.d4 g5, transposing back toward Classical/Fischer-type positions.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 h6 4.d4 g5</code>
+
+              <p><strong>Modern (Abbazia) Defense — 3...d5</strong>, striking back in the center at once rather than defending the f4-pawn.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 d5 4.exd5 Nf6</code>
+              <p>The main try, the <strong>Botvinnik Variation</strong>, continues 5.Bb5+ c6 6.dxc6 bxc6 7.Bc4 Nd5, when Black has reasonable central compensation for the pawn.</p>
+              <code class="theory-moves">5.Bb5+ c6 6.dxc6 bxc6 7.Bc4 Nd5</code>
+
+              <p><strong>Cunningham Defense — 3...Be7</strong>, with the immediate point of ...Bh4+ disrupting White's castling.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Nf3 Be7 4.Bc4 Bh4+ 5.Kf1</code>
+              <p>White's king loses castling rights but the position stays roughly balanced with chances for both sides.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>3.Bc4 — Bishop's Gambit</summary>
+            <div class="theory-variation-content">
+              <p>White develops immediately instead of playing 3.Nf3, accepting that Black gets a free tempo with check.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 exf4 3.Bc4 Qh4+ 4.Kf1</code>
+              <p>3...Qh4+ is close to forced for Black here — the real point of 3.Bc4 is that without the check, White's simple follow-up Qh5 (threatening Qxf7#, since only the king guards that square) is a serious problem, so Black essentially has to spend a tempo on the check to stay safe rather than developing naturally.</p>
+              <p>A quieter, well-regarded try for Black is <strong>3...d5</strong>, striking back in the center immediately:</p>
+              <code class="theory-moves">3...d5 4.Bxd5 Nf6 5.Nc3 Bb4 6.Nf3 Bxc3 7.dxc3 c6 8.Bc4 Qxd1+ 9.Kxd1 O-O 10.Bxf4 Nxe4</code>
+              <p>This line (the Bledow Variation) simplifies into a roughly equal position after mutual queen trades and recaptures.</p>
+            </div>
+          </details>
+
+          <p style="margin-top:18px;"><strong>King's Gambit Declined</strong></p>
+
+          <details class="theory-variation">
+            <summary>2...d5 — Falkbeer Counter-Gambit</summary>
+            <div class="theory-variation-content">
+              <p>Rather than accepting, Black strikes back in the center at once. Named for 19th-century Austrian master Ernst Falkbeer.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 d5 3.exd5 e4</code>
+              <p>The traditional main line — Black sacrifices a pawn back for rapid development and a strong e4-pawn cramping White. It fell out of favor after the 1930s once 4.d3! was established as a solid antidote for White, undermining the e4-pawn immediately.</p>
+              <p>A more modern try is the <strong>Nimzowitsch Countergambit</strong>, 2...d5 3.exd5 c6 (also employed by Frank Marshall), intending to recapture on c6 with a piece rather than committing the e-pawn forward:</p>
+              <code class="theory-moves">3...c6 4.Nc3 exf4 5.Nf3 Bd6 6.d4 Ne7 7.dxc6 Nbxc6</code>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>2...Bc5 — Classical Declined</summary>
+            <div class="theory-variation-content">
+              <p>The bishop develops actively, eyeing f2 and discouraging White from castling short too casually.</p>
+              <code class="theory-moves">1.e4 e5 2.f4 Bc5 3.Nf3 d6</code>
+              <p>White most often follows up with 4.c3 (preparing d4), 4.Bc4, or 4.Nc3 — ordinary development rather than the sharp gambit-compensation themes of the Accepted lines, since Black hasn't taken the pawn.</p>
+
+              <div class="theory-avoid">
+                <h4>🚫 A trap White must avoid, not spring</h4>
+                <p>This is the reverse of the traps above — a mistake for White to steer clear of. Grabbing the e5-pawn immediately is a serious error:</p>
+                <code class="theory-moves">3.fxe5?? Qh4+ 4.Ke2?? Qxe4#</code>
+                <p>Checkmate — verified move by move: the queen check forces the king forward, and after the blundering 4.Ke2, every escape square is covered (d1/d2/f1 blocked by White's own pieces, d3/e1/f3 all attacked by the queen once it captures on e4). White must instead block with 4.g3, when 4...Qxe4+ is still uncomfortable but not immediately fatal. The lesson: don't play 3.fxe5 at all — it walks into exactly the tempo-losing check that 3.Nf3 or 3.Bc4 are designed to meet safely.</p>
+              </div>
+            </div>
+          </details>
+
+          <h3>Middlegame plans for White</h3>
+          <p>Across most of the Accepted lines, White's compensation for the pawn rests on the same handful of ideas:</p>
+          <ul class="pattern-list">
+            <li><strong>The open f-file.</strong> Once castled, a rook on f1 stares straight down at f7 — the one square only Black's king defends in the opening. Much of King's Gambit theory is about forcing Black to either weaken that square further or fall behind in development trying to hold it.</li>
+            <li><strong>The central pawn duo.</strong> A follow-up d2-d4 (often paired with recapturing the gambit pawn via Bxf4) gives White a full e4/d4 center and lasting space, even in lines where the direct kingside attack doesn't land.</li>
+            <li><strong>Development speed over material.</strong> Nf3, Bc4, O-O, and sometimes d4 all come before White worries about the missing pawn — the whole opening is a bet that piece activity outweighs it.</li>
+            <li><strong>The tradeoff: king safety.</strong> f2 is permanently weaker after 2.f4, and ...Qh4+ (or ...Bh4+/...Be7-h4+ in some lines) is a recurring resource for Black that can cost White castling rights. Most named traps above exploit White's willingness to accept this risk — and Black's failure to.</li>
+          </ul>
+          <p>Against the Declined lines (Falkbeer, Classical Declined), these gambit-compensation themes don't apply the same way since Black hasn't taken the pawn — plans there look more like ordinary open-game development, with White's main technical task being to neutralize Black's active bishop/central pawn rather than to attack f7.</p>
+
+          <h3>Endgame themes</h3>
+          <p>The King's Gambit is built around a middlegame attack, not a favorable endgame — there isn't a body of King's Gambit "endgame theory" the way there is for, say, a Ruy Lopez structure. If the direct attack is defused and material stays level or White remains a pawn down, the compensation that carries into an endgame is mostly the same positional edge as the middlegame: better development, a more active king (once safely tucked away), and better outposts for the knights, particularly one that's already reached e5 or g5 in the Kieseritzky/Muzio-family lines. In practice, a King's Gambit player who hasn't converted the attack by the middlegame is usually playing to hold a slightly worse but resourceful position, not to win a technical endgame.</p>
+        </section>
+      </div>
+
+      <footer class="app-footer">
+        OpenFile · every line on this page was cross-checked against published sources (Wikipedia's King's Gambit and Kieseritzky Gambit articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including the mate claim, which chess.js confirmed as checkmate, not just asserted · not a substitute for a dedicated opening book or engine preparation
+      </footer>
+    </div>
+    <script type="module" src="/src/openingTheory.ts"></script>
+  </body>
+</html>
