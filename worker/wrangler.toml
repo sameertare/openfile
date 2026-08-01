@@ -5,4 +5,4 @@ compatibility_date = "2024-11-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "openfile-visits"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "2ce81ce2-6896-4a38-b110-c822865e51b8"

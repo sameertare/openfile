@@ -9,7 +9,7 @@ initTheme();
 // it's been deployed to your own Cloudflare account — left blank, the visitor card just explains
 // that setup step instead of trying to fetch. Nothing here works without a URL of your own; this
 // project can't deploy the Worker on your behalf since that needs your Cloudflare credentials.
-const VISIT_API_URL = '';
+const VISIT_API_URL = 'https://openfile-visits.openchessfile.workers.dev/visit';
 
 interface VisitLocation {
   city: string;
