@@ -682,6 +682,9 @@ html.walldisplay { font-size: 26px; }
 .theory-trap h4 { margin: 0 0 6px; font-size: 0.95rem; }
 .theory-avoid { border-left: 3px solid var(--red); background: rgba(224, 108, 92, 0.08); border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 10px 0; }
 .theory-avoid h4 { margin: 0 0 6px; font-size: 0.95rem; }
+.theory-game { border-left: 3px solid var(--blue); background: rgba(108, 167, 224, 0.08); border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 10px 0; }
+.theory-game h4 { margin: 0 0 6px; font-size: 0.95rem; }
+.theory-game .theory-moves { max-height: 140px; overflow-y: auto; background: var(--bg-card); }
 .color-flow span { padding: 5px 7px; border-radius: 6px; background: var(--bg-inset); }
 .swiss-limit { margin-top: 14px; border-left: 4px solid var(--gold); }
 .swiss-limit p { margin: 0; font-size: .9rem; }
