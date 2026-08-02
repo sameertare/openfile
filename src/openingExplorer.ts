@@ -4,8 +4,8 @@ import { gameId, gameLink, isBotOrComputerGame, splitPgn, tryParseGame } from '.
 import { groupPlayerNames, nameKey, inferOwnerColorFromTitle } from './playerMatch';
 import type { Color, Result } from './types';
 import { Board } from './board';
-import { buildTree, childSummaries, nodeAtPath, scorePct } from './openingTree';
-import type { TreeNode, ChildSummary, GameRef } from './openingTree';
+import { buildTree, childSummaries, nodeAtPath, scorePct, avgOpponentRating, performanceRating } from './openingTree';
+import type { TreeNode, RepertoireTree, ChildSummary, GameRef } from './openingTree';
 import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 import { downloadPgn } from './pgnExport';
@@ -21,7 +21,7 @@ registerServiceWorker();
 initTheme();
 
 // ---------- state ----------
-interface ExplorerGame { sans: string[]; color: Color; result: Result; opponent: string; link: string | null; date: string; }
+interface ExplorerGame { sans: string[]; color: Color; result: Result; opponent: string; opponentRating: number | null; link: string | null; date: string; }
 
 /** "My Repertoire" and "Opponent Prep" are two fully independent loaded datasets sharing the same
  *  UI chrome — switching tabs swaps which profile the load controls, tree, and browsing panels
@@ -44,7 +44,7 @@ let mode: Mode = 'me';
 const profiles: Record<Mode, Profile> = { me: newProfile(), opponent: newProfile() };
 function active(): Profile { return profiles[mode]; }
 
-let tree: TreeNode | null = null;
+let tree: RepertoireTree | null = null;
 let path: string[] = []; // SAN path from root to the currently viewed node
 let minGames = 2;
 
@@ -289,11 +289,14 @@ function buildExplorerGames(parsedGames: ParsedGame[], matchKeys: Set<string>): 
     else if (resultRaw === '1/2-1/2') result = 'draw';
     else result = 'unknown';
     const opponent = (userIsWhite ? h['Black'] : h['White']) || 'Unknown';
+    const opponentRatingRaw = Number(userIsWhite ? h['BlackElo'] : h['WhiteElo']);
+    const opponentRating = Number.isFinite(opponentRatingRaw) && opponentRatingRaw > 0 ? opponentRatingRaw : null;
     out.push({
       sans: g.moves.map((m) => m.san),
       color,
       result,
       opponent,
+      opponentRating,
       link: gameLink(h),
       date: h['Date'] ?? h['UTCDate'] ?? '',
     });
@@ -527,14 +530,27 @@ interface QuizNode { path: string[]; node: TreeNode }
 
 /** Every position in the tree where it's the tracked player's own turn AND they've actually
  *  played at least one move from there — i.e. everything worth quizzing. Never includes the
- *  opponent's replies, only the tracked player's own decisions. */
-function collectQuizzableNodes(root: TreeNode, color: Color): QuizNode[] {
+ *  opponent's replies, only the tracked player's own decisions.
+ *
+ *  Deduped by position (not by path): now that the tree merges transpositions, the same position
+ *  can be reachable via more than one move order, and the walk below would otherwise visit it once
+ *  per path — a redundant "same board, same question" repeat in a drilling session, and (since the
+ *  graph is now a merged DAG rather than a strict tree) a real risk of unbounded recursion if two
+ *  different games' contributions happen to chain into a cycle. `visited` guards against both:
+ *  each position is collected once, via whichever path reaches it first. */
+function collectQuizzableNodes(t: RepertoireTree, color: Color): QuizNode[] {
   const out: QuizNode[] = [];
-  const walk = (node: TreeNode, path: string[]) => {
+  const visited = new Set<string>();
+  const walk = (node: TreeNode, path: string[], key: string) => {
+    if (visited.has(key)) return;
+    visited.add(key);
     if (node.fen.split(' ')[1] === color && node.children.size > 0) out.push({ path, node });
-    for (const [san, child] of node.children) walk(child, [...path, san]);
+    for (const [san, childKey] of node.children) {
+      const child = t.positions.get(childKey);
+      if (child) walk(child, [...path, san], childKey);
+    }
   };
-  walk(root, []);
+  walk(t.root, [], t.rootKey);
   return out;
 }
 
@@ -653,7 +669,7 @@ function nextDrillPosition() {
 }
 
 function answerDrill(playedSan: string) {
-  if (!drillCurrent || drillAwaitingNext) return;
+  if (!drillCurrent || drillAwaitingNext || !tree) return;
   drillAwaitingNext = true;
   const key = pathKey(drillCurrent.path);
   const correct = drillCurrent.node.children.has(playedSan);
@@ -661,7 +677,7 @@ function answerDrill(playedSan: string) {
   srsData[key] = review(prior, correct);
   saveSrsData(srsData);
 
-  const summaries = childSummaries(drillCurrent.node);
+  const summaries = childSummaries(tree, drillCurrent.node);
   const list = summaries
     .map((c) => `<li><b>${esc(c.san)}</b> — ${c.games} game(s), ${c.scorePct}% score${c.san === playedSan ? ' ✓ (what you played)' : ''}</li>`)
     .join('');
@@ -718,10 +734,11 @@ $('#flip-btn').addEventListener('click', () => board.flip());
 
 function currentNode(): TreeNode | null {
   if (!tree) return null;
-  return nodeAtPath(tree, path) ?? tree;
+  return nodeAtPath(tree, path) ?? tree.root;
 }
 
 function render() {
+  if (!tree) return;
   const node = currentNode();
   if (!node) return;
   board.setFen(node.fen);
@@ -742,16 +759,20 @@ function render() {
 
   // Node stats
   const sc = scorePct(node);
+  const avgOpp = avgOpponentRating(node);
+  const perf = performanceRating(node);
   nodeStatsEl.innerHTML = `
     <div class="stat-card"><span class="big">${node.games}</span><span class="label">Games</span></div>
     <div class="stat-card"><span class="big">${sc}%</span><span class="label">Score</span></div>
     <div class="stat-card"><span class="big pos">${node.wins}</span><span class="label">Wins</span></div>
     <div class="stat-card"><span class="big mid">${node.draws}</span><span class="label">Draws</span></div>
     <div class="stat-card"><span class="big neg">${node.losses}</span><span class="label">Losses</span></div>
+    ${avgOpp != null ? `<div class="stat-card"><span class="big">${avgOpp}</span><span class="label">Avg opponent</span></div>` : ''}
+    ${perf != null ? `<div class="stat-card"><span class="big">${perf}</span><span class="label">Performance</span></div>` : ''}
   `;
 
   // Moves from here
-  const children = childSummaries(node).filter((c) => c.games >= minGames);
+  const children = childSummaries(tree, node).filter((c) => c.games >= minGames);
   yourMovesEl.innerHTML = children.length
     ? movesTableHtml(children)
     : `<p class="hint">No branch here reaches at least ${minGames} game(s). ${node.games ? 'Lower the game threshold above to see more.' : 'No games reached this position.'}</p>`;
@@ -777,6 +798,7 @@ function movesTableHtml(children: ChildSummary[]): string {
         <td><b>${esc(c.san)}</b></td>
         <td class="num">${c.games}</td>
         <td class="num">${c.scorePct}%</td>
+        <td class="num">${c.avgOpponentRating ?? '—'}</td>
         <td>
           <div class="score-bar" style="width:${barWidth}%">
             <div class="seg win" style="width:${winW}%"></div>
@@ -787,7 +809,7 @@ function movesTableHtml(children: ChildSummary[]): string {
       </tr>`;
     })
     .join('');
-  return `<table><thead><tr><th>Move</th><th class="num">Games</th><th class="num">Score</th><th>W/D/L</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<table><thead><tr><th>Move</th><th class="num">Games</th><th class="num">Score</th><th class="num">Avg Opp</th><th>W/D/L</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 /** Formats a SAN list as a readable move-number-prefixed string, e.g. "1. e4 e5 2. Nf3 Nc6". */
@@ -864,7 +886,7 @@ function renderGamesHere(node: TreeNode) {
   const rows = shown
     .map((g, i) => `
       <tr>
-        <td>${esc(g.opponent)}</td>
+        <td>${esc(g.opponent)}${g.opponentRating != null ? ` <span class="hint">(${g.opponentRating})</span>` : ''}</td>
         <td class="${resultClass(g.result)}">${resultLabel(g.result)}</td>
         <td class="hint">${esc(g.date || '—')}</td>
         <td>${g.link ? `<a href="${esc(g.link)}" target="_blank" rel="noopener">View ↗</a>` : '<span class="hint">—</span>'}</td>
