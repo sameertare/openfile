@@ -33,13 +33,14 @@
     <div id="app">
       <header class="app-header">
         <h1>📖 Opening Theory</h1>
-        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Covers the King's Gambit (as White), the Ruy Lopez Schliemann Defense (as Black), and the Caro-Kann Two Knights Attack (as White), with more to come. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
+        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Covers the King's Gambit (as White), the Ruy Lopez Schliemann Defense (as Black), the Caro-Kann Two Knights Attack (as White), and the Caro-Kann Accelerated Panov Attack (as White), with more to come. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
       </header>
 
       <nav class="theory-toc" aria-label="Openings covered">
         <a href="#kings-gambit">King's Gambit (as White)</a>
         <a href="#schliemann">Ruy Lopez: Schliemann Defense (as Black)</a>
         <a href="#caro-kann-two-knights">Caro-Kann: Two Knights Attack (as White)</a>
+        <a href="#caro-kann-accelerated-panov">Caro-Kann: Accelerated Panov Attack (as White)</a>
       </nav>
 
       <div class="card-grid">
@@ -442,10 +443,90 @@
           <h3>Endgame themes</h3>
           <p>As with the King's Gambit and the Schliemann, there's no dedicated "Two Knights Attack endgame theory" — the system doesn't steer toward a particular favorable endgame structure the way an isolated-queen's-pawn or minority-attack opening might. What it does produce, repeatedly in the games above, is long technical fights: both Fischer–Petrosian (68 moves) and Keres–Tartakower (50 moves) were decided well into deep middlegame-to-endgame territory, not by an early tactical knockout. The trap line is the one clear exception — when it lands, it's over in 11-12 moves. Outside of that specific trap, White's practical winning chances come from the same long-game factors as any other Caro-Kann structure: whichever side's minor pieces end up better placed once the position simplifies.</p>
         </section>
+
+        <section class="card span-2" id="caro-kann-accelerated-panov">
+          <h2>♙ Caro-Kann, Accelerated Panov Attack — as White</h2>
+          <p><strong>1.e4 c6 2.c4</strong> (ECO B10). White plays c4 on move two, before touching the d-pawn at all — a move-order trick aimed straight at the heart of the Caro-Kann. The threat is simple: if Black plays the natural 2...d5, White meets it with 3.exd5 cxd5 4.d4, transposing directly into the well-known <strong>Panov-Botvinnik Attack</strong> (normally reached via 1.e4 c6 2.d4 d5 3.exd5 cxd5 4.c4) — but a move faster, and with an extra independent try available along the way that the main-line move order doesn't offer.</p>
+
+          <h3>Move order &amp; the major branches</h3>
+          <p>After 2.c4, Black's replies split into three very different categories: playing <strong>2...d5</strong> as normal (by far the most common, but branching further depending on how Black recaptures), the rare <strong>2...e5</strong> counter-strike, or simply transposing into an ordinary Caro-Kann with a quieter second move. Each branch below is collapsed by default — click to expand a line.</p>
+
+          <details class="theory-variation" open>
+            <summary>2...d5 3.exd5 cxd5 4.d4 — transposing to the Panov-Botvinnik Attack</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 c6 2.c4 d5 3.exd5 cxd5 4.d4 Nf6 5.Nc3 e6 6.Nf3 Be7</code>
+              <p>This is the whole point of the "accelerated" move order in its most straightforward form: White simply reaches the standard Panov-Botvinnik Attack's main tabiya — the classic isolated-queen's-pawn (IQP) middlegame, White's d4-pawn unsupported by another pawn but compensated for by faster development and control of e5 — one tempo sooner than 2.d4 would allow. Everything known about the regular Panov-Botvinnik Attack's middlegame plans applies from here.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>2...d5 3.cxd5 cxd5 4.exd5 Nf6 — the Modern Variation</summary>
+            <div class="theory-variation-content">
+              <p>Rather than transposing, White can capture with the c-pawn first, offering an independent structure the classical 2.d4 move order can't reach directly. Both capture orders (3.cxd5 first, or 3.exd5 first) lead to the same position and are both filed under the same name in the databases.</p>
+              <code class="theory-moves">1.e4 c6 2.c4 d5 3.cxd5 cxd5 4.exd5 Nf6</code>
+              <p>Black doesn't rush to recapture the pawn on d5, developing with tempo instead. White's main tries from here are 5.Nc3, simply defending the extra pawn and developing, and 5.Qa4+, adding an extra check before doing the same thing.</p>
+              <code class="theory-moves">5.Nc3 Nxd5</code>
+              <p>Material is level again once the knight recaptures, in an open, roughly symmetrical position — very different in character from the IQP middlegames of the transposition line above, despite both starting from the same 2.c4.</p>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Vaganian vs Dreev, USSR Championship 1989</h4>
+                <p>Vaganian reached the position by 1.c4 (English Opening move order) rather than 1.e4, transposing back into the Modern Variation by move 4 — a reminder that this structure can arise from more than one opening entirely. A queenside pawn grab with 10.Qxb7 leads to heavy simplification and a drawn rook endgame.</p>
+                <code class="theory-moves">1.c4 c6 2.e4 d5 3.exd5 cxd5 4.cxd5 Nf6 5.Nc3 Nxd5 6.Nf3 Nc6 7.d4 Bg4 8.Qb3 Bxf3 9.gxf3 e6 10.Qxb7 Nxd4 11.Bb5+ Nxb5 12.Qc6+ Ke7 13.Qxb5 Qd7 14.Nxd5+ Qxd5 15.Qxd5 exd5 16.Be3 Ke6 17.O-O-O Bb4 18.a3 Rhc8+ 19.Kb1 Bc5 20.Rhe1 Bxe3 21.Rxe3+ Kd6 22.f4 Rab8 23.Rd4 1/2-1/2</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1039208" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Radjabov vs Azmaiparashvili, Dos Hermanas 2005</h4>
+                <p>A cleaner demonstration of the 5.Qa4+ move order, with Black meeting it by fianchettoing rather than blocking with a piece — a completely different setup from the open, symmetrical structures above, showing how flexible the position still is even after the early trades.</p>
+                <code class="theory-moves">1.e4 c6 2.c4 d5 3.cxd5 cxd5 4.exd5 Nf6 5.Qa4+ Nbd7 6.Nc3 g6 7.Nf3 Bg7 8.Bc4 a6 9.d3 O-O 10.Qa3 b6 11.O-O Bb7 12.Re1 Re8 13.Ng5 h6 14.Nge4 Ne5 15.Bf4 Nh5 16.Bxe5 Bxe5 17.Rad1 Qc7 18.g3 Rad8 19.Bb3 Nf6 20.d4 Bd6 21.Nxd6 Qxd6 22.Qxd6 Rxd6 23.Re5 Ng4 24.Re4 Nf6 25.Re5 Ng4 1/2-1/2</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1335785" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+
+              <p>Instead of 5.Nc3 or 5.Qa4+, White also has the sharper intermezzo <strong>5.Bb5+</strong>, delaying the recapture on d5 by a full move to squeeze in a check first.</p>
+              <code class="theory-moves">5.Bb5+ Nbd7 6.Nc3 a6 7.Qa4 Rb8 8.Bxd7+ Qxd7 9.Qxd7+ Bxd7</code>
+              <p>This usually simplifies straight into an endgame with doubled, isolated d-pawns for Black — objectively close to equal, but a structure Black has to know how to handle rather than one that plays itself.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>2...d5 3.exd5 Qxd5?? — the pseudo-Scandinavian trap</summary>
+            <div class="theory-variation-content">
+              <p>After 3.exd5, recapturing with the queen looks completely natural — it's exactly what happens in the real Scandinavian Defense (1.e4 d5 2.exd5 Qxd5). But White's early c4 changes everything.</p>
+              <code class="theory-moves">1.e4 c6 2.c4 d5 3.exd5 Qxd5</code>
+              <div class="theory-trap">
+                <h4>⚡ Trap for White</h4>
+                <p>Unlike the real Scandinavian, White already has a pawn on c4 here — and c4 attacks d5 directly. The queen isn't just inconvenienced by a developing check the way it is in a normal Scandinavian; it's simply hanging.</p>
+                <code class="theory-moves">4.cxd5</code>
+                <p>Engine-checked: this is a genuine, ordinary pawn capture that wins the queen outright for a pawn, not a tactic with any hidden point Black could be relying on. The correct recapture is 3...cxd5 instead, transposing into the lines above — this trap only exists because ...Qxd5 is the automatic, memorized reply in the real Scandinavian, and here that same reflex simply loses.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>2...e5 — the Open Variation</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 c6 2.c4 e5 3.Nf3</code>
+              <p>A rare, ambitious try that turns the game into something resembling a normal 1.e4 e5 open game — except Black can't defend the e5-pawn the standard way with 3...Nc6, since Black's own c-pawn is already sitting on c6. Black has to find another way to hold the center (3...d6, 3...Qe7, or simply developing and accepting some central tension), and White's extra tempo from not having played an early ...Nc6-blocking move for Black tends to translate into a small, lasting edge.</p>
+            </div>
+          </details>
+
+          <p class="hint">A note on the game citations above: verified games are linked for the Modern Variation (twice, showing both the 5.Nc3 and 5.Qa4+ move orders). The transposition line simply inherits the vast body of standard Panov-Botvinnik Attack games rather than needing its own separate citation, and the pseudo-Scandinavian trap and Open Variation don't have an equally famous named game attached — rather than link something unverified, those sections stick to the theory and trap content above.</p>
+
+          <h3>Middlegame plans for White</h3>
+          <ul class="pattern-list">
+            <li><strong>Choosing your structure, not just your opening.</strong> The whole point of 2.c4 is that White decides, move by move, whether to steer toward the well-trodden IQP middlegames of the standard Panov (rich in theory, well understood by both sides) or the more independent, less-charted Modern Variation structures — a real practical weapon precisely because Black has to be ready for both.</li>
+            <li><strong>The IQP compensation package, when it arises.</strong> In the transposition line, the same ideas as any Panov-Botvinnik or Isolated-Queen's-Pawn middlegame apply: piece activity and outposts (especially e5) outweigh the long-term structural weakness, provided White keeps pieces on and doesn't drift into a pure endgame where the isolated pawn becomes a simple target.</li>
+            <li><strong>Punishing move-order carelessness.</strong> The pseudo-Scandinavian trap is the clearest example, but the whole opening is built around Black needing to recognize that this isn't quite the position their memorized Caro-Kann or Scandinavian theory assumes.</li>
+            <li><strong>Development speed over structural symmetry.</strong> In the Modern Variation especially, material and structure end up level fast — White's edge, when there is one, comes from being a touch faster to develop and castle, not from a long-term pawn-structure advantage the way the IQP lines provide.</li>
+          </ul>
+
+          <h3>Endgame themes</h3>
+          <p>The two faces of this opening lead to genuinely different endgame outlooks. In the transposition line, the classic Panov-Botvinnik IQP question applies directly: White's isolated d-pawn is a long-term target once queens and enough minor pieces come off, so White generally wants to avoid over-simplifying and keep enough pieces on the board for the pawn's dynamic benefits (space, outposts, open lines) to matter. In the Modern Variation, both games above ended in fairly level, simplified endgames (a drawn rook ending in Vaganian–Dreev, a balanced middlegame-to-endgame draw in Radjabov–Azmaiparashvili) — a fair reflection of a structure that's closer to equal than the IQP lines, where technique and small edges matter more than any built-in structural advantage.</p>
+        </section>
       </div>
 
       <footer class="app-footer">
-        OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit mate line, the Schliemann's discovered check and material count, and the Caro-Kann trap's forcing sequence, which chess.js confirmed directly rather than just asserted · all twelve historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
+        OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit mate line, the Schliemann's discovered check and material count, the Two Knights trap's forcing sequence, and the Accelerated Panov's queen-hanging trap (engine-confirmed as a genuine capture, not just asserted) · all fourteen historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
       </footer>
     </div>
     <script type="module" src="/src/openingTheory.ts"></script>
