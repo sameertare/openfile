@@ -103,12 +103,26 @@ export function isNwchessRoster(text: string): boolean {
  * the NWSRS (and often school) columns entirely rather than leaving them blank, shifting every
  * later fixed index left. So instead of trusting fixed positions for the rating/byes/status
  * columns, this anchors byes/status off the *end* of the row (consistently the last two columns
- * in every variant seen) and finds the rating by scanning the whole row between grade and byes for
- * any strictly-numeric token in a plausible rating range — an ID always runs 6+ digits (well past
- * the 3500 ceiling), a grade or the month of an MM/YYYY expiry date is always under 100, so the
- * range check alone reliably tells a rating apart from either regardless of which column it's
- * actually in. The pairing rating is the max of whatever rating(s) are found (NWSRS/USCF, in
- * whichever order and however many of them this export includes); FIDE is ignored.
+ * in every variant seen) and finds rating candidates by scanning the whole row between grade and
+ * byes for any strictly-numeric token in a plausible rating range — an ID always runs 6+ digits
+ * (well past the 3500 ceiling), a grade or the month of an MM/YYYY expiry date is always under
+ * 100, so the range check alone reliably tells a rating-shaped token apart from either, regardless
+ * of which column it's actually in.
+ *
+ * That range check alone can't tell a genuine NWSRS/USCF rating apart from a genuine (nonzero)
+ * FIDE rating, though — all three are just plausible-range numbers, and FIDE sits in the same
+ * scanned span. The export's own two-row header always lists the rating groups in a fixed
+ * left-to-right order — NWSRS, then USCF, then FIDE — so candidates found scanning left-to-right
+ * line up with that order too, whichever subset a given section's columns actually include. Rather
+ * than trying to fully resolve the exact column each candidate came from (the header is a two-row
+ * grouped layout that doesn't reliably reduce to fixed indices — the same shifting problem as
+ * above, just for column identity instead of column position), this tracks how many of the two
+ * *wanted* groups (NWSRS, USCF) a section's header actually declares, updated every time a new
+ * header row is seen, and keeps only that many candidates (in their left-to-right order) — so a
+ * trailing FIDE candidate is dropped precisely because it comes after both wanted groups, not
+ * because of its value. The pairing rating is the max of whatever's left. If a header can't be
+ * read at all (e.g. a hand-edited CSV with no header row), both groups default to present rather
+ * than capping at zero and leaving everyone unrated.
  */
 const NWCHESS_HEADER_WORDS = /^(name|first|last|uscf|nwsrs|nwchess|fide|grade|school|byes|fees|id|rating|status|section|title)$/i;
 function parseNwchessRoster(text: string): RosterEntry[] {
@@ -121,13 +135,30 @@ function parseNwchessRoster(text: string): RosterEntry[] {
   // and silently parsing zero columns (and thus zero players) out of a tab-delimited file.
   const firstLine = lines.find((l) => l.trim()) ?? '';
   const delim: 'tab' | 'csv' = firstLine.includes('\t') ? 'tab' : 'csv';
+  // Updated whenever a header row names at least one rating group — see the doc comment above.
+  // Defaults to both-present so a file with no readable header keeps today's max(NWSRS, USCF)
+  // intent rather than silently capping every player to unrated.
+  let sectionHasNwsrs = true;
+  let sectionHasUscf = true;
   for (const raw of lines) {
     if (!raw.trim()) continue;
+    // The group-label header row (e.g. "NWSRS","USCF","FIDE") is the one line that ever names any
+    // of these three — a real name/school value essentially never does — so this checks the raw
+    // line directly rather than after column-splitting: a header row that omits enough columns to
+    // describe a dropped rating group can itself end up shorter than the >=8-column floor a real
+    // data row needs, and column-splitting first would skip it via that floor before its content
+    // was ever inspected, leaving section state stuck on a stale (or default) value.
+    if (/\bnwsrs\b|\buscf\b|\bfide\b/i.test(raw)) {
+      sectionHasNwsrs = /\bnwsrs\b/i.test(raw);
+      sectionHasUscf = /\buscf\b/i.test(raw);
+      continue;
+    }
     const c = splitDelimited(raw, delim).map((f) => f.trim());
     if (c.length < 8) continue;
-    // Header/label rows vary in shape across real exports (which column has "Name" vs "First" in
-    // it differs between variants), so rather than check one fixed position for a literal label,
-    // treat any row with a known column-label word in an early column as a header, not a player.
+    // The second, sub-column header row ("ID","Title","Rounds", …) names none of the three group
+    // words above, so it still needs its own check — this treats any row with a known column-label
+    // word in an early column as a header, not a player, rather than trusting one fixed position
+    // (which column has "Name" vs "First" in it differs between export variants).
     if (c.slice(0, 5).some((f) => NWCHESS_HEADER_WORDS.test(f))) continue;
     const section = c[0];
     const last = c[1];
@@ -137,10 +168,12 @@ function parseNwchessRoster(text: string): RosterEntry[] {
     const byesRaw = c[c.length - 2];
     if (/withdr|^wd$|inactive|dropped/i.test(status) || /withdr/i.test(section)) continue; // not playing
     const middle = c.slice(3, c.length - 2);
-    const ratings = middle
+    const candidates = middle
       .filter((f) => /^\d+$/.test(f))
       .map((f) => ratingOrNull(f))
       .filter((n): n is number => n != null);
+    const wantedCount = (sectionHasNwsrs ? 1 : 0) + (sectionHasUscf ? 1 : 0);
+    const ratings = wantedCount > 0 ? candidates.slice(0, wantedCount) : candidates;
     const rating = ratings.length ? Math.max(...ratings) : null;
     const name = `${first} ${last}`.replace(/\s{2,}/g, ' ').trim();
     if (!name) continue;
