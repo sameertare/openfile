@@ -33,12 +33,13 @@
     <div id="app">
       <header class="app-header">
         <h1>📖 Opening Theory</h1>
-        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Covers the King's Gambit (as White) and the Ruy Lopez Schliemann Defense (as Black), with more to come. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
+        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Covers the King's Gambit (as White), the Ruy Lopez Schliemann Defense (as Black), and the Caro-Kann Two Knights Attack (as White), with more to come. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
       </header>
 
       <nav class="theory-toc" aria-label="Openings covered">
         <a href="#kings-gambit">King's Gambit (as White)</a>
         <a href="#schliemann">Ruy Lopez: Schliemann Defense (as Black)</a>
+        <a href="#caro-kann-two-knights">Caro-Kann: Two Knights Attack (as White)</a>
       </nav>
 
       <div class="card-grid">
@@ -326,10 +327,125 @@
           <h3>Endgame themes</h3>
           <p>Like the King's Gambit, the Schliemann is fundamentally a middlegame weapon, not an endgame-favoring structure — Black's whole strategic bet is to generate enough activity that the game is decided well before an endgame is reached. When it does reach an endgame (as several of the games above do, including two long ones), the deciding factor is usually whichever structural damage has proven more costly: White's slightly exposed king and awkward piece placement from the early complications, versus Black's weakened kingside pawns and the pawn deficit in lines where material was never won back. Both games above that Black won were decided in long rook-and-minor-piece endgames, not quick kingside attacks — a reminder that even in a sharp opening built around activity, technique in the resulting endgame still matters.</p>
         </section>
+
+        <section class="card span-2" id="caro-kann-two-knights">
+          <h2>♘ Caro-Kann, Two Knights Attack — as White</h2>
+          <p><strong>1.e4 c6 2.Nc3 d5 3.Nf3</strong> (ECO B10–B11). Rather than the main-line 2.d4, White develops both knights before committing the d-pawn at all — a flexible, less-theoretical way to meet the Caro-Kann that keeps options open between d3 and d4 depending on how Black sets up. It was a favorite of a young Bobby Fischer before falling out of top-level fashion; a well-known trap buried in one of its main tries has caught two former World Champions.</p>
+
+          <h3>Move order &amp; the major branches</h3>
+          <p>After 3.Nf3, Black's most common tries are <strong>3...Bg4</strong> (pinning the knight immediately), <strong>3...dxe4</strong> (resolving the center at once), <strong>3...Nf6</strong>, and <strong>3...d4</strong> (chasing the knight away). Each branch below is collapsed by default — click to expand a line.</p>
+
+          <details class="theory-variation" open>
+            <summary>3...Bg4 — the Mindeno Variation, main tabiya</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 Bg4</code>
+              <p>Named for Dutch player Siegfried van Mindeno, on the losing end of an instructive 1927 example of the line (below). White's near-universal reply challenges the bishop immediately:</p>
+              <code class="theory-moves">4.h3</code>
+              <p>Black has two genuinely different replies from here, each with its own name in the databases.</p>
+
+              <p><strong>4...Bxf3 5.Qxf3 — Mindeno Variation, Exchange Line</strong>, the main theoretical line.</p>
+              <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 Bg4 4.h3 Bxf3 5.Qxf3 e6</code>
+              <p>Black hands over the bishop pair for simpler development and a solid structure — considered roughly equal by standard theory. White's follow-ups include 6.d4, 6.g3 (fianchetto), and 6.Be2, all aiming to use the extra space and the pressure the queen already exerts on d5/f6 to keep some initiative without real risk.</p>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Fischer vs Petrosian, Bled-Zagreb-Belgrade Candidates 1959</h4>
+                <p>A marathon 68-move fight from the Exchange Line between two legends, eventually won by Petrosian from the Black side — a reminder that "roughly equal" doesn't mean short or drawish. <a href="https://www.chessgames.com/perl/chessgame?gid=1044100" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+                <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 Bg4 4.h3 Bxf3 5.Qxf3 Nf6 6.d3 e6 7.g3 Bb4 8.Bd2 d4 9.Nb1 Bxd2+ 10.Nxd2 e5 11.Bg2 c5 12.O-O Nc6 13.Qe2 g5 14.Nf3 h6 15.h4 Rg8 16.a3 Qe7 17.hxg5 hxg5 18.Qd2 Nd7 19.c3 O-O-O 20.cxd4 exd4 21.b4 Kb8 22.Rfc1 Nce5 23.Nxe5 Qxe5 24.Rc4 Rc8 25.Rac1 g4 26.Qb2 Rgd8 27.a4 Qe7 28.Rb1 Ne5 29.Rxc5 Rxc5 30.bxc5 Nxd3 31.Qd2 Nxc5 32.Qf4+ Qc7 33.Qxg4 Nxa4 34.e5 Nc5 35.Qf3 d3 36.Qe3 d2 37.Bf3 Na4 38.Qe4 Nc5 39.Qe2 a6 40.Kg2 Ka7 41.Qe3 Rd3 42.Qf4 Qd7 43.Qc4 b6 44.Rd1 a5 45.Qf4 Rd4 46.Qh6 b5 47.Qe3 Kb6 48.Qh6+ Ne6 49.Qe3 Ka6 50.Be2 a4 51.Qc3 Kb6 52.Qe3 Nc5 53.Bf3 b4 54.Qh6+ Ne6 55.Qh8 Qd8 56.Qh7 Qd7 57.Qh8 b3 58.Qb8+ Ka5 59.Qa8+ Kb5 60.Qb8+ Kc4 61.Qg8 Kc3 62.Bh5 Nd8 63.Bf3 a3 64.Qf8 Kb2 65.Qh8 Ne6 66.Qa8 a2 67.Qa5 Qa4 68.Rxd2+ Ka3 0-1</code>
+              </div>
+
+              <p><strong>4...Bh5 5.g4 — Mindeno Variation, Retreat Line</strong>, sharper: White grabs kingside space at once instead of trading off the bishop.</p>
+              <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 Bg4 4.h3 Bh5 5.g4</code>
+              <p>Committal on both sides — White's kingside pawns are now permanently loosened, but the bishop on h5 is shut out of the game unless Black can round it up with a timely ...e6 and ...Nd7-f8-e6 rerouting.</p>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Noteboom vs van Mindeno, Holland 1927</h4>
+                <p>The naming-origin game for the whole variation. Black's queenside counterplay comes a tempo too slow, and White's kingside pawn storm — helped by a piece sacrifice on h7 — breaks through first.</p>
+                <code class="theory-moves">1.e4 c6 2.Nf3 d5 3.Nc3 Bg4 4.h3 Bh5 5.exd5 cxd5 6.g4 Bg6 7.Ne5 a6 8.h4 d4 9.h5 dxc3 10.hxg6 cxd2+ 11.Qxd2 Qxd2+ 12.Bxd2 f6 13.Rxh7 fxe5 14.Rxh8 Nf6 15.Bc4 Nc6 16.Bh6 O-O-O 17.Rd1 Nd4 18.Rxd4 exd4 19.Rxf8 Rxf8 20.Bxg7 Re8 21.Bf7 1-0</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1590007" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>3...dxe4 4.Nxe4 Nf6 — the solid main continuation</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 dxe4 4.Nxe4 Nf6 5.Qe2 Nxe4 6.Qxe4 Nd7 7.d4</code>
+              <p>Black resolves the center immediately and trades down to a quiet, roughly equal position — solid rather than ambitious. From 6.Qxe4, Black has reasonable alternatives too: 6...Be6 (developing before recapturing the tempo lost to the queen) or 6...Nd7 followed by 7.Bc4 Nf6 8.Ne5 e6, both leading to similarly balanced middlegames.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>3...dxe4 4.Nxe4 Bf5?! — the classical-transposition trap</summary>
+            <div class="theory-variation-content">
+              <p>Instead of 4...Nf6, developing the bishop first looks natural — it's the standard idea from the Classical Caro-Kann (1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Bf5). But without White's d-pawn already committed to d4, the resulting position is subtly different, and one specific continuation has trapped two world-class players historically.</p>
+              <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 dxe4 4.Nxe4 Bf5 5.Ng3 Bg6 6.h4 h6 7.Ne5 Bh7 8.Qh5 g6 9.Bc4 e6 10.Qe2</code>
+              <div class="theory-trap">
+                <h4>⚡ Trap for White</h4>
+                <p>After the forced-looking sequence above, Black is at a critical decision with the White queen eyeing e6 and the knight ready to jump into f7. Two natural-looking replies both lose on the spot to the same shot, <strong>11.Nxf7!</strong> — the knight sacrifice rips open Black's king since 9...gxh5 was already ruled out by 10.Bxf7#, and the king has nowhere safe to hide once f7 falls.</p>
+              </div>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Lasker vs van Trotsenburg, simultaneous exhibition 1908</h4>
+                <p>10...Bg7?? develops naturally but ignores the threat entirely.</p>
+                <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 dxe4 4.Nxe4 Bf5 5.Ng3 Bg6 6.h4 h6 7.Ne5 Bh7 8.Qh5 g6 9.Bc4 e6 10.Qe2 Bg7 11.Nxf7 1-0</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1380166" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Alekhine vs Bruce, Plymouth 1938</h4>
+                <p>Thirty years later, the reigning World Champion caught a different natural-looking slip, 10...Nf6??, the same way.</p>
+                <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 dxe4 4.Nxe4 Bf5 5.Ng3 Bg6 6.h4 h6 7.Ne5 Bh7 8.Qh5 g6 9.Bc4 e6 10.Qe2 Nf6 11.Nxf7 Kxf7 12.Qxe6+ 1-0</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1250739" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+
+              <p class="hint">Theory's suggested improvement for Black at the critical juncture is 10...Qe7!, meeting the threats head-on rather than continuing to develop as if nothing were wrong — a reminder that in this exact position, natural development is the losing plan.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>3...Nf6 4.e5 — the Advance-like try</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 Nf6 4.e5 Ne4 5.Ne2 Qb6 6.d4 e6 7.Ng3 c5</code>
+              <p>White gains space with the early e5 push; Black counters in the center with ...c5. The point comes with a small but sharp tactical justification for White's setup:</p>
+              <code class="theory-moves">8.Bd3 Nxg3 9.fxg3!</code>
+              <p>Recapturing away from the center looks strange, but it opens the f-file for a rook and gives White a real kingside attacking chance — standard theory rates the resulting position as slightly better for White (⩲). This exact system faded from top-level practice after a run of a few years, but it's still a real practical try below the very top.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>3...d4 — chasing the knight away</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 d4 4.Ne2 c5</code>
+              <p>Immediately gains space and kicks the c3-knight, at the cost of giving White a free hand in the center later (Black's ...d4 isn't backed up by a timely ...e5 the way it would need to be to fully justify the space grab). White's main tries from here are 5.c3, striking back at the pawn chain immediately, or 5.Ng3, simply rerouting the knight to a good square.</p>
+              <code class="theory-moves">5.c3 Nc6 6.cxd4 cxd4 7.Qa4</code>
+              <p>The straightforward 5.c3 line tends to leave Black somewhat worse — White gets the freer position and a slightly better version of an isolated/passed d-pawn structure.</p>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Keres vs Tartakower, France–Soviet Union match 1954</h4>
+                <p>Keres chose 5.Ng3 instead of 5.c3, and ground out a 50-move technical win — a good demonstration that White doesn't need to force matters immediately to get a comfortable game against 3...d4.</p>
+                <code class="theory-moves">1.e4 c6 2.Nc3 d5 3.Nf3 d4 4.Ne2 c5 5.Ng3 Nc6 6.Bc4 e5 7.d3 Be7 8.O-O Nf6 9.Nh4 O-O 10.a4 Nxe4 11.Nxe4 Bxh4 12.f4 exf4 13.Bxf4 Be7 14.Qh5 Be6 15.Rf3 Qd7 16.Rg3 Kh8 17.Rf1 f6 18.Rff3 g5 19.Rh3 Bf5 20.g4 Bxe4 21.dxe4 Bd8 22.Bd6 Bc7 23.Be6 Qg7 24.Bxf8 Rxf8 25.Bf5 Rf7 26.Bxh7 Re7 27.e5 Nxe5 28.Be4+ Kg8 29.Bd5+ Nf7 30.Bxb7 Bxh2+ 31.Rxh2 Rxb7 32.Re2 Kf8 33.Rf5 Qh6 34.Qxh6+ Nxh6 35.Rxf6+ Kg7 36.Rc6 Nxg4 37.Rxc5 Kf6 38.Re4 Ne3 39.b3 Rd7 40.Kf2 Kg6 41.Re8 Rf7+ 42.Ke2 Nf5 43.Re6+ Kh5 44.Kd3 Kg4 45.b4 Kf4 46.Re4+ Kf3 47.Re1 Kf4 48.Rf1+ Kg4 49.b5 Rf6 50.a5 1-0</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1072507" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+            </div>
+          </details>
+
+          <p class="hint">A note on the game citations above: verified games are linked for the Mindeno Variation's two lines, the classical-transposition trap (twice, since it caught two different World Champions the same way), and the 3...d4 line. The solid 3...dxe4 4.Nxe4 Nf6 continuation and the 3...Nf6 4.e5 sideline don't have an equally famous named game attached — rather than link something unverified, those sections stick to the theory and trap content above.</p>
+
+          <h3>Middlegame plans for White</h3>
+          <ul class="pattern-list">
+            <li><strong>Flexible d-pawn timing.</strong> The whole point of delaying d4 is choosing between d3 (solid, keeps options open, matches the modern main lines) and d4 (more space, more theory) based on what Black actually plays — there's no single "right" central structure the way there is in the main-line Caro-Kann.</li>
+            <li><strong>Punishing the bishop trade.</strong> When Black trades on f3 with ...Bxf3, White's doubled or shifted pawns are a long-term consideration, but the bishop pair and the extra tempo the recapturing queen gains are usually worth more in practice, especially with quick central and kingside expansion.</li>
+            <li><strong>The kingside pawn storm.</strong> h4-g4(-g5) ideas recur constantly — in the Retreat Line to trap the bishop on h5, and in the classical-transposition lines to hunt down the bishop on g6/h7 before Black can castle. Several of the sharpest lines above are built entirely around this plan.</li>
+            <li><strong>Development speed.</strong> Two knights out before the bishop or the d-pawn is the whole identity of the system — White is consistently willing to spend a move on a slightly unusual recapture (9.fxg3!, 6.Qxe4) to keep pieces active rather than worrying about structural purity.</li>
+          </ul>
+
+          <h3>Endgame themes</h3>
+          <p>As with the King's Gambit and the Schliemann, there's no dedicated "Two Knights Attack endgame theory" — the system doesn't steer toward a particular favorable endgame structure the way an isolated-queen's-pawn or minority-attack opening might. What it does produce, repeatedly in the games above, is long technical fights: both Fischer–Petrosian (68 moves) and Keres–Tartakower (50 moves) were decided well into deep middlegame-to-endgame territory, not by an early tactical knockout. The trap line is the one clear exception — when it lands, it's over in 11-12 moves. Outside of that specific trap, White's practical winning chances come from the same long-game factors as any other Caro-Kann structure: whichever side's minor pieces end up better placed once the position simplifies.</p>
+        </section>
       </div>
 
       <footer class="app-footer">
-        OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit mate line and the Schliemann's discovered check and material count, which chess.js confirmed directly rather than just asserted · the seven historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
+        OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit mate line, the Schliemann's discovered check and material count, and the Caro-Kann trap's forcing sequence, which chess.js confirmed directly rather than just asserted · all twelve historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
       </footer>
     </div>
     <script type="module" src="/src/openingTheory.ts"></script>
