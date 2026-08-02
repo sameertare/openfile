@@ -11,9 +11,10 @@
       <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
   </head>
   <body>
-    <nav class="topnav">
+    <div class="app-shell">
+    <nav class="sidebar">
       <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
-      <div class="navlinks">
+      <div class="sidebar-links">
         <a href="index.html">🏠 Home</a>
         <a href="analyze.html">Performance Analysis</a>
         <a href="live.html">Live &amp; Engine</a>
@@ -30,6 +31,7 @@
       </div>
           <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
     </nav>
+    <div class="main-col">
     <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
     <div id="app" class="app-wide">
       <header class="app-header">
@@ -173,6 +175,8 @@
       <footer class="app-footer">
         OpenFile · tree built entirely in your browser
       </footer>
+    </div>
+    </div>
     </div>
     <script type="module" src="/src/openingExplorer.ts"></script>
   </body>

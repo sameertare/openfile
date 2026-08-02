@@ -11,9 +11,10 @@
       <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
   </head>
   <body>
-    <nav class="topnav">
+    <div class="app-shell">
+    <nav class="sidebar">
       <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
-      <div class="navlinks">
+      <div class="sidebar-links">
         <a href="index.html">🏠 Home</a>
         <a href="analyze.html">Performance Analysis</a>
         <a href="live.html">Live &amp; Engine</a>
@@ -30,6 +31,7 @@
       </div>
           <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
     </nav>
+    <div class="main-col">
     <div id="app">
       <header class="app-header">
         <h1>📖 Opening Theory</h1>
@@ -528,6 +530,8 @@
       <footer class="app-footer">
         OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit mate line, the Schliemann's discovered check and material count, the Two Knights trap's forcing sequence, and the Accelerated Panov's queen-hanging trap (engine-confirmed as a genuine capture, not just asserted) · all fourteen historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
       </footer>
+    </div>
+    </div>
     </div>
     <script type="module" src="/src/openingTheory.ts"></script>
   </body>
