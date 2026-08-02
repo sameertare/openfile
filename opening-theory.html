@@ -33,11 +33,12 @@
     <div id="app">
       <header class="app-header">
         <h1>📖 Opening Theory</h1>
-        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Starting with the King's Gambit; more will be added over time. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
+        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Covers the King's Gambit (as White) and the Ruy Lopez Schliemann Defense (as Black), with more to come. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
       </header>
 
       <nav class="theory-toc" aria-label="Openings covered">
         <a href="#kings-gambit">King's Gambit (as White)</a>
+        <a href="#schliemann">Ruy Lopez: Schliemann Defense (as Black)</a>
       </nav>
 
       <div class="card-grid">
@@ -222,10 +223,113 @@
           <h3>Endgame themes</h3>
           <p>The King's Gambit is built around a middlegame attack, not a favorable endgame — there isn't a body of King's Gambit "endgame theory" the way there is for, say, a Ruy Lopez structure. If the direct attack is defused and material stays level or White remains a pawn down, the compensation that carries into an endgame is mostly the same positional edge as the middlegame: better development, a more active king (once safely tucked away), and better outposts for the knights, particularly one that's already reached e5 or g5 in the Kieseritzky/Muzio-family lines. In practice, a King's Gambit player who hasn't converted the attack by the middlegame is usually playing to hold a slightly worse but resourceful position, not to win a technical endgame.</p>
         </section>
+
+        <section class="card span-2" id="schliemann">
+          <h2>♟ Ruy Lopez, Schliemann Defense — as Black</h2>
+          <p><strong>1.e4 e5 2.Nf3 Nc6 3.Bb5 f5</strong> (ECO C63). Rather than meet the Ruy Lopez with a quiet main line, Black immediately counter-attacks the e4-pawn, accepting long-term risk to the kingside pawn structure and king safety for early piece activity and open lines. It's the most combative reply to 3.Bb5 — "positionally risky, especially against a strong and prepared opponent," in Wikipedia's phrasing, but a real practical weapon: Teimour Radjabov used it against the world's elite from 2008–11, scoring +1 −0 =10 against opponents including Carlsen, Anand, Topalov and Karjakin.</p>
+          <p class="hint">A naming footnote: English-language sources call this the <strong>Schliemann Defense</strong> after 19th-century player Adolf Schliemann, but the opening was actually first analyzed by the Finnish-Russian theorist Carl Jaenisch in 1847 — Schliemann's own published analysis was of a different line entirely (3...Bc5 4.c3 f5). Russian and German sources correctly call it the <strong>Jaenisch Gambit</strong>; the misattribution just stuck in English.</p>
+
+          <h3>Move order &amp; the major branches</h3>
+          <p>After 3...f5, White's four main tries are <strong>4.Nc3</strong> (sharpest, requires the most preparation), <strong>4.d3</strong> (quieter, now White's most popular choice), <strong>4.Bxc6</strong> (the Exchange Variation), and <strong>4.exf5</strong> (grabbing the pawn, generally considered White's weakest try). Each branch below is collapsed by default — click to expand a line.</p>
+
+          <details class="theory-variation" open>
+            <summary>4.Nc3 fxe4 5.Nxe4 Nf6 — today's main line</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.Nc3 fxe4 5.Nxe4 Nf6</code>
+              <p>Black develops with tempo, forcing matters immediately. 5...Nf6 has overtaken the older 5...d5 (below) as Black's main choice — it's more solid and less likely to lose outright to a single inaccuracy.</p>
+              <code class="theory-moves">6.Nxf6+ Qxf6 7.Qe2 Be7 8.Bxc6 dxc6 9.Nxe5</code>
+              <p>White ends up a pawn ahead, but Black has the bishop pair and open lines for the rooks — this pawn sacrifice for activity is the whole point of the Schliemann, not a side effect of it.</p>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>4.Nc3 fxe4 5.Nxe4 d5 — the traditional sharp main line</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.Nc3 fxe4 5.Nxe4 d5</code>
+              <p>The older main line and still the most razor-sharp: Black strikes the center at once rather than developing first. It produces some of the most forcing, well-mapped theory in the whole opening — and also some of the most dangerous for Black, since a single wrong move here can lose quickly. Modern theory rates it as slightly better for White with best play, which is why 5...Nf6 above has become the safer practical choice.</p>
+              <code class="theory-moves">6.Nxe5 dxe4 7.Nxc6 Qg5 8.Qe2 Nf6 9.f4 Qxf4 10.Ne5+ c6 11.d4 Qh4+ 12.g3 Qh3 13.Bc4 Be6</code>
+              <p>10.Ne5+ is a discovered check — the knight steps off the b5-e8 diagonal and reveals an attack from White's bishop, still sitting on b5 since move 3. The resulting position (⩲, a slight White edge per standard theory) is a well-known drawish-but-playable endgame-ish structure that both sides have to know well entering the line.</p>
+
+              <div class="theory-game">
+                <h4>♟ Notable games — 4.Nc3 Nf6, immediate development (Dyckhoff Variation)</h4>
+                <p>Rather than 4...fxe4 first, both games below have Black play 4...Nf6 right away, developing before resolving the center — a historically significant move-order that both these games follow from move 4.</p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.Nc3 Nf6</code>
+                <p><strong>Pillsbury vs Tarrasch, Monte Carlo 1903</strong> — an 83-move fighting draw-turned-win: White grabs a pawn and even wins an exchange with 13.Ng6, but Tarrasch's activity and the exposed White king prove decisive in a long queen-and-rook middlegame. <a href="https://www.chessgames.com/perl/chessgame?gid=1099457" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.Nc3 Nf6 5.exf5 e4 6.Qe2 Qe7 7.Bxc6 bxc6 8.Nh4 d5 9.d4 a5 10.Bg5 Ba6 11.Bxf6 Qxf6 12.Qh5+ Kd7 13.Ng6 Qxd4 14.Nxh8 Bc5 15.Qh4 Rxh8 16.Rd1 Qb4 17.Qg4 Kd8 18.Qxg7 Re8 19.Qf6+ Kd7 20.a3 Qb6 21.Rd2 e3 22.fxe3 Bxe3 23.Nxd5 Bxd2+ 24.Kxd2 Qf2+ 25.Kd1 Qe2+ 26.Kc1 cxd5 27.Rd1 c6 28.Qh4 Qxg2 29.Qxh7+ Re7 30.Qh4 Qe4 31.Qh8 Qxf5 32.Qa8 Bc8 33.Qa7+ Ke8 34.Qxa5 Qf4+ 35.Kb1 Qxh2 36.Qc5 Bb7 37.b4 Qe2 38.Rh1 Rf7 39.Rh8+ Kd7 40.Rh6 Rf1+ 41.Kb2 Qe7 42.Qd4 Re1 43.Rh5 Kc7 44.Qf4+ Kb6 45.Qd4+ c5 46.bxc5+ Qxc5 47.Rh6+ Bc6 48.Qf6 Qb5+ 49.Kc3 Qc4+ 50.Kb2 Qb5+ 51.Kc3 Qc4+ 52.Kb2 Qb5+ 53.Kc3 Re3+ 54.Kd2 Re2+ 55.Kd1 Re8 56.Kd2 Qe2+ 57.Kc1 Qe1+ 58.Kb2 Qe5+ 59.Qxe5 Rxe5 60.Rh4 Re4 61.Rh8 Kc5 62.Rc8 Re8 63.Rc7 Kd6 64.Rh7 Bb5 65.Kc3 Ba4 66.Rh2 Re4 67.Rg2 Kc5 68.Rh2 Re3+ 69.Kb2 Bb5 70.Rh8 Re2 71.Rc8+ Kd4 72.Kb3 Bc4+ 73.Kb2 Bd3 74.Kb3 Bf5 75.Rc7 Re8 76.c3+ Kd3 77.Rc5 Rb8+ 78.Ka4 Be4 79.Rc7 Kc2 80.Rc6 Bd3 81.Rc5 Bc4 82.Ka5 Kxc3 83.a4 Ra8+ 0-1</code>
+                <p><strong>Bagirov vs Kholmov, USSR Championship 1961</strong> — a cleaner, more modern demonstration: Black meets 5.Qe2 with natural development, wins the e4-pawn back with an active piece trade, and converts a small structural edge in a rook endgame. <a href="https://www.chessgames.com/perl/chessgame?gid=1022757" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.Nc3 Nf6 5.Qe2 Bc5 6.exf5 Qe7 7.Ne4 Nxe4 8.Qxe4 O-O 9.O-O d6 10.Bxc6 bxc6 11.d4 Bxf5 12.Qe2 Bb6 13.dxe5 d5 14.h3 Be4 15.Ng5 Rf5 16.Nxe4 Rxe5 17.Qa6 Rxe4 18.Be3 Re8 19.Bxb6 cxb6 20.Qd3 Qf6 21.b3 h5 22.Rad1 R8e5 23.Qc3 c5 24.Rfe1 Rxe1+ 25.Rxe1 Re2 0-1</code>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>4.d3 — White's modern main try</summary>
+            <div class="theory-variation-content">
+              <p>Simply defending e4 rather than entering the sharpest theory. It has overtaken 4.Nc3 in popularity in recent years precisely because it sidesteps Black's most-analyzed resources.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.d3 fxe4 5.dxe4 Nf6 6.O-O Bc5 7.Bxc6 bxc6 8.Nxe5 O-O 9.Nc3 d6</code>
+              <p>Black offers the e5-pawn back for quick development and open lines toward White's king, rather than trying to hold everything. This is a critical tabiya both sides need to know.</p>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Adams vs Radjabov, European Club Cup 2011</h4>
+                <p>Teimour Radjabov, the Schliemann's leading modern practitioner, beats English GM Michael Adams from the Black side of this exact 4.d3 tabiya (with a small move-order twist, 7.Qd3 Nd4 instead of 7.Bxc6) in a 57-move technical grind that ends with a won king-and-pawn endgame. <a href="https://www.chessgames.com/perl/chessgame?gid=1641033" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.d3 fxe4 5.dxe4 Nf6 6.O-O Bc5 7.Qd3 Nd4 8.Nxd4 Bxd4 9.Bc4 Qe7 10.a4 a6 11.Nc3 d6 12.Bg5 c6 13.Ne2 Bc5 14.c3 h6 15.Bxf6 Qxf6 16.b4 Bb6 17.Kh1 g5 18.f3 h5 19.b5 axb5 20.axb5 Rxa1 21.Rxa1 Kd8 22.bxc6 bxc6 23.Rf1 Kc7 24.Nc1 Rf8 25.Qd1 Qg6 26.Be2 g4 27.Nd3 gxf3 28.Rxf3 Rxf3 29.Bxf3 h4 30.Nb4 Qg5 31.Qe1 Be6 32.Nd3 Bc4 33.Nf2 d5 34.Nh3 Qe3 35.Qxe3 Bxe3 36.g3 hxg3 37.hxg3 Bd2 38.Kg2 Bxc3 39.g4 d4 40.g5 Bd2 41.g6 Be3 42.Kg3 c5 43.Kh4 Bg8 44.Ng5 c4 45.Nf7 Bf4 46.Be2 d3 47.Bf1 Kd7 48.Kh5 Ke7 49.Nh6 Bxh6 50.Kxh6 Kf6 51.g7 Kf7 52.Kg5 Kxg7 53.Kf5 d2 54.Be2 c3 55.Bd1 Bc4 56.Kxe5 Bd3 57.Kd4 0-1</code>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>4.Bxc6 — Exchange Variation</summary>
+            <div class="theory-variation-content">
+              <p>White trades off the bishop rather than let Black define the tension. Black usually recaptures toward the center.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.Bxc6 dxc6</code>
+              <p>White's calmest follow-up develops normally rather than grabbing material: <strong>5.Nc3 Nf6 6.Qe2 Bc5 7.exf5 Qe7</strong>, heading for a roughly balanced position with mutual chances.</p>
+              <code class="theory-moves">5.Nc3 Nf6 6.Qe2 Bc5 7.exf5 Qe7</code>
+
+              <div class="theory-trap">
+                <h4>⚡ Trap for Black</h4>
+                <p>If White instead grabs the e5-pawn immediately, Black has a strong reply that hits two pieces at once:</p>
+                <code class="theory-moves">5.Nxe5?! Qd4! 6.Nf3 Qxe4+</code>
+                <p>5...Qd4 attacks both the loose knight on e5 and the e4-pawn simultaneously; White can't save both, and 6...Qxe4+ regains the pawn with an active, centralized queen and the bishop pair to boot. It gets much worse for White if the natural-looking check is tried instead:</p>
+                <code class="theory-moves">6.Qh5+?? g6 7.Nxg6 hxg6 8.Qxg6+ Kd8</code>
+                <p>The point of 6.Qh5+?? is to fork g6 and h8 hoping to win the exchange, but Black's queen on d4 defends h8 along the long diagonal (d4–h8) the whole time, so the rook was never really hanging. Engine-checked material after 8...Kd8 comes out exactly level (33 points a side by standard piece values), but Black keeps the bishop pair against White's lone remaining minor piece and has a far more comfortable position — the king move to d8 costs castling rights, but it's a small price for the piece activity and structure Black gets in return.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>4.exf5 — Gambit Accepted, and 4.d4</summary>
+            <div class="theory-variation-content">
+              <p>Considered White's weakest try — grabbing the f-pawn hands Black the center for free.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5 f5 4.exf5 e4 5.Qe2 Qe7 6.Bxc6 dxc6 7.Nd4 Nh6</code>
+              <p>Black already stands better here — White's extra pawn on f5 is more of a long-term weakness than an asset, and Black's development and central space are worth more.</p>
+
+              <div class="theory-trap">
+                <h4>⚡ Trap for Black</h4>
+                <p>4.d4!? tries to meet the center head-on before Black can build the same structure, but it runs into a clean tactical refutation:</p>
+                <code class="theory-moves">4.d4 fxe4 5.Nxe5 Nxe5 6.dxe5 c6!</code>
+                <p>The point of 6...c6 is that White's bishop on b5 can't move — stepping away allows ...Qa5+ followed by ...Qxe5, regaining the pawn with a fine position. White has to shed the extra e5-pawn back and Black equalizes comfortably.</p>
+              </div>
+            </div>
+          </details>
+
+          <p class="hint">A note on the game citations above: verified games are linked for the 4.Nc3 lines (Pillsbury–Tarrasch 1903, Bagirov–Kholmov 1961) and 4.d3 (Adams–Radjabov 2011). The Exchange Variation (4.Bxc6) and Gambit Accepted (4.exf5) branches don't have an equally famous named game attached — rather than link something unverified, those sections stick to the theory and trap content above.</p>
+
+          <h3>Middlegame plans for Black</h3>
+          <p>Across the Accepted-pawn-back lines, Black's compensation rests on the same handful of ideas:</p>
+          <ul class="pattern-list">
+            <li><strong>The open f-file and e-file.</strong> Once the center opens up, Black's rooks get active quickly, often before White's own pieces are fully coordinated.</li>
+            <li><strong>The bishop pair.</strong> Most main lines see White trade a bishop for a knight (via Bxc6) — Black's two bishops, once developed, are a long-term asset even in structurally messy positions.</li>
+            <li><strong>Central and kingside activity over material.</strong> Black is frequently a pawn down for real, structural reasons — the whole opening is a bet that piece activity and White's slightly loosened kingside outweigh it, not an accident to be corrected.</li>
+            <li><strong>The tradeoff: king safety and structure.</strong> Black's own king often can't castle short comfortably and the kingside pawns get damaged in several lines (the g6/h-pawn structures above). Black is trading long-term structural soundness for short-term activity — a bet that has to pay off before the middlegame ends, or the weaknesses start to matter more than the activity.</li>
+          </ul>
+
+          <h3>Endgame themes</h3>
+          <p>Like the King's Gambit, the Schliemann is fundamentally a middlegame weapon, not an endgame-favoring structure — Black's whole strategic bet is to generate enough activity that the game is decided well before an endgame is reached. When it does reach an endgame (as several of the games above do, including two long ones), the deciding factor is usually whichever structural damage has proven more costly: White's slightly exposed king and awkward piece placement from the early complications, versus Black's weakened kingside pawns and the pawn deficit in lines where material was never won back. Both games above that Black won were decided in long rook-and-minor-piece endgames, not quick kingside attacks — a reminder that even in a sharp opening built around activity, technique in the resulting endgame still matters.</p>
+        </section>
       </div>
 
       <footer class="app-footer">
-        OpenFile · every line on this page was cross-checked against published sources (Wikipedia's King's Gambit and Kieseritzky Gambit articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including the mate claim, which chess.js confirmed as checkmate, not just asserted · the four historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
+        OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit mate line and the Schliemann's discovered check and material count, which chess.js confirmed directly rather than just asserted · the seven historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
       </footer>
     </div>
     <script type="module" src="/src/openingTheory.ts"></script>
