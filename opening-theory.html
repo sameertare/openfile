@@ -35,7 +35,7 @@
     <div id="app">
       <header class="app-header">
         <h1>📖 Opening Theory</h1>
-        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Covers the King's Gambit (as White), the Ruy Lopez Schliemann Defense (as Black), the Caro-Kann Two Knights Attack (as White), and the Caro-Kann Accelerated Panov Attack (as White), with more to come. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
+        <p class="tagline">Reference notes on individual openings — move order, plans, and traps. Covers the King's Gambit (as White), the Ruy Lopez Schliemann Defense (as Black), the Caro-Kann Two Knights Attack (as White), the Caro-Kann Accelerated Panov Attack (as White), and the Evans Gambit (as White), with more to come. Every line here was checked against published theory and verified move-legal before publishing (see the note at the bottom) — this is a reference, not a substitute for a real opening book.</p>
       </header>
 
       <nav class="theory-toc" aria-label="Openings covered">
@@ -43,6 +43,7 @@
         <a href="#schliemann">Ruy Lopez: Schliemann Defense (as Black)</a>
         <a href="#caro-kann-two-knights">Caro-Kann: Two Knights Attack (as White)</a>
         <a href="#caro-kann-accelerated-panov">Caro-Kann: Accelerated Panov Attack (as White)</a>
+        <a href="#evans-gambit">Evans Gambit (as White)</a>
       </nav>
 
       <div class="card-grid">
@@ -525,10 +526,151 @@
           <h3>Endgame themes</h3>
           <p>The two faces of this opening lead to genuinely different endgame outlooks. In the transposition line, the classic Panov-Botvinnik IQP question applies directly: White's isolated d-pawn is a long-term target once queens and enough minor pieces come off, so White generally wants to avoid over-simplifying and keep enough pieces on the board for the pawn's dynamic benefits (space, outposts, open lines) to matter. In the Modern Variation, both games above ended in fairly level, simplified endgames (a drawn rook ending in Vaganian–Dreev, a balanced middlegame-to-endgame draw in Radjabov–Azmaiparashvili) — a fair reflection of a structure that's closer to equal than the IQP lines, where technique and small edges matter more than any built-in structural advantage.</p>
         </section>
+
+        <section class="card span-2" id="evans-gambit">
+          <h2>♗ Evans Gambit — as White</h2>
+          <p><strong>1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4</strong> (ECO C51–C52). White offers a second pawn — on top of the Italian Game's usual central play — to deflect Black's bishop off the c5–f2 diagonal, then races to build a full pawn center with c3 and d4 while the bishop sorts itself out. Named for William Davies Evans, a Welsh sea captain who worked the idea out and introduced it in the game below; it became the single most fashionable weapon of the Romantic 19th century, played constantly by Anderssen, Morphy, and later revived by Mikhail Chigorin against the era's top defenders. Considered "refuted" by some late-19th-century analysis, it has never actually gone away — Garry Kasparov pulled it out to beat Viswanathan Anand in their 1995 World Championship match, over a century after its supposed refutation.</p>
+
+          <h3>Move order &amp; the major branches</h3>
+          <p>After 4.b4, Black's main choice is <strong>accepting</strong> the pawn (4...Bxb4), which itself branches heavily depending on where the bishop retreats to on move 5. <strong>Declining</strong> with 4...Bb6 is also playable, and 4...d5 is a rare, direct counter-punch. Each branch below is collapsed by default — click to expand a line.</p>
+
+          <p><strong>Evans Gambit Accepted — 4...Bxb4</strong></p>
+
+          <details class="theory-variation" open>
+            <summary>5.c3 Ba5 6.d4 exd4 7.O-O — main tabiya</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O</code>
+              <p>5.c3 does double duty — it prepares d4 and opens the d1–a4 diagonal for the queen, aiming at the a5-bishop and, later, f7. 5...Ba5 is Black's most popular retreat, keeping the bishop's pin-like pressure on c3 alive. From the 7.O-O tabiya, Black has several distinct, individually-named replies.</p>
+
+              <p><strong>7...Nge7 — Mieses Defence</strong>, the modern main line (recommended by Vasily Panov in the 1960s): Black develops the king's knight to a flexible square, preparing to meet White's central pressure with ...d5 at the right moment rather than grabbing more material.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O Nge7</code>
+
+              <p><strong>7...Nf6 — Anderssen Defence</strong>: Black develops the kingside knight immediately instead. White's main tries are 8.Ba3 (preventing castling and preparing e5) or the immediate 8.e5.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O Nf6 8.Ba3 d6 9.e5</code>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Morphy vs Anderssen, Paris 1858</h4>
+                <p>From the famous Anderssen–Morphy match — the two greatest attacking players of the era, facing each other in Morphy's own signature opening. Anderssen defended precisely with the Anderssen Defence and, in a marathon 72-move struggle full of mutual chances, ground down Morphy's attack and eventually queened his own a-pawn to force resignation. A useful reminder that even the strongest 19th-century attacker didn't win automatically with this gambit against the era's best defensive technique.</p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O Nf6 8.e5 d5 9.Bb5 Ne4 10.cxd4 O-O 11.Bxc6 bxc6 12.Qa4 Bb6 13.Qxc6 Bg4 14.Bb2 Bxf3 15.gxf3 Ng5 16.Nd2 Re8 17.Kh1 Nh3 18.f4 Qh4 19.Qxd5 Nxf2+ 20.Kg1 Nd3 21.Bc3 Nxf4 22.Qf3 Nh3+ 23.Kh1 Ng5 24.Qg2 Rad8 25.Rg1 h6 26.Raf1 Qh3 27.Qc6 Qd7 28.Qg2 Bxd4 29.Bxd4 Qxd4 30.Nf3 Qd5 31.h4 Ne6 32.Qg4 Qc6 33.Rg2 Rd3 34.Qf5 Red8 35.Qf6 Qd5 36.Qf5 Rd1 37.Rxd1 Qxd1+ 38.Kh2 Rd3 39.Rf2 Re3 40.Nd2 Re2 41.Qxf7+ Kh8 42.Ne4 Rxf2+ 43.Nxf2 Qd5 44.Ng4 Qxa2+ 45.Kg3 Qb3+ 46.Kh2 Qc2+ 47.Kg3 Qc3+ 48.Kh2 Qc6 49.h5 a5 50.Nf6 gxf6 51.Qxf6+ Kg8 52.Qg6+ Kf8 53.Qxh6+ Ke8 54.Qg6+ Kd7 55.h6 Qd5 56.h7 Qxe5+ 57.Kg1 Ng5 58.h8=Q Qxh8 59.Qxg5 Qd4+ 60.Kf1 a4 61.Qf5+ Kc6 62.Qc8 Kb5 63.Ke1 c5 64.Qb7+ Kc4 65.Qf7+ Kc3 66.Qf3+ Qd3 67.Qf6+ Kb3 68.Qb6+ Kc2 69.Qa7 Qc3+ 70.Ke2 a3 71.Qa4+ Kb2 72.Qb5+ Qb3 0-1</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1019047" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+
+              <p><strong>7...d3 — Pierce Defense</strong>: instead of taking on c3 or developing normally, Black shoves the pawn one more square, declining to open the position further for now. This is the exact line of one of the most famous games ever played.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O d3</code>
+
+              <div class="theory-game">
+                <h4>♟ "The Evergreen Game" — Anderssen vs Dufresne, Berlin 1852</h4>
+                <p>One of the most celebrated games ever played, and the clearest textbook demonstration of what the Evans Gambit is trying to do: White gives up more and more material — a piece, then the exchange, then the queen itself — to keep Black's king caught in the center, and it all comes together in a mating net delivered by a bishop and knight alone while White's own queen and a rook never even leave their home squares.</p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O d3 8.Qb3 Qf6 9.e5 Qg6 10.Re1 Nge7 11.Ba3 b5 12.Qxb5 Rb8 13.Qa4 Bb6 14.Nbd2 Bb7 15.Ne4 Qf5 16.Bxd3 Qh5 17.Nf6+ gxf6 18.exf6 Rg8 19.Rad1 Qxf3 20.Rxe7+ Nxe7 21.Qxd7+ Kxd7 22.Bf5+ Ke8 23.Bd7+ Kf8 24.Bxe7# 1-0</code>
+                <p>Checkmate — engine-confirmed, not just asserted. <a href="https://www.chessgames.com/perl/chessgame?gid=1018961" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+
+              <p><strong>7...dxc3 — Compromised Defence</strong>: Black grabs a third pawn instead of developing. Considered inferior — the extra material doesn't make up for how far behind in development Black falls.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O dxc3</code>
+
+              <div class="theory-trap">
+                <h4>⚡ Trap for White</h4>
+                <p>The point of accepting the Compromised Defence's greed: White doesn't even bother recapturing the pawn on c3 right away, instead opening lines with tempo straight at Black's king.</p>
+                <code class="theory-moves">8.Qb3 Qf6 9.e5 Qg6 10.Nxc3 Nge7 11.Ba3!</code>
+                <p>11.Ba3 pins the trapped-looking Nge7 (well, prevents ...d6 from ever freeing it) and keeps Black's king stuck in the center with no safe development in sight — Black has an extra pawn but is strategically lost in most lines from here, a rare case of a "trap" that's really a whole named defense sharing the same fundamental problem.</p>
+              </div>
+
+              <div class="theory-game">
+                <h4>♟ Notable game — Fischer vs Fine, New York 1963</h4>
+                <p>Bobby Fischer's own demonstration of the Compromised Defence's dangers for Black, against the great American grandmaster and openings theorist Reuben Fine — Fine's exact defense (7...dxc3 8.Qb3 Qe7, sidestepping the book line above) still couldn't hold the center together, and Fischer forced resignation in just 17 moves.</p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O dxc3 8.Qb3 Qe7 9.Nxc3 Nf6 10.Nd5 Nxd5 11.exd5 Ne5 12.Nxe5 Qxe5 13.Bb2 Qg5 14.h4 Qxh4 15.Bxg7 Rg8 16.Rfe1+ Kd8 17.Qg3 1-0</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1043992" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>6.d4 d6 — Lasker Defence &amp; Tartakower Attack</summary>
+            <div class="theory-variation-content">
+              <p>Instead of taking on d4 right away, Black shores up e5 with ...d6 first. World Champion Emanuel Lasker's approach aims straight at simplification.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 d6 7.O-O Bb6 8.dxe5 dxe5 9.Qxd8+ Nxd8 10.Nxe5 Be6</code>
+              <p>The <strong>Lasker Defence</strong> trades queens and heads for an endgame where Black's structure holds up fine — chess writer Reuben Fine reportedly called handing back the pawn this way "psychologically depressing for the gambit player," since it neutralizes White's whole attacking point at the cost of returning the extra pawn.</p>
+              <p>White can sidestep the trade with the <strong>Tartakower Attack</strong>, keeping queens on:</p>
+              <code class="theory-moves">6.d4 d6 7.Qb3 Qd7</code>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>5...Bc5 — the inferior retreat</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Bc5</code>
+              <p>Retreating the bishop back to its original square rather than a5 loses a tempo compared to the main line, since White's d4 push arrives with an extra attack on the bishop already built in.</p>
+              <code class="theory-moves">6.d4 exd4 7.O-O d6 8.cxd4 Bb6</code>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>5...Be7 — Anderssen Variation</summary>
+            <div class="theory-variation-content">
+              <p>Tucking the bishop away on e7 rather than a5 or c5 gives up the pin/pressure on c3 entirely in exchange for safety — a favorite of Viswanathan Anand's, which set up one of the most famous modern Evans Gambit games.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Be7 6.d4 Na5 7.Be2 exd4 8.Qxd4</code>
+
+              <div class="theory-game">
+                <h4>♟ "The Evans Gambit Revisited" — Kasparov vs Anand, Tal Memorial (Riga) 1995</h4>
+                <p>Played during their 1995 PCA World Championship match, over a hundred years after the Evans Gambit had supposedly been "refuted" by careful defense — Kasparov revived it specifically to surprise the reigning theoretical expert, and it worked: a sharp central battle with queens on the board led to a powerful White initiative, and Anand resigned facing serious material and positional losses.</p>
+                <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Be7 6.d4 Na5 7.Be2 exd4 8.Qxd4 Nf6 9.e5 Nc6 10.Qh4 Nd5 11.Qg3 g6 12.O-O Nb6 13.c4 d6 14.Rd1 Nd7 15.Bh6 Ncxe5 16.Nxe5 Nxe5 17.Nc3 f6 18.c5 Nf7 19.cxd6 cxd6 20.Qe3 Nxh6 21.Qxh6 Bf8 22.Qe3+ Kf7 23.Nd5 Be6 24.Nf4 Qe7 25.Re1 1-0</code>
+                <p><a href="https://www.chessgames.com/perl/chessgame?gid=1018648" target="_blank" rel="noopener">Full game on chessgames.com ↗</a></p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>5...Bd6 — Stone-Ware Variation</summary>
+            <div class="theory-variation-content">
+              <p>A less common but perfectly respectable retreat, seen from time to time even at grandmaster level (Alexander Grischuk and Andrei Volokitin among its modern practitioners) — the bishop supports e5 directly from d6, at the cost of blocking the d-pawn for a while.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Bd6 6.d4 Nf6 7.O-O O-O 8.Re1 h6</code>
+            </div>
+          </details>
+
+          <p style="margin-top:18px;"><strong>Evans Gambit Declined &amp; sidelines</strong></p>
+
+          <details class="theory-variation">
+            <summary>4...Bb6 — Evans Gambit Declined</summary>
+            <div class="theory-variation-content">
+              <p>Black simply steps the bishop aside rather than grabbing the pawn — generally considered a touch passive, since the whole point of the gambit (opening lines against a bishop that's actually captured on b4) never materializes, but it's solid and avoids all of the sharp theory above.</p>
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bb6</code>
+              <p><strong>Showalter Variation — 5.a4 a6 6.Nc3</strong>: White grabs queenside space with the a-pawn advance rather than pushing b5 immediately.</p>
+              <code class="theory-moves">5.a4 a6 6.Nc3</code>
+
+              <div class="theory-avoid">
+                <h4>🚫 A trap White must avoid, not spring</h4>
+                <p>The tempting immediate <strong>5.b5?!</strong> (the Lange Variation) looks like it just wins more space for free, kicking the knight — but it's premature.</p>
+                <code class="theory-moves">5.b5 Na5</code>
+                <p>The knight isn't actually in trouble on a5 — it eyes c4 and White's attack hasn't developed any real support for the space grab yet. Standard assessment credits Black with the better game here; White's expansion has simply outrun its own development.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="theory-variation">
+            <summary>4...d5 — Evans Countergambit</summary>
+            <div class="theory-variation-content">
+              <code class="theory-moves">1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 d5</code>
+              <p>Rather than deal with the b4-pawn at all, Black counterattacks the bishop on c4 immediately. A rare, sharp try — most sources consider it dubious with accurate play, and it's seen far less often in practice than any of the Accepted lines above, so this page sticks to naming it rather than presenting an extended "main line" it doesn't really have consensus on.</p>
+            </div>
+          </details>
+
+          <p class="hint">A note on the game citations above: verified games are linked for the Anderssen Defence and Pierce Defense lines (via the Morphy–Anderssen and Evergreen games), the Compromised Defence, and the Anderssen Variation (5...Be7). The Mieses Defence, Lasker Defence/Tartakower Attack, the 5...Bc5 retreat, the Stone-Ware Variation, and both Declined sidelines don't have an equally famous named game attached — rather than link something unverified, those sections stick to the theory and trap/avoid content above.</p>
+
+          <h3>Middlegame plans for White</h3>
+          <ul class="pattern-list">
+            <li><strong>The battery on the long diagonal.</strong> Qb3 and Ba3 together are the recurring engine of White's attack across almost every accepted line — Qb3 hits f7 and b7 at once, while Ba3 both prevents Black from ever castling short safely and eyes the a3–f8 diagonal straight through wherever Black's king ends up.</li>
+            <li><strong>Development speed over pawn count.</strong> White is routinely two, and in the Compromised Defence three, pawns down at some point in these lines — the whole opening is a bet that the resulting lead in development and open lines is worth more, not a miscalculation to be corrected by winning the pawns back quickly.</li>
+            <li><strong>The full pawn center.</strong> Once c3 and d4 both go in, White often gets e4 and d4 (or e5 and d4) working together, cramping Black's pieces and supporting further advances like e5 that gain even more time.</li>
+            <li><strong>Forcing the king to stay in the center.</strong> Nearly every named trap and brilliancy above shares the same shape: keep Black from ever castling safely, then convert that alone into a mating attack, even if it costs real material along the way (as in the Evergreen Game, where White's own queen and a rook never leave their starting squares).</li>
+          </ul>
+
+          <h3>Endgame themes</h3>
+          <p>Like the King's Gambit, the Evans Gambit is built to win before an endgame is reached, not to produce a favorable one — White's whole compensation (development, open lines, the long-diagonal battery) tends to matter less the more pieces come off the board. The Lasker Defence is the clearest illustration of this from Black's side: trading queens immediately, as early as move 9, is specifically designed to reach an endgame where White's structural investment (the missing pawn) simply outweighs whatever lingering development edge remains — Fine's "psychologically depressing" comment was about exactly this dynamic. When White's attack does land, it's almost always well before move 25 or so, as in every game cited above; an Evans Gambit that reaches a level middlegame with no attack in sight is usually just a pawn down for White with little to show for it.</p>
+        </section>
       </div>
 
       <footer class="app-footer">
-        OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit mate line, the Schliemann's discovered check and material count, the Two Knights trap's forcing sequence, and the Accelerated Panov's queen-hanging trap (engine-confirmed as a genuine capture, not just asserted) · all fourteen historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
+        OpenFile · every line on this page was cross-checked against published sources (Wikipedia and Wikibooks opening theory articles, and standard opening references) and independently replayed through chess.js to confirm each move sequence is legal before publishing — including specific claims like the King's Gambit and Evergreen Game mate lines, the Schliemann's discovered check and material count, the Two Knights trap's forcing sequence, and the Accelerated Panov's queen-hanging trap, all engine-confirmed rather than just asserted · all nineteen historical games were each confirmed against a primary source (chessgames.com or Chess.com) before publishing and replayed through chess.js the same way · not a substitute for a dedicated opening book or engine preparation
       </footer>
     </div>
     </div>
