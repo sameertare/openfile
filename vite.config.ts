@@ -28,7 +28,6 @@ export default defineConfig({
         fideRating: page('./fide-rating.html'),
         about: page('./about.html'),
         gettingStarted: page('./getting-started.html'),
-        openingTheory: page('./opening-theory.html'),
       },
     },
   },
