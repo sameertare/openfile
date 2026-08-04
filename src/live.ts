@@ -214,7 +214,6 @@ function render() {
   $('#opening-name').textContent = openingNameFor(sansSoFar) ?? '';
 
   renderAssess(c, fen);
-  renderMoveList();
   updateNav();
   renderEvalGraph();
   updatePgnOutput();
@@ -255,8 +254,9 @@ function renderEvalGraph() {
 function updatePgnOutput() {
   const el = $('#live-pgn-moves');
   const label = $('#live-pgn-label');
-  // The Live and Play-vs-Engine tabs show the vertical move grid; hide it everywhere else.
-  if ((mode !== 'live' && mode !== 'play') || line.length < 2) {
+  // Shown on every tab that has a move line to display (Any Position, Live, Play vs Engine) —
+  // Endgame Drill hides the whole .live-layout instead, so it never reaches this function.
+  if (line.length < 2) {
     el.hidden = true;
     label.hidden = true;
     el.innerHTML = '';
@@ -339,30 +339,6 @@ function renderAssess(c: Chess, fen: string) {
     }
   }
   $('#move-assess').innerHTML = parts.join('');
-}
-
-function renderMoveList() {
-  const ml = $('#move-list');
-  // Live and Play-vs-Engine modes use the vertical lichess-style move grid instead of this
-  // horizontal list, so keep the horizontal one out of the way there.
-  if (mode === 'live' || mode === 'play') { ml.hidden = true; ml.innerHTML = ''; return; }
-  const n = line.length;
-  if (n <= 1) { ml.hidden = true; ml.innerHTML = ''; return; }
-  ml.hidden = false;
-  let html = '';
-  for (let k = 1; k < n; k++) {
-    const prevFen = line[k - 1].fen;
-    const color = prevFen.split(' ')[1];
-    const moveNo = parseInt(prevFen.split(' ')[5], 10);
-    if (color === 'w') html += `<span class="ml-num">${moveNo}.</span>`;
-    else if (k === 1) html += `<span class="ml-num">${moveNo}…</span>`;
-    html += `<span class="ml-move ${moveColorClass(k)} ${k === view ? 'cur' : ''}" data-ply="${k}">${line[k].san ?? '?'}</span>`;
-  }
-  ml.innerHTML = html;
-  ml.querySelectorAll<HTMLElement>('.ml-move').forEach((el) =>
-    el.addEventListener('click', () => goto(parseInt(el.dataset.ply!, 10)))
-  );
-  ml.querySelector('.cur')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }
 
 function updateNav() {
@@ -449,7 +425,7 @@ async function pump() {
         if (evalsW[view] != null) setEvalBar(evalsW[view]!);
         renderAssess(new Chess(line[view].fen), line[view].fen);
       }
-      renderMoveList();
+      updatePgnOutput();
       renderEvalGraph(); // the sparkline reflects the whole line, so any new eval refreshes it
     }
   } finally {
@@ -1366,7 +1342,7 @@ resetLine(START);
 render();
 setEvalBar(20);
 
-// Deep link from another tool, e.g. Analyze's "open in Live & Engine": ?game=<lichess URL/ID>
+// Deep link from another tool, e.g. Analyze's "open in Game Analysis": ?game=<lichess URL/ID>
 const deepLinkGame = new URLSearchParams(location.search).get('game');
 if (deepLinkGame) {
   document.querySelector<HTMLElement>('.tab[data-mode="live"]')?.click();

@@ -861,9 +861,9 @@ function gamesTableHtml(games: GameRecord[], openingsByFamily?: Map<string, Open
       const spark = evalGraph && evalGraph.length > 1
         ? renderSparklineSvg(evalGraph, { width: 140, height: 28 })
         : `<span class="hint">no engine data</span>`;
-      // Live & Engine can only load lichess games (chess.com has no public unauthenticated live-game API).
+      // Game Analysis can only load lichess games (chess.com has no public unauthenticated live-game API).
       const liveLink = /^https?:\/\/(www\.)?lichess\.org\//.test(g.site)
-        ? `<a href="live.html?game=${encodeURIComponent(g.site)}" target="_blank" rel="noopener" title="Open in Live &amp; Engine">▶</a>`
+        ? `<a href="live.html?game=${encodeURIComponent(g.site)}" target="_blank" rel="noopener" title="Open in Game Analysis">▶</a>`
         : '';
       const pgnBtn = g.sans?.length
         ? `<button class="btn-icon pgn-dl-btn" data-id="${esc(g.id)}" title="Download annotated PGN (engine evals + notes on flagged moves)">⬇</button>`
@@ -895,7 +895,7 @@ function renderGamesSection(games: GameRecord[], openings: OpeningRow[]): string
   const openingsByFamily = new Map(openings.map((o) => [o.family, o]));
   return `<div class="card span-2"><h2>📈 Games</h2>
     ${gamesTableHtml(games, openingsByFamily)}
-    <p class="hint">The eval graph tracks the position's evaluation (white's perspective) across the whole game. Click ▶ to open a game in Live &amp; Engine and step through it move by move. Click ⬇ to download that game as a standard PGN with engine evals and flagged-move notes baked in as comments. Click 🩺 for a strengths/weaknesses breakdown of that game's opening, middlegame, and endgame.</p>
+    <p class="hint">The eval graph tracks the position's evaluation (white's perspective) across the whole game. Click ▶ to open a game in Game Analysis and step through it move by move. Click ⬇ to download that game as a standard PGN with engine evals and flagged-move notes baked in as comments. Click 🩺 for a strengths/weaknesses breakdown of that game's opening, middlegame, and endgame.</p>
   </div>`;
 }
 

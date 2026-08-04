@@ -74,9 +74,9 @@ export interface LinePosition {
 }
 
 /**
- * Builds an annotated PGN from Live & Engine's in-memory position line — the same [%eval] comment
+ * Builds an annotated PGN from Game Analysis's in-memory position line — the same [%eval] comment
  * convention as buildAnnotatedPgn, plus the engine's suggested best move (converted to SAN)
- * wherever it differs from the move actually played, since Live & Engine keeps that per-position
+ * wherever it differs from the move actually played, since Game Analysis keeps that per-position
  * (not just for a handful of flagged moments).
  */
 export function buildPgnFromLine(opts: {
@@ -89,7 +89,7 @@ export function buildPgnFromLine(opts: {
   bestU: (string | null)[];
 }): string {
   const headers = [
-    headerLine('Event', opts.event || 'OpenFile Live & Engine'),
+    headerLine('Event', opts.event || 'OpenFile Game Analysis'),
     headerLine('Site', '?'),
     headerLine('Date', '????.??.??'),
     headerLine('White', opts.white || '?'),
