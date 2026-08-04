@@ -393,10 +393,16 @@ html.walldisplay { font-size: 26px; }
 #app.app-wide { max-width: 1400px; }
 .explorer-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   gap: 24px;
   align-items: start;
 }
+/* A lighter-weight card for secondary, supplementary panels (engine analysis, book theory) that
+   sit alongside the primary moves/games tables — same border/radius language as .card, just less
+   padding and a smaller heading so a stack of several doesn't read as one more full-size card per
+   scroll, on top of the moves and games tables already there. */
+.card-compact { padding: 14px 16px; }
+.card-compact h2 { font-size: 1rem; margin-bottom: 10px; }
 .explorer-board-col {
   display: flex;
   flex-direction: column;

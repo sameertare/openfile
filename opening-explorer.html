@@ -35,17 +35,11 @@
     <div id="app" class="app-wide">
       <header class="app-header">
         <h1>🌳 Opening Explorer</h1>
-        <p class="tagline">Turn your own games into a branching opening tree — see how often you play each move and how you actually score from there. Or scout an opponent's account the same way, before you play them.</p>
+        <p class="tagline">Turn any account's games — yours, or an opponent's before you play them — into a branching opening tree: see how often each move gets played and how it actually scores from there.</p>
       </header>
 
-      <div class="tabbar">
-        <button class="tab active" data-mode="me">🧑 My Repertoire</button>
-        <button class="tab" data-mode="opponent">🎯 Opponent Prep</button>
-      </div>
-      <p id="profile-status" class="hint" style="margin:-8px 0 18px;"></p>
-
       <section class="card" id="load-card">
-        <h2><span class="step">1</span> <span id="load-card-title">Load games</span></h2>
+        <h2><span class="step">1</span> Load games</h2>
         <div id="dropzone" class="dropzone">
           <p><strong>Drop PGN files here</strong> — or</p>
           <label class="btn btn-primary" for="file-input">Choose files</label>
@@ -120,7 +114,7 @@
       </section>
 
       <section class="card" id="scouting-card" hidden>
-        <h2>📋 Opponent Scouting Report</h2>
+        <h2>📋 Scouting Report</h2>
         <p class="hint">Openings, results, and time-control breakdown across every loaded game — no engine analysis (which would be too slow for scouting many games at once), so this covers what's knowable from results and openings alone.</p>
         <div id="scouting-body"></div>
       </section>
@@ -158,8 +152,15 @@
             </div>
             <div id="breadcrumb" class="breadcrumb"></div>
             <div id="node-stats" class="summary-cards"></div>
+          </div>
 
-            <section class="card" id="engine-card">
+          <div class="explorer-side-col">
+            <section class="card">
+              <h2>Moves from here</h2>
+              <div id="your-moves" class="games-table-wrap"></div>
+            </section>
+
+            <section class="card card-compact" id="engine-card">
               <h2>🔎 Engine analysis</h2>
               <div class="config-row">
                 <label>Depth
@@ -173,7 +174,12 @@
               <div id="explorer-candidates" class="candidates-panel"></div>
             </section>
 
-            <section class="card" id="book-card">
+            <section class="card">
+              <h2>Games reaching this position <span id="games-here-count" class="hint"></span></h2>
+              <div id="games-here" class="games-table-wrap"></div>
+            </section>
+
+            <section class="card card-compact" id="book-card">
               <h2>📚 Book theory <span class="hint">(Lichess)</span></h2>
               <div id="book-connect">
                 <p class="hint">Connect your Lichess account to see aggregate stats from millions of Lichess games at this exact position, alongside your own repertoire above. Lichess requires being signed in to use this — nothing else about your account is accessed.</p>
@@ -183,18 +189,6 @@
                 <p class="hint">Connected as <b id="book-username"></b> · <button id="lichess-disconnect-btn" class="btn btn-ghost btn-sm">Disconnect</button></p>
                 <div id="book-table" class="games-table-wrap"></div>
               </div>
-            </section>
-          </div>
-
-          <div class="explorer-side-col">
-            <section class="card">
-              <h2>Moves from here</h2>
-              <div id="your-moves" class="games-table-wrap"></div>
-            </section>
-
-            <section class="card">
-              <h2>Games reaching this position <span id="games-here-count" class="hint"></span></h2>
-              <div id="games-here" class="games-table-wrap"></div>
             </section>
           </div>
         </div>

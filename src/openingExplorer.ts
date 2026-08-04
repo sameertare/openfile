@@ -29,17 +29,17 @@ initTheme();
 // ---------- state ----------
 interface ExplorerGame { sans: string[]; color: Color; result: Result; opponent: string; opponentRating: number | null; link: string | null; date: string; }
 
-/** "My Repertoire" and "Opponent Prep" are two fully independent loaded datasets sharing the same
- *  UI chrome — switching tabs swaps which profile the load controls, tree, and browsing panels
- *  operate on, without losing whatever's loaded in the other one. */
+/** The one loaded dataset — whichever account (yours or an opponent's) is currently loaded. Every
+ *  panel below (tree, moves, games, scouting report, drill) reads from this same profile; loading
+ *  a new source replaces it rather than keeping a separate copy per "who". */
 interface Profile {
   parsedGames: ParsedGame[];
   username: string | null;
   matchKeys: Set<string> | null;
   explorerGames: ExplorerGame[];
   // Extra chip HTML from the most recent load (parse failures, bot/computer games excluded) —
-  // syncUiToActiveProfile() rebuilds fileSummary from scratch on every call (tab switch, fetch
-  // completion, etc.), so this has to live on the profile to survive past the load that set it.
+  // syncUiToProfile() rebuilds fileSummary from scratch on every call, so this has to live on the
+  // profile to survive past the load that set it.
   lastLoadNote: string;
   // Set only by a successful lichess/chess.com username fetch — a shareable position URL needs to
   // be reproducible by re-fetching the same account, which a PGN upload or loaded .tree file (no
@@ -49,10 +49,7 @@ interface Profile {
 function newProfile(): Profile {
   return { parsedGames: [], username: null, matchKeys: null, explorerGames: [], lastLoadNote: '', loadedFrom: null };
 }
-type Mode = 'me' | 'opponent';
-let mode: Mode = 'me';
-const profiles: Record<Mode, Profile> = { me: newProfile(), opponent: newProfile() };
-function active(): Profile { return profiles[mode]; }
+const profile: Profile = newProfile();
 
 let tree: RepertoireTree | null = null;
 let path: string[] = []; // SAN path from root to the currently viewed node
@@ -69,8 +66,6 @@ const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as
 const fileInput = $('#file-input') as HTMLInputElement;
 const dropzone = $('#dropzone');
 const fileSummary = $('#file-summary');
-const loadCardTitle = $('#load-card-title');
-const profileStatusEl = $('#profile-status');
 const configCard = $('#config-card');
 const detectedPlayerName = $('#detected-player-name');
 const detectedPlayerCount = $('#detected-player-count');
@@ -119,27 +114,10 @@ function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
 }
 
-// ---------- mode switching ----------
-document.querySelectorAll<HTMLButtonElement>('.tab[data-mode]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    mode = btn.dataset.mode as Mode;
-    document.querySelectorAll('.tab[data-mode]').forEach((b) => b.classList.toggle('active', b === btn));
-    syncUiToActiveProfile();
-  });
-});
-
-function profileSummary(p: Profile, label: string): string {
-  if (!p.username) return `${label}: not loaded yet`;
-  return `${label}: <b>${esc(p.username)}</b> — ${p.explorerGames.length} game${p.explorerGames.length === 1 ? '' : 's'}`;
-}
-
-/** Reflects whichever profile is now active into every piece of UI that depends on it — called on
- *  tab switch and after any load/fetch completes. */
-function syncUiToActiveProfile() {
-  const p = active();
-  loadCardTitle.textContent = mode === 'me' ? 'Load your games' : "Load the opponent's games";
-  profileStatusEl.innerHTML = `${profileSummary(profiles.me, '🧑 My Repertoire')} &nbsp;·&nbsp; ${profileSummary(profiles.opponent, '🎯 Opponent Prep')}`;
-
+/** Reflects the loaded profile into every piece of UI that depends on it — called after any
+ *  load/fetch completes. */
+function syncUiToProfile() {
+  const p = profile;
   const downloadBtn = p.parsedGames.length
     ? ` <button class="btn btn-ghost btn-sm dl-loaded-pgn-btn" title="Download every currently loaded game as one PGN file">⬇ Download PGN</button>`
     : '';
@@ -156,14 +134,12 @@ function syncUiToActiveProfile() {
     // Use each game's own original raw PGN text (headers exactly as fetched — real ratings, event
     // names, site URLs) rather than reconstructing synthetic ones, since the whole point here is a
     // faithful copy of what was actually loaded, not a re-derived summary of it.
-    const activeProfile = active(); // this button belongs to whichever profile was active when clicked
-    const pgn = activeProfile.parsedGames.map((g) => g.raw.trim()).join('\n\n');
-    const safeName = (activeProfile.username || 'games').replace(/[^\w.-]/g, '_').slice(0, 60);
-    downloadPgn(`${safeName}_${activeProfile.parsedGames.length}games.pgn`, pgn);
+    const pgn = profile.parsedGames.map((g) => g.raw.trim()).join('\n\n');
+    const safeName = (profile.username || 'games').replace(/[^\w.-]/g, '_').slice(0, 60);
+    downloadPgn(`${safeName}_${profile.parsedGames.length}games.pgn`, pgn);
   });
   fileSummary.querySelector('.save-tree-btn')?.addEventListener('click', () => {
-    const activeProfile = active();
-    downloadTreeFile(activeProfile);
+    downloadTreeFile();
   });
   detectedPlayerName.textContent = p.username ?? '—';
   detectedPlayerCount.textContent = p.explorerGames.length
@@ -184,16 +160,8 @@ function syncUiToActiveProfile() {
 }
 
 // ---------- file loading (same pattern as Performance Analysis) ----------
-// `profile` is resolved by the caller at the moment the user actually triggered the load (a click,
-// a drop), not by calling active() in here — this function runs after at least one await (reading
-// file contents), and the lichess/chess.com fetch flows below run after several more (a full
-// network round-trip), any of which gives the user time to switch the My Repertoire/Opponent Prep
-// tab before this code resumes. Resolving the target profile late would silently load into
-// whichever tab happens to be open when the network call *finishes*, not the one that was open when
-// it *started* — merging one profile's games into the other's.
 async function handleFiles(
   files: FileList | File[],
-  profile: Profile,
   forceUsername?: string,
   source: 'lichess' | 'chesscom' | null = null
 ) {
@@ -201,7 +169,7 @@ async function handleFiles(
   // A shareable position URL needs a re-fetchable source — fetchFromLichess/fetchFromChessCom pass
   // their own source through so this is set correctly *before* the render() a few lines down (via
   // finalizeAfterLoad) reads it; a plain upload (drag-drop, file picker, bundled sample) passes
-  // none, which also correctly invalidates any source a previous load into this same profile had.
+  // none, which also correctly invalidates any source a previous load had.
   p.loadedFrom = source;
   let failed = 0;
   let botExcluded = 0;
@@ -237,9 +205,9 @@ async function handleFiles(
     return true;
   });
 
-  // syncUiToActiveProfile() (called at the end of finalizeAfterLoad, below, and again on every tab
-  // switch) rebuilds fileSummary from scratch with just the "N games loaded" chip — stash the rest
-  // here so it survives that overwrite instead of flashing and disappearing.
+  // syncUiToProfile() (called at the end of finalizeAfterLoad, below) rebuilds fileSummary from
+  // scratch with just the "N games loaded" chip — stash the rest here so it survives that
+  // overwrite instead of flashing and disappearing.
   let note = '';
   if (failed) note += ` <span class="chip">⚠ ${failed} item(s) could not be parsed</span>`;
   if (botExcluded) note += ` <span class="chip">🤖 ${botExcluded} game(s) vs a bot/computer excluded</span>`;
@@ -253,15 +221,13 @@ async function handleFiles(
   }
   p.lastLoadNote = note;
 
-  finalizeAfterLoad(p, forceUsername);
+  finalizeAfterLoad(forceUsername);
 }
 
-/** Sets the detected player for the given profile (auto-detected, or forced to a known username)
- *  and rebuilds everything downstream. Split out from handleFiles so the lichess/chess.com fetch
- *  flows — which already know exactly whose account they fetched — can skip the frequency
- *  heuristic entirely. Takes the same profile handleFiles resolved, rather than re-resolving
- *  active() itself, for the same late-resolution reason documented on handleFiles above. */
-function finalizeAfterLoad(profile: Profile, forceUsername?: string) {
+/** Sets the detected player (auto-detected, or forced to a known username) and rebuilds everything
+ *  downstream. Split out from handleFiles so the lichess/chess.com fetch flows — which already
+ *  know exactly whose account they fetched — can skip the frequency heuristic entirely. */
+function finalizeAfterLoad(forceUsername?: string) {
   const p = profile;
   if (!p.parsedGames.length) return;
   const detected = forceUsername
@@ -272,12 +238,8 @@ function finalizeAfterLoad(profile: Profile, forceUsername?: string) {
   p.explorerGames = p.matchKeys ? buildExplorerGames(p.parsedGames, p.matchKeys) : [];
 
   configCard.hidden = false;
-  // A background lichess/chess.com fetch can resolve after the user has already switched tabs —
-  // syncUiToActiveProfile() below correctly re-hides configCard in that case, but without this
-  // guard the page would still jump to scroll it into view an instant beforehand, a disorienting
-  // flash/scroll under whatever the user is currently looking at instead of the tab that loaded.
-  if (profile === active()) configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  syncUiToActiveProfile();
+  configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  syncUiToProfile();
 }
 
 /** Same heuristic as Performance Analysis: the player appearing in the most games, with name
@@ -346,7 +308,7 @@ function buildExplorerGames(parsedGames: ParsedGame[], matchKeys: Set<string>): 
 }
 
 fileInput.addEventListener('change', () => {
-  if (fileInput.files?.length) void handleFiles(fileInput.files, active());
+  if (fileInput.files?.length) void handleFiles(fileInput.files);
   fileInput.value = '';
 });
 dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
@@ -354,14 +316,13 @@ dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover
 dropzone.addEventListener('drop', (e) => {
   e.preventDefault();
   dropzone.classList.remove('dragover');
-  if (e.dataTransfer?.files.length) void handleFiles(e.dataTransfer.files, active());
+  if (e.dataTransfer?.files.length) void handleFiles(e.dataTransfer.files);
 });
 $('#load-sample').addEventListener('click', async () => {
-  const profile = active(); // captured before the fetch below, not after
   const resp = await fetch(`${import.meta.env.BASE_URL}samples/sample-games.pgn`);
   const text = await resp.text();
   const file = new File([text], 'sample-games.pgn');
-  await handleFiles([file], profile);
+  await handleFiles([file]);
 });
 
 // ---------- save/load a fully-built tree as a portable .tree.json file ----------
@@ -370,7 +331,7 @@ $('#load-sample').addEventListener('click', async () => {
 // account's tree can be reopened instantly later without re-fetching from lichess/chess.com.
 interface TreeFile { version: 1; username: string | null; explorerGames: ExplorerGame[]; }
 
-function downloadTreeFile(profile: Profile) {
+function downloadTreeFile() {
   const payload: TreeFile = { version: 1, username: profile.username, explorerGames: profile.explorerGames };
   const safeName = (profile.username || 'repertoire').replace(/[^\w.-]/g, '_').slice(0, 60);
   const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
@@ -389,7 +350,6 @@ async function loadTreeFile() {
   const file = treeFileInput.files?.[0];
   treeFileInput.value = '';
   if (!file) return;
-  const profile = active(); // captured now, before the (fast, local) read below completes
   try {
     const text = await file.text();
     const data = JSON.parse(text);
@@ -403,8 +363,8 @@ async function loadTreeFile() {
     profile.loadedFrom = null; // not re-fetchable from a URL
     profile.lastLoadNote = '';
     configCard.hidden = false;
-    if (profile === active()) configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    syncUiToActiveProfile();
+    configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    syncUiToProfile();
   } catch (e) {
     fileSummary.innerHTML = `<span class="chip">⚠ Could not load tree file: ${esc(e instanceof Error ? e.message : String(e))}</span>`;
   }
@@ -422,7 +382,6 @@ async function fetchFromLichess() {
     lichessStatusEl.textContent = 'Enter a lichess username first.';
     return;
   }
-  const profile = active(); // captured now, not after the network round-trip below
   const max = lichessMaxSelect.value;
   lichessFetchBtn.disabled = true;
   lichessStatusEl.textContent = `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
@@ -438,7 +397,7 @@ async function fetchFromLichess() {
       return;
     }
     const file = new File([text], `${username}-lichess.pgn`);
-    await handleFiles([file], profile, username, 'lichess');
+    await handleFiles([file], username, 'lichess');
     lichessStatusEl.textContent = `Loaded games for ${username} from lichess.`;
   } catch (e) {
     lichessStatusEl.textContent = `Could not fetch from lichess: ${e instanceof Error ? e.message : String(e)}`;
@@ -468,7 +427,6 @@ async function fetchFromChessCom() {
     chesscomStatusEl.textContent = 'Enter a chess.com username first.';
     return;
   }
-  const profile = active(); // captured now, not after the network round-trips below
   const monthsBack = parseInt(chesscomMonthsSelect.value, 10);
   chesscomFetchBtn.disabled = true;
   chesscomStatusEl.textContent = `Fetching up to ${monthsBack} month(s) of games for ${username} from chess.com…`;
@@ -504,7 +462,7 @@ async function fetchFromChessCom() {
     }
     const text = allPgns.join('\n\n');
     const file = new File([text], `${username}-chesscom.pgn`);
-    await handleFiles([file], profile, username, 'chesscom');
+    await handleFiles([file], username, 'chesscom');
     chesscomStatusEl.textContent = `Loaded ${allPgns.length} game(s) for ${username} from chess.com.`;
   } catch (e) {
     chesscomStatusEl.textContent = `Could not fetch from chess.com: ${e instanceof Error ? e.message : String(e)}`;
@@ -683,10 +641,9 @@ if (isReturningFromAuthServer()) {
 // tree click would otherwise flood the browser's back-history) so the address bar always reflects
 // exactly what's on screen, ready to copy at any moment without a separate "generate link" step.
 function updateUrlForCurrentState() {
-  const p = active();
+  const p = profile;
   const params = new URLSearchParams();
   if (p.loadedFrom && p.username) {
-    params.set('mode', mode);
     params.set('src', p.loadedFrom);
     params.set('user', p.username);
     params.set('color', colorSelect.value);
@@ -723,10 +680,6 @@ async function tryLoadFromUrl() {
   const user = params.get('user');
   if (!src || !user || (src !== 'lichess' && src !== 'chesscom')) return;
 
-  if (params.get('mode') === 'opponent') {
-    mode = 'opponent';
-    document.querySelectorAll<HTMLButtonElement>('.tab[data-mode]').forEach((b) => b.classList.toggle('active', b.dataset.mode === 'opponent'));
-  }
   const color = params.get('color');
   if (color === 'w' || color === 'b') colorSelect.value = color;
 
@@ -795,8 +748,7 @@ function openingRowsHtml(rows: OpeningRow[]): string {
 
 async function renderScoutingReport() {
   const token = ++scoutingToken;
-  if (mode !== 'opponent') { scoutingCard.hidden = true; return; }
-  const p = active();
+  const p = profile;
   if (!p.parsedGames.length || !p.matchKeys || !p.username) { scoutingCard.hidden = true; return; }
 
   scoutingCard.hidden = false;
@@ -844,7 +796,7 @@ async function renderScoutingReport() {
 
 function rebuildAndRender() {
   const color = colorSelect.value as Color;
-  const games = active().explorerGames.filter((g) => g.color === color);
+  const games = profile.explorerGames.filter((g) => g.color === color);
   tree = buildTree(games);
   path = [];
   board.setOrientation(color);
@@ -885,7 +837,7 @@ function collectQuizzableNodes(t: RepertoireTree, color: Color): QuizNode[] {
 }
 
 function srsStorageKey(): string | null {
-  const p = active();
+  const p = profile;
   if (!p.username) return null;
   const color = colorSelect.value as Color;
   return `openfile-srs:${p.username.trim().toLowerCase()}:${color}`;
@@ -924,7 +876,7 @@ let drillStats = { correct: 0, incorrect: 0 };
 let drillAwaitingNext = false;
 
 function updateDrillCard() {
-  if (mode !== 'me' || !tree) { drillCard.hidden = true; return; }
+  if (!tree) { drillCard.hidden = true; return; }
   const quizzable = collectQuizzableNodes(tree, colorSelect.value as Color);
   if (!quizzable.length) { drillCard.hidden = true; return; }
   drillCard.hidden = false;
@@ -1258,8 +1210,8 @@ function renderGamesHere(node: TreeNode) {
     sel.addEventListener('change', () => {
       if (sel.value === 'download') {
         const trackedColor = colorSelect.value as Color;
-        const pgn = buildMultiGamePgn(refs, active().username, trackedColor);
-        const safeName = (active().username || 'games').replace(/[^\w.-]/g, '_').slice(0, 60);
+        const pgn = buildMultiGamePgn(refs, profile.username, trackedColor);
+        const safeName = (profile.username || 'games').replace(/[^\w.-]/g, '_').slice(0, 60);
         downloadPgn(`${safeName}_position_games.pgn`, pgn);
         sel.value = gamesPageSize === 'all' ? 'all' : String(gamesPageSize); // not a real page size — snap back
         return;
@@ -1277,5 +1229,5 @@ function renderGamesHere(node: TreeNode) {
   });
 }
 
-syncUiToActiveProfile();
+syncUiToProfile();
 void tryLoadFromUrl();
