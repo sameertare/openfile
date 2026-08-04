@@ -14,6 +14,7 @@ import { debounce } from './debounce';
 import { queryTablebase, tablebaseEligible, tbCategoryLabel, tbCategoryClass } from './tablebase';
 import type { TbResult, TbCategory } from './tablebase';
 import { ENDGAME_POSITIONS } from './endgamePositions';
+import { whiteCp, fmtEval, uciToSan, pvToSans } from './engineFormat';
 
 registerServiceWorker();
 initTheme();
@@ -44,40 +45,10 @@ const turnInd = $('#turn-indicator');
 $('#engine-name').textContent = ENGINE_NAME;
 
 // ---------- helpers ----------
-function whiteCp(fen: string, cpSideToMove: number): number {
-  return fen.split(' ')[1] === 'w' ? cpSideToMove : -cpSideToMove;
-}
-function fmtEval(whiteCpVal: number, mate: number | null, stmWhite: boolean): string {
-  if (mate !== null) {
-    const m = stmWhite ? mate : -mate; // mate is side-to-move perspective → white perspective
-    return `#${m}`;
-  }
-  const pawns = whiteCpVal / 100;
-  return (pawns >= 0 ? '+' : '') + pawns.toFixed(2);
-}
 function setEvalBar(whiteCpVal: number) {
   evalFill.style.height = `${winPct(whiteCpVal)}%`;
   const pawns = Math.max(-9.9, Math.min(9.9, whiteCpVal / 100));
   evalNum.textContent = (pawns >= 0 ? '+' : '') + pawns.toFixed(1);
-}
-function uciToSan(fen: string, uci: string): string | null {
-  try {
-    const c = new Chess(fen);
-    const mv = c.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci.length > 4 ? uci.slice(4) : undefined });
-    return mv ? mv.san : null;
-  } catch { return null; }
-}
-function pvToSans(fen: string, pv: string[], max = 6): string[] {
-  const c = new Chess(fen);
-  const out: string[] = [];
-  for (const u of pv.slice(0, max)) {
-    try {
-      const mv = c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u.length > 4 ? u.slice(4) : undefined });
-      if (!mv) break;
-      out.push(mv.san);
-    } catch { break; }
-  }
-  return out;
 }
 /** Opening name from the moves played so far (book lookup only — no PGN headers available here). */
 function openingNameFor(sansSoFar: string[]): string | null {

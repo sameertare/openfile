@@ -54,6 +54,8 @@
         </div>
         <div id="file-summary" class="file-summary"></div>
         <button id="load-sample" class="btn btn-ghost">…or try the bundled sample games</button>
+        <label class="btn btn-ghost" for="tree-file-input">…or load a saved .tree.json file</label>
+        <input type="file" id="tree-file-input" accept=".json,.tree.json" hidden />
 
         <div class="bulk-fetch">
           <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch a lichess account's games directly</strong></p>
@@ -152,9 +154,36 @@
               <button id="root-btn" class="btn nav-btn" title="Back to start position">⏮ Start</button>
               <button id="up-btn" class="btn nav-btn" title="One move back">◀ Back</button>
               <button id="flip-btn" class="btn nav-btn" title="Flip board">⇅</button>
+              <button id="copy-link-btn" class="btn nav-btn" title="Copy a link to this exact position" hidden>🔗 Copy link</button>
             </div>
             <div id="breadcrumb" class="breadcrumb"></div>
             <div id="node-stats" class="summary-cards"></div>
+
+            <section class="card" id="engine-card">
+              <h2>🔎 Engine analysis</h2>
+              <div class="config-row">
+                <label>Depth
+                  <select id="explorer-depth">
+                    <option value="12">Depth 12</option>
+                    <option value="15" selected>Depth 15</option>
+                    <option value="18">Depth 18 (slower)</option>
+                  </select>
+                </label>
+              </div>
+              <div id="explorer-candidates" class="candidates-panel"></div>
+            </section>
+
+            <section class="card" id="book-card">
+              <h2>📚 Book theory <span class="hint">(Lichess)</span></h2>
+              <div id="book-connect">
+                <p class="hint">Connect your Lichess account to see aggregate stats from millions of Lichess games at this exact position, alongside your own repertoire above. Lichess requires being signed in to use this — nothing else about your account is accessed.</p>
+                <button id="lichess-connect-btn" class="btn btn-primary">🔌 Connect Lichess account</button>
+              </div>
+              <div id="book-body" hidden>
+                <p class="hint">Connected as <b id="book-username"></b> · <button id="lichess-disconnect-btn" class="btn btn-ghost btn-sm">Disconnect</button></p>
+                <div id="book-table" class="games-table-wrap"></div>
+              </div>
+            </section>
           </div>
 
           <div class="explorer-side-col">

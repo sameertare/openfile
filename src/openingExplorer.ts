@@ -16,6 +16,12 @@ import type { GameRecord } from './types';
 import { Chess } from 'chess.js';
 import { newCard, isDue, review } from './srs';
 import type { SrsCard } from './srs';
+import { Engine } from './engine';
+import type { EngineEval } from './engine';
+import { fmtEval, uciToSan, pvToSans } from './engineFormat';
+import { debounce } from './debounce';
+import { getStoredAuth, isReturningFromAuthServer, completeLogin, startLogin, logout } from './lichessAuth';
+import type { LichessAuth } from './lichessAuth';
 
 registerServiceWorker();
 initTheme();
@@ -35,9 +41,13 @@ interface Profile {
   // syncUiToActiveProfile() rebuilds fileSummary from scratch on every call (tab switch, fetch
   // completion, etc.), so this has to live on the profile to survive past the load that set it.
   lastLoadNote: string;
+  // Set only by a successful lichess/chess.com username fetch — a shareable position URL needs to
+  // be reproducible by re-fetching the same account, which a PGN upload or loaded .tree file (no
+  // re-fetchable source) can't offer, so those leave this null and the URL just stays bare.
+  loadedFrom: 'lichess' | 'chesscom' | null;
 }
 function newProfile(): Profile {
-  return { parsedGames: [], username: null, matchKeys: null, explorerGames: [], lastLoadNote: '' };
+  return { parsedGames: [], username: null, matchKeys: null, explorerGames: [], lastLoadNote: '', loadedFrom: null };
 }
 type Mode = 'me' | 'opponent';
 let mode: Mode = 'me';
@@ -92,6 +102,15 @@ const drillProgress = $('#drill-progress');
 const drillNextBtn = $('#drill-next-btn') as HTMLButtonElement;
 const drillStopBtn = $('#drill-stop-btn') as HTMLButtonElement;
 const drillSummary = $('#drill-summary');
+const explorerDepthSelect = $('#explorer-depth') as HTMLSelectElement;
+const explorerCandidatesEl = $('#explorer-candidates');
+const bookConnectEl = $('#book-connect');
+const bookBodyEl = $('#book-body');
+const bookUsernameEl = $('#book-username');
+const bookTableEl = $('#book-table');
+const lichessConnectBtn = $('#lichess-connect-btn') as HTMLButtonElement;
+const lichessDisconnectBtn = $('#lichess-disconnect-btn') as HTMLButtonElement;
+const copyLinkBtn = $('#copy-link-btn') as HTMLButtonElement;
 
 const board = new Board($('#board'));
 const drillBoard = new Board($('#drill-board'));
@@ -124,7 +143,15 @@ function syncUiToActiveProfile() {
   const downloadBtn = p.parsedGames.length
     ? ` <button class="btn btn-ghost btn-sm dl-loaded-pgn-btn" title="Download every currently loaded game as one PGN file">⬇ Download PGN</button>`
     : '';
-  fileSummary.innerHTML = (p.parsedGames.length ? `<span class="chip">♟ ${p.parsedGames.length} game(s) loaded</span>${downloadBtn}` : '') + p.lastLoadNote;
+  const saveTreeBtn = p.explorerGames.length
+    ? ` <button class="btn btn-ghost btn-sm save-tree-btn" title="Save the built tree as a portable .tree.json file — reload it later instantly, without re-fetching or re-parsing">⬇ Save tree</button>`
+    : '';
+  const chip = p.parsedGames.length
+    ? `<span class="chip">♟ ${p.parsedGames.length} game(s) loaded</span>`
+    : p.explorerGames.length
+      ? `<span class="chip">🌳 Tree loaded from file (${p.explorerGames.length} game(s), no raw PGN)</span>`
+      : '';
+  fileSummary.innerHTML = chip + downloadBtn + saveTreeBtn + p.lastLoadNote;
   fileSummary.querySelector('.dl-loaded-pgn-btn')?.addEventListener('click', () => {
     // Use each game's own original raw PGN text (headers exactly as fetched — real ratings, event
     // names, site URLs) rather than reconstructing synthetic ones, since the whole point here is a
@@ -133,6 +160,10 @@ function syncUiToActiveProfile() {
     const pgn = activeProfile.parsedGames.map((g) => g.raw.trim()).join('\n\n');
     const safeName = (activeProfile.username || 'games').replace(/[^\w.-]/g, '_').slice(0, 60);
     downloadPgn(`${safeName}_${activeProfile.parsedGames.length}games.pgn`, pgn);
+  });
+  fileSummary.querySelector('.save-tree-btn')?.addEventListener('click', () => {
+    const activeProfile = active();
+    downloadTreeFile(activeProfile);
   });
   detectedPlayerName.textContent = p.username ?? '—';
   detectedPlayerCount.textContent = p.explorerGames.length
@@ -160,8 +191,18 @@ function syncUiToActiveProfile() {
 // tab before this code resumes. Resolving the target profile late would silently load into
 // whichever tab happens to be open when the network call *finishes*, not the one that was open when
 // it *started* — merging one profile's games into the other's.
-async function handleFiles(files: FileList | File[], profile: Profile, forceUsername?: string) {
+async function handleFiles(
+  files: FileList | File[],
+  profile: Profile,
+  forceUsername?: string,
+  source: 'lichess' | 'chesscom' | null = null
+) {
   const p = profile;
+  // A shareable position URL needs a re-fetchable source — fetchFromLichess/fetchFromChessCom pass
+  // their own source through so this is set correctly *before* the render() a few lines down (via
+  // finalizeAfterLoad) reads it; a plain upload (drag-drop, file picker, bundled sample) passes
+  // none, which also correctly invalidates any source a previous load into this same profile had.
+  p.loadedFrom = source;
   let failed = 0;
   let botExcluded = 0;
   const failureCounts = new Map<string, { count: number; sample: string }>();
@@ -323,6 +364,52 @@ $('#load-sample').addEventListener('click', async () => {
   await handleFiles([file], profile);
 });
 
+// ---------- save/load a fully-built tree as a portable .tree.json file ----------
+// Distinct from "Download PGN" above: this skips straight to the already-computed ExplorerGame
+// list (no raw PGN text, no re-parsing or re-detecting the tracked player on reload), so a large
+// account's tree can be reopened instantly later without re-fetching from lichess/chess.com.
+interface TreeFile { version: 1; username: string | null; explorerGames: ExplorerGame[]; }
+
+function downloadTreeFile(profile: Profile) {
+  const payload: TreeFile = { version: 1, username: profile.username, explorerGames: profile.explorerGames };
+  const safeName = (profile.username || 'repertoire').replace(/[^\w.-]/g, '_').slice(0, 60);
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeName}.tree.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+const treeFileInput = $('#tree-file-input') as HTMLInputElement;
+treeFileInput.addEventListener('change', () => void loadTreeFile());
+
+async function loadTreeFile() {
+  const file = treeFileInput.files?.[0];
+  treeFileInput.value = '';
+  if (!file) return;
+  const profile = active(); // captured now, before the (fast, local) read below completes
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data || typeof data.username !== 'string' || !Array.isArray(data.explorerGames)) {
+      throw new Error('not a valid .tree.json file');
+    }
+    profile.username = data.username;
+    profile.matchKeys = new Set([nameKey(data.username)]);
+    profile.explorerGames = data.explorerGames;
+    profile.parsedGames = []; // no raw PGN in a tree file — scouting report/PGN re-export stay unavailable
+    profile.loadedFrom = null; // not re-fetchable from a URL
+    profile.lastLoadNote = '';
+    configCard.hidden = false;
+    if (profile === active()) configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    syncUiToActiveProfile();
+  } catch (e) {
+    fileSummary.innerHTML = `<span class="chip">⚠ Could not load tree file: ${esc(e instanceof Error ? e.message : String(e))}</span>`;
+  }
+}
+
 // ---------- lichess username bulk fetch ----------
 lichessFetchBtn.addEventListener('click', () => void fetchFromLichess());
 lichessUsernameInput.addEventListener('keydown', (e) => {
@@ -351,7 +438,7 @@ async function fetchFromLichess() {
       return;
     }
     const file = new File([text], `${username}-lichess.pgn`);
-    await handleFiles([file], profile, username);
+    await handleFiles([file], profile, username, 'lichess');
     lichessStatusEl.textContent = `Loaded games for ${username} from lichess.`;
   } catch (e) {
     lichessStatusEl.textContent = `Could not fetch from lichess: ${e instanceof Error ? e.message : String(e)}`;
@@ -417,12 +504,255 @@ async function fetchFromChessCom() {
     }
     const text = allPgns.join('\n\n');
     const file = new File([text], `${username}-chesscom.pgn`);
-    await handleFiles([file], profile, username);
+    await handleFiles([file], profile, username, 'chesscom');
     chesscomStatusEl.textContent = `Loaded ${allPgns.length} game(s) for ${username} from chess.com.`;
   } catch (e) {
     chesscomStatusEl.textContent = `Could not fetch from chess.com: ${e instanceof Error ? e.message : String(e)}`;
   } finally {
     chesscomFetchBtn.disabled = false;
+  }
+}
+
+// ---------- engine analysis for the currently-viewed node ----------
+let engine: Engine | null = null;
+let enginePromise: Promise<Engine> | null = null;
+async function getEngine(): Promise<Engine> {
+  if (engine) return engine;
+  if (!enginePromise) {
+    enginePromise = (async () => {
+      const e = new Engine();
+      await e.init();
+      engine = e;
+      return e;
+    })();
+  }
+  return enginePromise;
+}
+
+const NUM_CANDIDATES = 3;
+let candidatesToken = 0;
+
+function renderCandidates(fen: string, results: EngineEval[]) {
+  if (!results.length) { explorerCandidatesEl.innerHTML = ''; board.setArrows([]); return; }
+  const stmWhite = fen.split(' ')[1] === 'w';
+  const arrows = results
+    .slice(0, NUM_CANDIDATES)
+    .map((r, i) => {
+      const uci = r.bestmove;
+      return uci ? { from: uci.slice(0, 2), to: uci.slice(2, 4), rank: (i + 1) as 1 | 2 | 3 } : null;
+    })
+    .filter((a): a is { from: string; to: string; rank: 1 | 2 | 3 } => a !== null);
+  board.setArrows(arrows);
+
+  const rows = results.slice(0, NUM_CANDIDATES).map((r, i) => {
+    const san = r.bestmove ? uciToSan(fen, r.bestmove) ?? r.bestmove : '—';
+    const whiteEval = stmWhite ? r.cp : -r.cp;
+    const evalStr = fmtEval(whiteEval, r.mateIn, stmWhite);
+    const contPv = r.bestmove ? pvToSans(fen, r.pv, 4).slice(1).join(' ') : '';
+    return `<div class="cand-row cand-rank${i + 1}">
+      <span class="cand-num">${i + 1}</span>
+      <span class="cand-move">${esc(san)}</span>
+      <span class="eval-chip">${esc(evalStr)}</span>
+      ${contPv ? `<span class="hint cand-cont">${esc(contPv)}</span>` : ''}
+    </div>`;
+  });
+  explorerCandidatesEl.innerHTML = rows.join('');
+}
+
+async function updateCandidates() {
+  const token = ++candidatesToken;
+  const node = currentNode();
+  if (!node) { explorerCandidatesEl.innerHTML = ''; board.setArrows([]); return; }
+  const fen = node.fen;
+  const c = new Chess(fen);
+  if (c.isGameOver()) { explorerCandidatesEl.innerHTML = '<p class="hint">Game over in this position.</p>'; board.setArrows([]); return; }
+  explorerCandidatesEl.innerHTML = '<p class="hint">Analyzing…</p>';
+  const depth = parseInt(explorerDepthSelect.value, 10);
+  const eng = await getEngine();
+  const results = await eng.evaluateMultiPv(fen, depth, NUM_CANDIDATES);
+  if (token !== candidatesToken) return; // superseded by a newer navigation
+  if (currentNode()?.fen !== fen) return; // view moved on while we were searching
+  renderCandidates(fen, results);
+}
+
+const debouncedUpdateCandidates = debounce(updateCandidates, 80);
+explorerDepthSelect.addEventListener('change', () => void updateCandidates());
+
+// ---------- Lichess book theory (requires a connected Lichess account — see lichessAuth.ts) ----------
+let lichessAuth: LichessAuth | null = getStoredAuth();
+let bookToken = 0;
+
+function renderBookAuthUi() {
+  bookConnectEl.hidden = !!lichessAuth;
+  bookBodyEl.hidden = !lichessAuth;
+  if (lichessAuth) bookUsernameEl.textContent = lichessAuth.username;
+}
+renderBookAuthUi();
+
+lichessConnectBtn.addEventListener('click', () => void startLogin());
+lichessDisconnectBtn.addEventListener('click', async () => {
+  await logout();
+  lichessAuth = null;
+  renderBookAuthUi();
+  bookTableEl.innerHTML = '';
+});
+
+interface LichessExplorerMove { san: string; white: number; draws: number; black: number; }
+interface LichessExplorerResponse { white: number; draws: number; black: number; moves: LichessExplorerMove[]; }
+
+function bookTableHtml(moves: LichessExplorerMove[]): string {
+  if (!moves.length) return `<p class="hint">No book games reach this exact position.</p>`;
+  const withTotal = moves.map((m) => ({ ...m, total: m.white + m.draws + m.black })).filter((m) => m.total > 0);
+  if (!withTotal.length) return `<p class="hint">No book games reach this exact position.</p>`;
+  const maxGames = Math.max(...withTotal.map((m) => m.total));
+  const rows = withTotal
+    .map((m) => {
+      const whiteW = (m.white / m.total) * 100;
+      const drawW = (m.draws / m.total) * 100;
+      const blackW = (m.black / m.total) * 100;
+      const barWidth = 40 + (m.total / maxGames) * 60;
+      return `<tr>
+        <td><b>${esc(m.san)}</b></td>
+        <td class="num">${m.total.toLocaleString()}</td>
+        <td>
+          <div class="score-bar" style="width:${barWidth}%">
+            <div class="seg win" style="width:${whiteW}%"></div>
+            <div class="seg draw" style="width:${drawW}%"></div>
+            <div class="seg loss" style="width:${blackW}%"></div>
+          </div>
+        </td>
+      </tr>`;
+    })
+    .join('');
+  return `<table><thead><tr><th>Move</th><th class="num">Games</th><th>White / Draw / Black</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+async function updateBookTheory() {
+  const token = ++bookToken;
+  if (!lichessAuth) { bookTableEl.innerHTML = ''; return; }
+  const node = currentNode();
+  if (!node) { bookTableEl.innerHTML = ''; return; }
+  const fen = node.fen;
+  bookTableEl.innerHTML = '<p class="hint">Looking up book theory…</p>';
+  try {
+    const url = `https://explorer.lichess.org/lichess?variant=standard&fen=${encodeURIComponent(fen)}&moves=12&topGames=0&recentGames=0`;
+    const resp = await fetch(url, { headers: { Authorization: `Bearer ${lichessAuth.token}` } });
+    if (token !== bookToken) return; // superseded
+    if (currentNode()?.fen !== fen) return; // view moved on
+    if (resp.status === 401) {
+      // Token expired or was revoked on Lichess's side — drop it and prompt reconnect rather than
+      // silently failing on every subsequent navigation.
+      clearStoredAuthAndUi();
+      return;
+    }
+    if (!resp.ok) { bookTableEl.innerHTML = `<p class="hint">Lichess book lookup failed (HTTP ${resp.status}).</p>`; return; }
+    const data: LichessExplorerResponse = await resp.json();
+    bookTableEl.innerHTML = bookTableHtml(data.moves ?? []);
+  } catch {
+    if (token !== bookToken) return;
+    bookTableEl.innerHTML = `<p class="hint">Lichess book lookup failed — check your connection and try again.</p>`;
+  }
+}
+
+function clearStoredAuthAndUi() {
+  lichessAuth = null;
+  logout(); // best-effort revoke; already cleared locally by us setting lichessAuth = null above
+  renderBookAuthUi();
+  bookTableEl.innerHTML = `<p class="hint">Your Lichess connection expired — reconnect above to keep seeing book theory.</p>`;
+}
+
+const debouncedUpdateBookTheory = debounce(updateBookTheory, 200);
+
+// Resolves the OAuth redirect back from Lichess, if this page load is one.
+if (isReturningFromAuthServer()) {
+  void (async () => {
+    const result = await completeLogin();
+    if (result) {
+      lichessAuth = result;
+      renderBookAuthUi();
+      debouncedUpdateBookTheory();
+    } else {
+      renderBookAuthUi();
+    }
+  })();
+}
+
+// ---------- shareable position URLs ----------
+// Only meaningful for a profile loaded via a re-fetchable source (lichess/chess.com username) —
+// see Profile.loadedFrom above. Kept in sync via history.replaceState (never pushState: every
+// tree click would otherwise flood the browser's back-history) so the address bar always reflects
+// exactly what's on screen, ready to copy at any moment without a separate "generate link" step.
+function updateUrlForCurrentState() {
+  const p = active();
+  const params = new URLSearchParams();
+  if (p.loadedFrom && p.username) {
+    params.set('mode', mode);
+    params.set('src', p.loadedFrom);
+    params.set('user', p.username);
+    params.set('color', colorSelect.value);
+    if (path.length) params.set('path', path.join(','));
+  }
+  const qs = params.toString();
+  const url = location.pathname + (qs ? `?${qs}` : '');
+  if (url !== location.pathname + location.search) history.replaceState(null, '', url);
+  copyLinkBtn.hidden = !(p.loadedFrom && p.username);
+}
+
+function flashCopied(btn: HTMLButtonElement, label: string) {
+  const original = btn.textContent;
+  btn.textContent = label;
+  setTimeout(() => { btn.textContent = original; }, 1200);
+}
+
+copyLinkBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(location.href);
+    flashCopied(copyLinkBtn, '✓ Copied');
+  } catch {
+    flashCopied(copyLinkBtn, 'Copy failed');
+  }
+});
+
+/** Reproduces a shared link on page load: re-fetches the named account, picks the right tab and
+ *  color, and walks as deep into `path` as the rebuilt tree actually supports — a link can go
+ *  stale if the account's games have changed since it was shared, so this deliberately stops at
+ *  the deepest still-valid prefix instead of failing outright. */
+async function tryLoadFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const src = params.get('src');
+  const user = params.get('user');
+  if (!src || !user || (src !== 'lichess' && src !== 'chesscom')) return;
+
+  if (params.get('mode') === 'opponent') {
+    mode = 'opponent';
+    document.querySelectorAll<HTMLButtonElement>('.tab[data-mode]').forEach((b) => b.classList.toggle('active', b.dataset.mode === 'opponent'));
+  }
+  const color = params.get('color');
+  if (color === 'w' || color === 'b') colorSelect.value = color;
+
+  if (src === 'lichess') {
+    lichessUsernameInput.value = user;
+    await fetchFromLichess();
+  } else {
+    chesscomUsernameInput.value = user;
+    await fetchFromChessCom();
+  }
+
+  const pathParam = params.get('path');
+  if (pathParam && tree) {
+    const wanted = pathParam.split(',').filter(Boolean);
+    let node = tree.root;
+    const validPath: string[] = [];
+    for (const san of wanted) {
+      const childKey = node.children.get(san);
+      if (!childKey) break;
+      const child = tree.positions.get(childKey);
+      if (!child) break;
+      node = child;
+      validPath.push(san);
+    }
+    path = validPath;
+    render();
   }
 }
 
@@ -784,6 +1114,9 @@ function render() {
   });
 
   renderGamesHere(node);
+  debouncedUpdateCandidates();
+  debouncedUpdateBookTheory();
+  updateUrlForCurrentState();
 }
 
 function movesTableHtml(children: ChildSummary[]): string {
@@ -945,3 +1278,4 @@ function renderGamesHere(node: TreeNode) {
 }
 
 syncUiToActiveProfile();
+void tryLoadFromUrl();
