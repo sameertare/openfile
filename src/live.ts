@@ -361,6 +361,15 @@ function updateNav() {
 function goto(i: number) {
   view = Math.max(0, Math.min(line.length - 1, i));
   if (mode === 'live') liveFollow = view === line.length - 1;
+  // In Play mode, stepping back/forward through the history can land on a different position than
+  // whatever the engine's reply search was launched for (e.g. it's still mid-search for the live
+  // position when the user steps back to try a different move) — without cancelling that stale
+  // search, playEngineThinking stays stuck true until it eventually resolves on its own, silently
+  // blocking every click for as long as that takes. invalidatePlayEngineMove() cancels it and frees
+  // the lock immediately; playEngineMove() right after is a no-op unless navigation actually landed
+  // back on the engine's own turn (e.g. returning to the live end), in which case it starts a fresh
+  // search for the position now on the board instead of leaving the engine's move undelivered.
+  if (mode === 'play') { invalidatePlayEngineMove(); void playEngineMove(); }
   render();
   void pump();
 }
