@@ -547,7 +547,81 @@ function renderBookAuthUi() {
 }
 renderBookAuthUi();
 
-lichessConnectBtn.addEventListener('click', () => void startLogin());
+// Connecting a Lichess account is a full-page redirect to lichess.org and back (OAuth's
+// Authorization Code flow has no way around that) — everything in this module's memory, including
+// a loaded PGN or .tree.json profile, is gone by the time the page comes back. A profile loaded
+// via lichess/chess.com username fetch already survives this through the shareable-URL mechanism
+// above (the account just gets re-fetched on return), but a raw PGN/tree-file profile has no such
+// re-fetchable source — so stash it here right before redirecting, and restore it on the way back.
+const OAUTH_SNAPSHOT_KEY = 'openfile-explorer-oauth-snapshot';
+interface OAuthSnapshot {
+  parsedGames: ParsedGame[];
+  username: string | null;
+  matchKeys: string[] | null;
+  explorerGames: ExplorerGame[];
+  color: string;
+  path: string[];
+}
+
+lichessConnectBtn.addEventListener('click', () => {
+  if (!profile.loadedFrom && (profile.parsedGames.length || profile.explorerGames.length)) {
+    const snapshot: OAuthSnapshot = {
+      parsedGames: profile.parsedGames,
+      username: profile.username,
+      matchKeys: profile.matchKeys ? [...profile.matchKeys] : null,
+      explorerGames: profile.explorerGames,
+      color: colorSelect.value,
+      path,
+    };
+    try {
+      sessionStorage.setItem(OAUTH_SNAPSHOT_KEY, JSON.stringify(snapshot));
+    } catch {
+      // sessionStorage unavailable/full — connecting will just cost the loaded profile, same as
+      // before this fix existed, rather than blocking the connect flow over it
+    }
+  }
+  void startLogin();
+});
+
+function restoreOAuthSnapshotIfPresent() {
+  let raw: string | null;
+  try {
+    raw = sessionStorage.getItem(OAUTH_SNAPSHOT_KEY);
+  } catch {
+    return;
+  }
+  if (!raw) return;
+  sessionStorage.removeItem(OAUTH_SNAPSHOT_KEY);
+  try {
+    const snap: OAuthSnapshot = JSON.parse(raw);
+    profile.parsedGames = snap.parsedGames;
+    profile.username = snap.username;
+    profile.matchKeys = snap.matchKeys ? new Set(snap.matchKeys) : null;
+    profile.explorerGames = snap.explorerGames;
+    profile.loadedFrom = null;
+    if (snap.color === 'w' || snap.color === 'b') colorSelect.value = snap.color;
+    configCard.hidden = false;
+    syncUiToProfile();
+    // Re-validate the restored path against the freshly-rebuilt tree the same way tryLoadFromUrl
+    // does — syncUiToProfile()'s rebuildAndRender() already reset path to [], so walk it back in.
+    if (snap.path.length && tree) {
+      let node = tree.root;
+      const validPath: string[] = [];
+      for (const san of snap.path) {
+        const childKey = node.children.get(san);
+        if (!childKey) break;
+        const child = tree.positions.get(childKey);
+        if (!child) break;
+        node = child;
+        validPath.push(san);
+      }
+      path = validPath;
+      render();
+    }
+  } catch {
+    // corrupt snapshot — nothing to restore, but don't crash the page load over it
+  }
+}
 lichessDisconnectBtn.addEventListener('click', async () => {
   await logout();
   lichessAuth = null;
@@ -620,6 +694,12 @@ function clearStoredAuthAndUi() {
 }
 
 const debouncedUpdateBookTheory = debounce(updateBookTheory, 200);
+
+// Restores a PGN/tree-file profile stashed right before a Lichess-connect redirect (see
+// lichessConnectBtn above) — checked unconditionally rather than only when this load is an OAuth
+// return, so a snapshot still gets restored even if the user closed the lichess.org tab instead of
+// completing the flow.
+restoreOAuthSnapshotIfPresent();
 
 // Resolves the OAuth redirect back from Lichess, if this page load is one.
 if (isReturningFromAuthServer()) {
