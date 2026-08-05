@@ -608,15 +608,6 @@ html.walldisplay { font-size: 26px; }
 .chart-legend-item { display: inline-flex; align-items: center; gap: 5px; }
 .chart-legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
 
-.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin: 10px 0 4px; }
-.crumb {
-  background: transparent; border: none; color: var(--text-dim); font-size: 0.88rem;
-  padding: 3px 6px; border-radius: 5px; cursor: pointer;
-}
-.crumb:hover, .crumb:focus-visible { background: var(--bg-inset); color: var(--text); }
-.crumb:last-child { color: var(--text); font-weight: 600; }
-.crumb-sep { color: var(--text-dim); opacity: 0.5; }
-
 .move-row { cursor: pointer; }
 .move-row:hover { background: var(--bg-inset); }
 .score-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; min-width: 40px; background: var(--bg-inset); }

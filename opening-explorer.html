@@ -110,15 +110,6 @@
               <option value="b">Black</option>
             </select>
           </label>
-          <label>Hide branches with fewer than
-            <select id="mingames-select">
-              <option value="1">1 game</option>
-              <option value="2" selected>2 games</option>
-              <option value="3">3 games</option>
-              <option value="5">5 games</option>
-              <option value="10">10 games</option>
-            </select>
-          </label>
         </div>
         <button id="scouting-link-btn" class="btn btn-ghost" hidden>📋 Full scouting report →</button>
       </section>
@@ -133,7 +124,8 @@
               <button id="flip-btn" class="btn nav-btn" title="Flip board">⇅</button>
               <button id="copy-link-btn" class="btn nav-btn" title="Copy a link to this exact position" hidden>🔗 Copy link</button>
             </div>
-            <div id="breadcrumb" class="breadcrumb"></div>
+            <div class="live-pgn-label" id="opening-pgn-label" hidden>Moves</div>
+            <div id="opening-pgn-moves" class="live-pgn-moves" hidden></div>
             <div id="node-stats" class="summary-cards"></div>
           </div>
 

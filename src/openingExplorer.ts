@@ -54,7 +54,6 @@ const profile: Profile = newProfile();
 
 let tree: RepertoireTree | null = null;
 let path: string[] = []; // SAN path from root to the currently viewed node
-let minGames = 2;
 
 // "Games reaching this position" pagination — reset to page 1 whenever the viewed node changes,
 // but preserved across a page-size change or Prev/Next click (both just re-run renderGamesHere).
@@ -71,9 +70,9 @@ const configCard = $('#config-card');
 const detectedPlayerName = $('#detected-player-name');
 const detectedPlayerCount = $('#detected-player-count');
 const colorSelect = $('#color-select') as HTMLSelectElement;
-const minGamesSelect = $('#mingames-select') as HTMLSelectElement;
 const resultsEl = $('#results');
-const breadcrumbEl = $('#breadcrumb');
+const openingPgnLabelEl = $('#opening-pgn-label');
+const openingPgnMovesEl = $('#opening-pgn-moves');
 const nodeStatsEl = $('#node-stats');
 const yourMovesEl = $('#your-moves');
 const gamesHereEl = $('#games-here');
@@ -910,10 +909,6 @@ colorSelect.addEventListener('change', () => {
   path = [];
   rebuildAndRender();
 });
-minGamesSelect.addEventListener('change', () => {
-  minGames = parseInt(minGamesSelect.value, 10);
-  render();
-});
 
 // ---------- hand off to the Scouting Report companion page ----------
 // That page has no load UI of its own (see scoutingReport.ts) — it only ever receives whatever's
@@ -1156,25 +1151,51 @@ function currentNode(): TreeNode | null {
   return nodeAtPath(tree, path) ?? tree.root;
 }
 
+/** Lichess-style vertical move list for the currently-viewed path — same grid/markup as Game
+ *  Analysis's #live-pgn-moves (reuses its CSS directly), just without the per-move engine-quality
+ *  coloring, which doesn't apply here (no per-move eval exists in a tree built from bare PGN move
+ *  lists). Unlike Game Analysis's `line`, `path` always starts from the standard position with
+ *  White to move, so column placement is just index parity — no need to read a per-ply FEN. */
+function renderOpeningPgnMoves() {
+  if (!path.length) {
+    openingPgnLabelEl.hidden = true;
+    openingPgnMovesEl.hidden = true;
+    openingPgnMovesEl.innerHTML = '';
+    return;
+  }
+  openingPgnLabelEl.hidden = false;
+  openingPgnMovesEl.hidden = false;
+
+  const cell = (i: number) => `<span class="lpm-move ${i === path.length - 1 ? 'cur' : ''}" data-idx="${i}">${esc(path[i])}</span>`;
+  const emptyCell = '<span class="lpm-move lpm-empty"></span>';
+  const rows: string[] = [];
+  for (let i = 0; i < path.length; i += 2) {
+    const moveNo = i / 2 + 1;
+    const white = cell(i);
+    const black = i + 1 < path.length ? cell(i + 1) : emptyCell;
+    rows.push(`<span class="lpm-num">${moveNo}.</span>${white}${black}`);
+  }
+  openingPgnMovesEl.innerHTML = rows.join('');
+  openingPgnMovesEl.querySelectorAll<HTMLElement>('.lpm-move[data-idx]').forEach((m) => {
+    m.addEventListener('click', () => {
+      path = path.slice(0, parseInt(m.dataset.idx!, 10) + 1);
+      render();
+    });
+  });
+  const cur = openingPgnMovesEl.querySelector<HTMLElement>('.cur');
+  if (cur) {
+    const target = cur.offsetTop - openingPgnMovesEl.clientHeight / 2 + cur.offsetHeight / 2;
+    openingPgnMovesEl.scrollTop = Math.max(0, target);
+  }
+}
+
 function render() {
   if (!tree) return;
   const node = currentNode();
   if (!node) return;
   board.setFen(node.fen);
 
-  // Breadcrumb
-  const crumbs = ['<button class="crumb" data-idx="0">Start</button>'];
-  path.forEach((san, i) => {
-    crumbs.push(`<span class="crumb-sep">›</span><button class="crumb" data-idx="${i + 1}">${esc(san)}</button>`);
-  });
-  breadcrumbEl.innerHTML = crumbs.join('');
-  breadcrumbEl.querySelectorAll<HTMLButtonElement>('.crumb').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.idx!, 10);
-      path = path.slice(0, idx);
-      render();
-    });
-  });
+  renderOpeningPgnMoves();
 
   // Node stats
   const sc = scorePct(node);
@@ -1190,11 +1211,12 @@ function render() {
     ${perf != null ? `<div class="stat-card"><span class="big">${perf}</span><span class="label">Performance</span></div>` : ''}
   `;
 
-  // Moves from here
-  const children = childSummaries(tree, node).filter((c) => c.games >= minGames);
+  // Moves from here — every move the tracked player has ever played from this position, no
+  // frequency filter.
+  const children = childSummaries(tree, node);
   yourMovesEl.innerHTML = children.length
     ? movesTableHtml(children)
-    : `<p class="hint">No branch here reaches at least ${minGames} game(s). ${node.games ? 'Lower the game threshold above to see more.' : 'No games reached this position.'}</p>`;
+    : `<p class="hint">No games reached this position.</p>`;
   yourMovesEl.querySelectorAll<HTMLElement>('.move-row').forEach((row) => {
     row.addEventListener('click', () => {
       path = [...path, row.dataset.san!];
