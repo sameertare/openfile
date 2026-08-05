@@ -38,10 +38,15 @@ interface Profile {
   // profile to survive past the load that set it.
   lastLoadNote: string;
   // Set only by a successful lichess/chess.com username fetch — a shareable position URL needs to
-  // be reproducible by re-fetching the same account, which a PGN upload or loaded .tree file (no
+  // be reproducible by re-fetching the same account(s), which a PGN upload or loaded .tree file (no
   // re-fetchable source) can't offer, so those leave this null and the URL just stays bare.
-  loadedFrom: 'lichess' | 'chesscom' | null;
+  loadedFrom: LoadedFrom;
 }
+type LoadedFrom =
+  | { kind: 'lichess'; user: string }
+  | { kind: 'chesscom'; user: string }
+  | { kind: 'combined'; lichessUser: string | null; chesscomUser: string | null }
+  | null;
 function newProfile(): Profile {
   return { parsedGames: [], username: null, matchKeys: null, explorerGames: [], lastLoadNote: '', loadedFrom: null };
 }
@@ -157,8 +162,8 @@ function syncUiToProfile() {
 // ---------- file loading (same pattern as Performance Analysis) ----------
 async function handleFiles(
   files: FileList | File[],
-  forceUsername?: string,
-  source: 'lichess' | 'chesscom' | null = null
+  forceUsername?: string | string[],
+  source: LoadedFrom = null
 ) {
   const p = profile;
   // A shareable position URL needs a re-fetchable source — fetchFromLichess/fetchFromChessCom pass
@@ -219,15 +224,23 @@ async function handleFiles(
   finalizeAfterLoad(forceUsername);
 }
 
-/** Sets the detected player (auto-detected, or forced to a known username) and rebuilds everything
- *  downstream. Split out from handleFiles so the lichess/chess.com fetch flows — which already
- *  know exactly whose account they fetched — can skip the frequency heuristic entirely. */
-function finalizeAfterLoad(forceUsername?: string) {
+/** Sets the detected player (auto-detected, or forced to one or more known usernames — a combined
+ *  lichess+chess.com build passes both, unioning their matchKeys so games under either identity
+ *  count) and rebuilds everything downstream. Split out from handleFiles so the lichess/chess.com
+ *  fetch flows — which already know exactly whose account they fetched — can skip the frequency
+ *  heuristic entirely. */
+function finalizeAfterLoad(forceUsername?: string | string[]) {
   const p = profile;
   if (!p.parsedGames.length) return;
-  const detected = forceUsername
-    ? { name: forceUsername, matchKeys: new Set([nameKey(forceUsername)]) }
-    : detectMainPlayer(p.parsedGames);
+  let detected: { name: string; matchKeys: Set<string> } | null;
+  if (Array.isArray(forceUsername)) {
+    const names = forceUsername.filter(Boolean);
+    detected = names.length ? { name: names.join(' + '), matchKeys: new Set(names.map(nameKey)) } : null;
+  } else if (forceUsername) {
+    detected = { name: forceUsername, matchKeys: new Set([nameKey(forceUsername)]) };
+  } else {
+    detected = detectMainPlayer(p.parsedGames);
+  }
   p.username = detected?.name ?? null;
   p.matchKeys = detected?.matchKeys ?? null;
   p.explorerGames = p.matchKeys ? buildExplorerGames(p.parsedGames, p.matchKeys) : [];
@@ -371,6 +384,18 @@ lichessUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromLichess();
 });
 
+/** Raw fetch only — throws with a user-facing message on failure, returns '' if the account exists
+ *  but has no matching games. Shared by the single-source fetchFromLichess and the combined-tree
+ *  fetchCombined below, so both go through identical request/error-handling logic. */
+async function fetchLichessPgnText(username: string, max: string): Promise<string> {
+  const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=false&clocks=false&evals=false&opening=false`;
+  const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
+  if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
+  if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} from lichess`);
+  return resp.text();
+}
+
 async function fetchFromLichess() {
   const username = lichessUsernameInput.value.trim();
   if (!username) {
@@ -381,18 +406,13 @@ async function fetchFromLichess() {
   lichessFetchBtn.disabled = true;
   lichessStatusEl.textContent = `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
   try {
-    const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=false&clocks=false&evals=false&opening=false`;
-    const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
-    if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
-    if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const text = await resp.text();
+    const text = await fetchLichessPgnText(username, max);
     if (!text.trim()) {
       lichessStatusEl.textContent = `${username} has no games matching this request.`;
       return;
     }
     const file = new File([text], `${username}-lichess.pgn`);
-    await handleFiles([file], username, 'lichess');
+    await handleFiles([file], username, { kind: 'lichess', user: username });
     lichessStatusEl.textContent = `Loaded games for ${username} from lichess.`;
   } catch (e) {
     lichessStatusEl.textContent = `Could not fetch from lichess: ${e instanceof Error ? e.message : String(e)}`;
@@ -416,6 +436,31 @@ chesscomUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromChessCom();
 });
 
+async function fetchChessComPgnText(username: string, monthsBack: number): Promise<string> {
+  const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
+  if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
+  if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status} from chess.com`);
+  const archivesData: ChessComArchivesResponse = await archivesResp.json();
+  const archives = archivesData.archives ?? [];
+  if (!archives.length) return '';
+  const selected = archives.slice(-monthsBack); // archives are oldest-first; take the most recent N
+  const monthResults = await Promise.all(
+    selected.map(async (url) => {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) return [];
+        const data: ChessComGamesResponse = await r.json();
+        return (data.games ?? [])
+          .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
+          .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn));
+      } catch {
+        return []; // one bad month shouldn't sink the whole fetch
+      }
+    })
+  );
+  return monthResults.flat().join('\n\n');
+}
+
 async function fetchFromChessCom() {
   const username = chesscomUsernameInput.value.trim();
   if (!username) {
@@ -426,43 +471,87 @@ async function fetchFromChessCom() {
   chesscomFetchBtn.disabled = true;
   chesscomStatusEl.textContent = `Fetching up to ${monthsBack} month(s) of games for ${username} from chess.com…`;
   try {
-    const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
-    if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
-    if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status}`);
-    const archivesData: ChessComArchivesResponse = await archivesResp.json();
-    const archives = archivesData.archives ?? [];
-    if (!archives.length) {
-      chesscomStatusEl.textContent = `${username} has no game archives on chess.com.`;
-      return;
-    }
-    const selected = archives.slice(-monthsBack); // archives are oldest-first; take the most recent N
-    const monthResults = await Promise.all(
-      selected.map(async (url) => {
-        try {
-          const r = await fetch(url);
-          if (!r.ok) return [];
-          const data: ChessComGamesResponse = await r.json();
-          return (data.games ?? [])
-            .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
-            .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn));
-        } catch {
-          return []; // one bad month shouldn't sink the whole fetch
-        }
-      })
-    );
-    const allPgns = monthResults.flat();
-    if (!allPgns.length) {
+    const text = await fetchChessComPgnText(username, monthsBack);
+    if (!text.trim()) {
       chesscomStatusEl.textContent = `No games found for ${username} in the selected range.`;
       return;
     }
-    const text = allPgns.join('\n\n');
     const file = new File([text], `${username}-chesscom.pgn`);
-    await handleFiles([file], username, 'chesscom');
-    chesscomStatusEl.textContent = `Loaded ${allPgns.length} game(s) for ${username} from chess.com.`;
+    await handleFiles([file], username, { kind: 'chesscom', user: username });
+    chesscomStatusEl.textContent = `Loaded games for ${username} from chess.com.`;
   } catch (e) {
     chesscomStatusEl.textContent = `Could not fetch from chess.com: ${e instanceof Error ? e.message : String(e)}`;
   } finally {
     chesscomFetchBtn.disabled = false;
+  }
+}
+
+// ---------- combined-tree toggle ----------
+// See lichess-combined-toggle in opening-explorer.html. Off (default): the two fetch buttons above
+// behave exactly as before, each independent. On: both usernames are fetched together into one
+// tree — finalizeAfterLoad's forceUsername accepts an array specifically for this, unioning both
+// accounts' matchKeys so a game under either identity counts, rather than the last fetch's
+// finalizeAfterLoad call silently overwriting the matchKeys from an earlier, different-source one.
+const combineToggle = $('#combine-toggle') as HTMLInputElement;
+const combineRow = $('#combine-row');
+const combineBtn = $('#combine-btn') as HTMLButtonElement;
+const combineStatusEl = $('#combine-status');
+
+function updateCombineUi() {
+  const on = combineToggle.checked;
+  lichessFetchBtn.hidden = on;
+  chesscomFetchBtn.hidden = on;
+  combineRow.hidden = !on;
+}
+combineToggle.addEventListener('change', updateCombineUi);
+updateCombineUi();
+
+combineBtn.addEventListener('click', () => void fetchCombined());
+
+async function fetchCombined() {
+  const lichessUsername = lichessUsernameInput.value.trim();
+  const chesscomUsername = chesscomUsernameInput.value.trim();
+  if (!lichessUsername && !chesscomUsername) {
+    combineStatusEl.textContent = 'Enter at least one username above.';
+    return;
+  }
+  combineBtn.disabled = true;
+  combineStatusEl.textContent = 'Fetching…';
+  try {
+    const files: File[] = [];
+    if (lichessUsername) {
+      combineStatusEl.textContent = `Fetching ${lichessUsername} from lichess…`;
+      const text = await fetchLichessPgnText(lichessUsername, lichessMaxSelect.value);
+      if (text.trim()) files.push(new File([text], `${lichessUsername}-lichess.pgn`));
+    }
+    if (chesscomUsername) {
+      combineStatusEl.textContent = `Fetching ${chesscomUsername} from chess.com…`;
+      const text = await fetchChessComPgnText(chesscomUsername, parseInt(chesscomMonthsSelect.value, 10));
+      if (text.trim()) files.push(new File([text], `${chesscomUsername}-chesscom.pgn`));
+    }
+    if (!files.length) {
+      combineStatusEl.textContent = 'No games found for the given username(s).';
+      return;
+    }
+    // A combined build replaces whatever was loaded before, same as any other fetch — starting
+    // from a clean profile rather than appending avoids mixing in an unrelated earlier load.
+    profile.parsedGames = [];
+    profile.explorerGames = [];
+    profile.username = null;
+    profile.matchKeys = null;
+    profile.loadedFrom = null;
+    profile.lastLoadNote = '';
+    const identities = [lichessUsername, chesscomUsername].filter(Boolean);
+    await handleFiles(files, identities, {
+      kind: 'combined',
+      lichessUser: lichessUsername || null,
+      chesscomUser: chesscomUsername || null,
+    });
+    combineStatusEl.textContent = `Loaded games for ${identities.join(' + ')} — combined into one tree.`;
+  } catch (e) {
+    combineStatusEl.textContent = `Could not build combined tree: ${e instanceof Error ? e.message : String(e)}`;
+  } finally {
+    combineBtn.disabled = false;
   }
 }
 
@@ -719,8 +808,15 @@ function updateUrlForCurrentState() {
   const p = profile;
   const params = new URLSearchParams();
   if (p.loadedFrom && p.username) {
-    params.set('src', p.loadedFrom);
-    params.set('user', p.username);
+    const lf = p.loadedFrom;
+    if (lf.kind === 'combined') {
+      params.set('src', 'combined');
+      if (lf.lichessUser) params.set('lichessUser', lf.lichessUser);
+      if (lf.chesscomUser) params.set('chesscomUser', lf.chesscomUser);
+    } else {
+      params.set('src', lf.kind);
+      params.set('user', lf.user);
+    }
     params.set('color', colorSelect.value);
     if (path.length) params.set('path', path.join(','));
   }
@@ -752,18 +848,30 @@ copyLinkBtn.addEventListener('click', async () => {
 async function tryLoadFromUrl() {
   const params = new URLSearchParams(location.search);
   const src = params.get('src');
-  const user = params.get('user');
-  if (!src || !user || (src !== 'lichess' && src !== 'chesscom')) return;
+  if (!src || (src !== 'lichess' && src !== 'chesscom' && src !== 'combined')) return;
 
   const color = params.get('color');
   if (color === 'w' || color === 'b') colorSelect.value = color;
 
   if (src === 'lichess') {
+    const user = params.get('user');
+    if (!user) return;
     lichessUsernameInput.value = user;
     await fetchFromLichess();
-  } else {
+  } else if (src === 'chesscom') {
+    const user = params.get('user');
+    if (!user) return;
     chesscomUsernameInput.value = user;
     await fetchFromChessCom();
+  } else {
+    const lichessUser = params.get('lichessUser');
+    const chesscomUser = params.get('chesscomUser');
+    if (!lichessUser && !chesscomUser) return;
+    lichessUsernameInput.value = lichessUser ?? '';
+    chesscomUsernameInput.value = chesscomUser ?? '';
+    combineToggle.checked = true;
+    updateCombineUi();
+    await fetchCombined();
   }
 
   const pathParam = params.get('path');

@@ -52,7 +52,12 @@
         <input type="file" id="tree-file-input" accept=".json,.tree.json" hidden />
 
         <div class="bulk-fetch">
-          <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch a lichess account's games directly</strong></p>
+          <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch account(s) directly</strong></p>
+          <label class="stack" style="margin-bottom:10px;">
+            <span><input type="checkbox" id="combine-toggle" /> 🔗 Build one combined tree from both accounts</span>
+            <span class="hint">Off: each fetch below builds its own tree, replacing whatever was loaded before. On: both usernames are fetched together and merged into a single tree — for a player with different handles on each site.</span>
+          </label>
+
           <div class="config-row">
             <label>Lichess username
               <input type="text" id="lichess-username" class="text-input" placeholder="e.g. DrNykterstein" />
@@ -68,10 +73,7 @@
             <button id="lichess-fetch-btn" class="btn btn-primary">Fetch from lichess</button>
           </div>
           <div id="lichess-status" class="hint"></div>
-        </div>
 
-        <div class="bulk-fetch">
-          <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch a chess.com account's games directly</strong></p>
           <div class="config-row">
             <label>Chess.com username
               <input type="text" id="chesscom-username" class="text-input" placeholder="e.g. Hikaru" />
@@ -88,6 +90,11 @@
             <button id="chesscom-fetch-btn" class="btn btn-primary">Fetch from chess.com</button>
           </div>
           <div id="chesscom-status" class="hint"></div>
+
+          <div class="config-row" id="combine-row" hidden>
+            <button id="combine-btn" class="btn btn-primary">🔗 Build combined tree</button>
+          </div>
+          <div id="combine-status" class="hint"></div>
         </div>
       </section>
 
