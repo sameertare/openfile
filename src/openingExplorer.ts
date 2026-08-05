@@ -905,7 +905,26 @@ async function tryLoadFromUrl() {
 }
 
 // ---------- tree building & navigation ----------
+// The White/Black segmented buttons are a purely visual front end for the hidden native <select>
+// below — every other read/write of color state in this file still goes through colorSelect.value,
+// so this is the only place that needs to know the toggle buttons exist.
+const colorToggle = $('#color-toggle');
+colorToggle.querySelectorAll<HTMLButtonElement>('.seg-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const c = btn.dataset.color;
+    if (c && colorSelect.value !== c) {
+      colorSelect.value = c;
+      colorSelect.dispatchEvent(new Event('change'));
+    }
+  });
+});
+function syncColorToggle() {
+  colorToggle.querySelectorAll<HTMLButtonElement>('.seg-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.color === colorSelect.value);
+  });
+}
 colorSelect.addEventListener('change', () => {
+  syncColorToggle();
   path = [];
   rebuildAndRender();
 });
@@ -1193,6 +1212,7 @@ function render() {
   if (!tree) return;
   const node = currentNode();
   if (!node) return;
+  syncColorToggle();
   board.setFen(node.fen);
 
   renderOpeningPgnMoves();

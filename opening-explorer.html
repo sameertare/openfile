@@ -39,78 +39,81 @@
       </header>
 
       <section class="card" id="load-card">
-        <h2><span class="step">1</span> Load games</h2>
-        <div id="dropzone" class="dropzone">
-          <p><strong>Drop PGN files here</strong> — or</p>
-          <label class="btn btn-primary" for="file-input">Choose files</label>
-          <input type="file" id="file-input" multiple accept=".pgn,.txt" hidden />
-          <p class="hint">Multiple files supported. Nothing is uploaded — the tree is built entirely in your browser.</p>
+        <h2><span class="step">1</span> Sources</h2>
+        <div class="source-list">
+          <div class="source-row dropzone" id="dropzone">
+            <div class="source-row-head">📄 PGN file</div>
+            <span class="hint">Drag &amp; drop, or</span>
+            <label class="btn btn-primary" for="file-input" style="margin-left:auto;">Choose files</label>
+            <input type="file" id="file-input" multiple accept=".pgn,.txt" hidden />
+          </div>
+
+          <div class="source-row">
+            <div class="source-row-head">♞ Lichess</div>
+            <input type="text" id="lichess-username" class="text-input" placeholder="username" />
+            <div class="source-row-controls">
+              <select id="lichess-max">
+                <option value="100">100 games</option>
+                <option value="200" selected>200 games</option>
+                <option value="500">500 games</option>
+                <option value="1000">1000 games</option>
+                <option value="all">All (can take a while)</option>
+              </select>
+              <button id="lichess-fetch-btn" class="btn btn-primary">Fetch</button>
+            </div>
+          </div>
+
+          <div class="source-row">
+            <div class="source-row-head">♟ Chess.com</div>
+            <input type="text" id="chesscom-username" class="text-input" placeholder="username" />
+            <div class="source-row-controls">
+              <select id="chesscom-months">
+                <option value="1">1 month back</option>
+                <option value="3" selected>3 months back</option>
+                <option value="6">6 months back</option>
+                <option value="12">12 months back</option>
+                <option value="24">24 months back</option>
+                <option value="all">All (can take a while)</option>
+              </select>
+              <button id="chesscom-fetch-btn" class="btn btn-primary">Fetch</button>
+            </div>
+          </div>
+        </div>
+        <p class="hint" id="lichess-status" style="margin-top:10px;"></p>
+        <p class="hint" id="chesscom-status"></p>
+
+        <div class="source-row" style="margin-top:14px;">
+          <label class="source-row-head" style="cursor:pointer;">
+            <input type="checkbox" id="combine-toggle" /> 🔗 Combined tree from both accounts
+          </label>
+          <span class="hint">Fetch both usernames together into one merged tree, for a player with different handles on each site.</span>
+        </div>
+        <div class="config-row" id="combine-row" hidden style="margin-top:10px;">
+          <button id="combine-btn" class="btn btn-primary">🔗 Build combined tree</button>
+        </div>
+        <p class="hint" id="combine-status"></p>
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button id="load-sample" class="btn btn-ghost" style="margin-top:0;">…or try the bundled sample games</button>
+          <label class="btn btn-ghost" for="tree-file-input" style="margin-top:0;">↑ Load saved .tree file</label>
+          <input type="file" id="tree-file-input" accept=".json,.tree.json" hidden />
         </div>
         <div id="file-summary" class="file-summary"></div>
-        <button id="load-sample" class="btn btn-ghost">…or try the bundled sample games</button>
-        <label class="btn btn-ghost" for="tree-file-input">…or load a saved .tree.json file</label>
-        <input type="file" id="tree-file-input" accept=".json,.tree.json" hidden />
-
-        <div class="bulk-fetch">
-          <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch account(s) directly</strong></p>
-          <label class="stack" style="margin-bottom:10px;">
-            <span><input type="checkbox" id="combine-toggle" /> 🔗 Build one combined tree from both accounts</span>
-            <span class="hint">Off: each fetch below builds its own tree, replacing whatever was loaded before. On: both usernames are fetched together and merged into a single tree — for a player with different handles on each site.</span>
-          </label>
-
-          <div class="config-row">
-            <label>Lichess username
-              <input type="text" id="lichess-username" class="text-input" placeholder="e.g. DrNykterstein" />
-            </label>
-            <label>Max games
-              <select id="lichess-max">
-                <option value="100">100</option>
-                <option value="200" selected>200</option>
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-                <option value="all">All (can take a while)</option>
-              </select>
-            </label>
-            <button id="lichess-fetch-btn" class="btn btn-primary">Fetch from lichess</button>
-          </div>
-          <div id="lichess-status" class="hint"></div>
-
-          <div class="config-row">
-            <label>Chess.com username
-              <input type="text" id="chesscom-username" class="text-input" placeholder="e.g. Hikaru" />
-            </label>
-            <label>How far back
-              <select id="chesscom-months">
-                <option value="1">Last month</option>
-                <option value="3" selected>Last 3 months</option>
-                <option value="6">Last 6 months</option>
-                <option value="12">Last 12 months</option>
-                <option value="24">Last 24 months</option>
-                <option value="all">All (can take a while)</option>
-              </select>
-            </label>
-            <button id="chesscom-fetch-btn" class="btn btn-primary">Fetch from chess.com</button>
-          </div>
-          <div id="chesscom-status" class="hint"></div>
-
-          <div class="config-row" id="combine-row" hidden>
-            <button id="combine-btn" class="btn btn-primary">🔗 Build combined tree</button>
-          </div>
-          <div id="combine-status" class="hint"></div>
-        </div>
       </section>
 
       <section class="card" id="config-card" hidden>
-        <h2><span class="step">2</span> Build the tree</h2>
+        <h2><span class="step">2</span> Color</h2>
         <p class="hint">Building the tree for <b id="detected-player-name">—</b><span id="detected-player-count"></span> — the player who appears most across the loaded games.</p>
-        <div class="config-row">
-          <label>Color
-            <select id="color-select">
-              <option value="w">White</option>
-              <option value="b">Black</option>
-            </select>
-          </label>
+        <span class="field-label">Color</span>
+        <div class="segmented" id="color-toggle">
+          <button type="button" class="seg-btn active" data-color="w">White</button>
+          <button type="button" class="seg-btn" data-color="b">Black</button>
         </div>
+        <select id="color-select" hidden>
+          <option value="w">White</option>
+          <option value="b">Black</option>
+        </select>
+        <p class="hint" style="margin-top:9px;">Only games where the player had this color are walked into the tree.</p>
         <button id="scouting-link-btn" class="btn btn-ghost" hidden>📋 Full scouting report →</button>
       </section>
 
