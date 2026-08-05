@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scouting Report — OpenFile</title>
+    <link rel="icon" href="/logo-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
+  </head>
+  <body>
+    <div class="app-shell">
+    <nav class="sidebar">
+      <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
+      <div class="sidebar-links">
+        <a href="opening-explorer.html">← Back to Opening Explorer</a>
+      </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
+    </nav>
+    <div class="main-col">
+    <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
+    <div id="app">
+      <header class="app-header">
+        <h1>📋 Scouting Report</h1>
+        <p class="tagline">Openings, results, and time-control breakdown for whichever games are currently loaded in Opening Explorer. Opened via the "Full scouting report" link there — this page doesn't load games on its own.</p>
+      </header>
+
+      <div id="empty-state" class="card" hidden>
+        <p class="hint">No games handed off from Opening Explorer yet. Load games there, then click <b>📋 Full scouting report</b> once the tree is built.</p>
+        <p><a class="btn btn-primary" href="opening-explorer.html">Go to Opening Explorer →</a></p>
+      </div>
+
+      <section class="card" id="report-card" hidden>
+        <h2 id="report-title">Report</h2>
+        <div id="report-body"></div>
+      </section>
+
+      <footer class="app-footer">
+        OpenFile · built entirely in your browser
+      </footer>
+    </div>
+    </div>
+    </div>
+    <script type="module" src="/src/scoutingReport.ts"></script>
+  </body>
+</html>

@@ -21,6 +21,7 @@ export default defineConfig({
         swiss: page('./swiss.html'),
         wallchartDisplay: page('./wallchart-display.html'),
         openingExplorer: page('./opening-explorer.html'),
+        scoutingReport: page('./scouting-report.html'),
         openingDeviation: page('./opening-deviation.html'),
         compareReports: page('./compare-reports.html'),
         roster: page('./roster.html'),
