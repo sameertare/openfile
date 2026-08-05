@@ -134,7 +134,11 @@ code { background: var(--bg-inset); padding: 1px 5px; border-radius: 4px; }
 .config-row label { display: flex; flex-direction: column; gap: 5px; font-size: 0.88rem; color: var(--text-dim); }
 
 .bulk-fetch { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
-.bulk-fetch .hint:last-child { margin-top: 8px; }
+/* Consistent vertical rhythm for every row/status pair inside — was `.hint:last-child` only, which
+   broke once the lichess/chess.com fetch sections and the combined-tree toggle were merged into a
+   single .bulk-fetch with several .config-row/.hint pairs instead of one of each. */
+.bulk-fetch > .config-row { margin-top: 14px; }
+.bulk-fetch > .hint { margin-top: 6px; }
 
 .game-moves { margin-top: 10px; background: var(--bg-inset); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 0.86rem; }
 .game-moves summary { cursor: pointer; color: var(--gold); font-weight: 600; }
