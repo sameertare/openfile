@@ -386,9 +386,12 @@ lichessUsernameInput.addEventListener('keydown', (e) => {
 
 /** Raw fetch only — throws with a user-facing message on failure, returns '' if the account exists
  *  but has no matching games. Shared by the single-source fetchFromLichess and the combined-tree
- *  fetchCombined below, so both go through identical request/error-handling logic. */
+ *  fetchCombined below, so both go through identical request/error-handling logic.
+ *  `max === 'all'` omits the `max` param entirely — lichess streams the account's full history
+ *  (unbounded) when it's left off, rather than there being an explicit "unlimited" sentinel value. */
 async function fetchLichessPgnText(username: string, max: string): Promise<string> {
-  const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=false&clocks=false&evals=false&opening=false`;
+  const maxParam = max === 'all' ? '' : `&max=${max}`;
+  const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?pgnInJson=false&clocks=false&evals=false&opening=false${maxParam}`;
   const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
   if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
   if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
@@ -404,7 +407,10 @@ async function fetchFromLichess() {
   }
   const max = lichessMaxSelect.value;
   lichessFetchBtn.disabled = true;
-  lichessStatusEl.textContent = `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
+  lichessStatusEl.textContent =
+    max === 'all'
+      ? `Fetching ${username}'s entire lichess history… this can take a while for a long-tenured account.`
+      : `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
   try {
     const text = await fetchLichessPgnText(username, max);
     if (!text.trim()) {
@@ -436,14 +442,15 @@ chesscomUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromChessCom();
 });
 
-async function fetchChessComPgnText(username: string, monthsBack: number): Promise<string> {
+async function fetchChessComPgnText(username: string, monthsBack: number | 'all'): Promise<string> {
   const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
   if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
   if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status} from chess.com`);
   const archivesData: ChessComArchivesResponse = await archivesResp.json();
   const archives = archivesData.archives ?? [];
   if (!archives.length) return '';
-  const selected = archives.slice(-monthsBack); // archives are oldest-first; take the most recent N
+  // archives are oldest-first; take the most recent N, or every archive for 'all'.
+  const selected = monthsBack === 'all' ? archives : archives.slice(-monthsBack);
   const monthResults = await Promise.all(
     selected.map(async (url) => {
       try {
@@ -467,9 +474,13 @@ async function fetchFromChessCom() {
     chesscomStatusEl.textContent = 'Enter a chess.com username first.';
     return;
   }
-  const monthsBack = parseInt(chesscomMonthsSelect.value, 10);
+  const monthsRaw = chesscomMonthsSelect.value;
+  const monthsBack = monthsRaw === 'all' ? 'all' : parseInt(monthsRaw, 10);
   chesscomFetchBtn.disabled = true;
-  chesscomStatusEl.textContent = `Fetching up to ${monthsBack} month(s) of games for ${username} from chess.com…`;
+  chesscomStatusEl.textContent =
+    monthsBack === 'all'
+      ? `Fetching ${username}'s entire chess.com history… this can take a while for a long-tenured account.`
+      : `Fetching up to ${monthsBack} month(s) of games for ${username} from chess.com…`;
   try {
     const text = await fetchChessComPgnText(username, monthsBack);
     if (!text.trim()) {
@@ -526,7 +537,9 @@ async function fetchCombined() {
     }
     if (chesscomUsername) {
       combineStatusEl.textContent = `Fetching ${chesscomUsername} from chess.com…`;
-      const text = await fetchChessComPgnText(chesscomUsername, parseInt(chesscomMonthsSelect.value, 10));
+      const monthsRaw = chesscomMonthsSelect.value;
+      const monthsBack = monthsRaw === 'all' ? 'all' : parseInt(monthsRaw, 10);
+      const text = await fetchChessComPgnText(chesscomUsername, monthsBack);
       if (text.trim()) files.push(new File([text], `${chesscomUsername}-chesscom.pgn`));
     }
     if (!files.length) {
