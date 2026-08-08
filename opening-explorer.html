@@ -67,12 +67,11 @@
             <div class="source-row-head">♟ Chess.com</div>
             <input type="text" id="chesscom-username" class="text-input" placeholder="username" />
             <div class="source-row-controls">
-              <select id="chesscom-months">
-                <option value="1">1 month back</option>
-                <option value="3" selected>3 months back</option>
-                <option value="6">6 months back</option>
-                <option value="12">12 months back</option>
-                <option value="24">24 months back</option>
+              <select id="chesscom-max">
+                <option value="100">100 games</option>
+                <option value="200" selected>200 games</option>
+                <option value="500">500 games</option>
+                <option value="1000">1000 games</option>
                 <option value="all">All (can take a while)</option>
               </select>
               <button id="chesscom-fetch-btn" class="btn btn-primary">Fetch</button>

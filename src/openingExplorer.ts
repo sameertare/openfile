@@ -82,7 +82,7 @@ const lichessMaxSelect = $('#lichess-max') as HTMLSelectElement;
 const lichessFetchBtn = $('#lichess-fetch-btn') as HTMLButtonElement;
 const lichessStatusEl = $('#lichess-status');
 const chesscomUsernameInput = $('#chesscom-username') as HTMLInputElement;
-const chesscomMonthsSelect = $('#chesscom-months') as HTMLSelectElement;
+const chesscomMaxSelect = $('#chesscom-max') as HTMLSelectElement;
 const chesscomFetchBtn = $('#chesscom-fetch-btn') as HTMLButtonElement;
 const chesscomStatusEl = $('#chesscom-status');
 const scoutingLinkBtn = $('#scouting-link-btn') as HTMLButtonElement;
@@ -427,12 +427,16 @@ async function fetchFromLichess() {
 }
 
 // ---------- chess.com username bulk fetch ----------
-// Chess.com's public "Published Data API" has no single all-games endpoint like lichess — games
-// are grouped into monthly archives, so this fetches the archive list, then the N most recent
-// months in parallel, and concatenates each game's own `pgn` field (already a complete PGN chunk)
-// into one blob for the existing splitPgn/tryParseGame pipeline. Chess.com's own [Site] header is
-// never a URL ("Chess.com", not a link), so the game's separate `url` field is injected as a
-// [Link] header so gameLink() can still resolve a "View" link downstream.
+// Chess.com's public "Published Data API" has no single all-games endpoint like lichess, and no
+// count-limited one either — games are grouped into monthly archives. To offer a "max games" control
+// that matches lichess's, this walks archives newest-month-first, fetching one month at a time (has
+// to be sequential, not parallel, since it needs to know the running total before deciding whether
+// another month is needed) and stops as soon as it has enough, then trims to exactly that count —
+// a month's own games arrive oldest-first, so the trim keeps its most recent games too. Each game's
+// own `pgn` field (already a complete PGN chunk) is concatenated into one blob for the existing
+// splitPgn/tryParseGame pipeline. Chess.com's own [Site] header is never a URL ("Chess.com", not a
+// link), so the game's separate `url` field is injected as a [Link] header so gameLink() can still
+// resolve a "View" link downstream.
 interface ChessComArchivesResponse { archives: string[]; }
 interface ChessComGamesResponse { games: { pgn?: string; url?: string }[]; }
 
@@ -441,30 +445,30 @@ chesscomUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromChessCom();
 });
 
-async function fetchChessComPgnText(username: string, monthsBack: number | 'all'): Promise<string> {
+async function fetchChessComPgnText(username: string, maxGames: number | 'all'): Promise<string> {
   const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
   if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
   if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status} from chess.com`);
   const archivesData: ChessComArchivesResponse = await archivesResp.json();
   const archives = archivesData.archives ?? [];
   if (!archives.length) return '';
-  // archives are oldest-first; take the most recent N, or every archive for 'all'.
-  const selected = monthsBack === 'all' ? archives : archives.slice(-monthsBack);
-  const monthResults = await Promise.all(
-    selected.map(async (url) => {
-      try {
-        const r = await fetch(url);
-        if (!r.ok) return [];
-        const data: ChessComGamesResponse = await r.json();
-        return (data.games ?? [])
-          .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
-          .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn));
-      } catch {
-        return []; // one bad month shouldn't sink the whole fetch
-      }
-    })
-  );
-  return monthResults.flat().join('\n\n');
+  const pgns: string[] = []; // accumulated newest-first
+  for (let i = archives.length - 1; i >= 0 && (maxGames === 'all' || pgns.length < maxGames); i--) {
+    try {
+      const r = await fetch(archives[i]);
+      if (!r.ok) continue;
+      const data: ChessComGamesResponse = await r.json();
+      const monthPgns = (data.games ?? [])
+        .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
+        .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn))
+        .reverse(); // a month's games arrive oldest-first; reverse so newest-first holds within it too
+      pgns.push(...monthPgns);
+    } catch {
+      // one bad month shouldn't sink the whole fetch
+    }
+  }
+  const trimmed = maxGames === 'all' ? pgns : pgns.slice(0, maxGames);
+  return trimmed.join('\n\n');
 }
 
 async function fetchFromChessCom() {
@@ -473,17 +477,17 @@ async function fetchFromChessCom() {
     chesscomStatusEl.textContent = 'Enter a chess.com username first.';
     return;
   }
-  const monthsRaw = chesscomMonthsSelect.value;
-  const monthsBack = monthsRaw === 'all' ? 'all' : parseInt(monthsRaw, 10);
+  const maxRaw = chesscomMaxSelect.value;
+  const maxGames = maxRaw === 'all' ? 'all' : parseInt(maxRaw, 10);
   chesscomFetchBtn.disabled = true;
   chesscomStatusEl.textContent =
-    monthsBack === 'all'
+    maxGames === 'all'
       ? `Fetching ${username}'s entire chess.com history… this can take a while for a long-tenured account.`
-      : `Fetching up to ${monthsBack} month(s) of games for ${username} from chess.com…`;
+      : `Fetching up to ${maxGames} game(s) for ${username} from chess.com…`;
   try {
-    const text = await fetchChessComPgnText(username, monthsBack);
+    const text = await fetchChessComPgnText(username, maxGames);
     if (!text.trim()) {
-      chesscomStatusEl.textContent = `No games found for ${username} in the selected range.`;
+      chesscomStatusEl.textContent = `No games found for ${username}.`;
       return;
     }
     const file = new File([text], `${username}-chesscom.pgn`);
@@ -536,9 +540,9 @@ async function fetchCombined() {
     }
     if (chesscomUsername) {
       combineStatusEl.textContent = `Fetching ${chesscomUsername} from chess.com…`;
-      const monthsRaw = chesscomMonthsSelect.value;
-      const monthsBack = monthsRaw === 'all' ? 'all' : parseInt(monthsRaw, 10);
-      const text = await fetchChessComPgnText(chesscomUsername, monthsBack);
+      const maxRaw = chesscomMaxSelect.value;
+      const maxGames = maxRaw === 'all' ? 'all' : parseInt(maxRaw, 10);
+      const text = await fetchChessComPgnText(chesscomUsername, maxGames);
       if (text.trim()) files.push(new File([text], `${chesscomUsername}-chesscom.pgn`));
     }
     if (!files.length) {

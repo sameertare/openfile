@@ -49,7 +49,7 @@ const lichessMaxSelect = $('#lichess-max') as HTMLSelectElement;
 const lichessFetchBtn = $('#lichess-fetch-btn') as HTMLButtonElement;
 const lichessStatusEl = $('#lichess-status');
 const chesscomUsernameInput = $('#chesscom-username') as HTMLInputElement;
-const chesscomMonthsSelect = $('#chesscom-months') as HTMLSelectElement;
+const chesscomMaxSelect = $('#chesscom-max') as HTMLSelectElement;
 const chesscomFetchBtn = $('#chesscom-fetch-btn') as HTMLButtonElement;
 const chesscomStatusEl = $('#chesscom-status');
 const configCard = $('#config-card');
@@ -312,10 +312,12 @@ async function fetchFromLichess() {
   }
 }
 
-// Chess.com's public "Published Data API" has no single all-games endpoint like lichess — games
-// are grouped into monthly archives, so this fetches the archive list, then the N most recent
-// months in parallel, and concatenates each game's own `pgn` field into one blob for the existing
-// splitPgn/tryParseGame pipeline.
+// Chess.com's public "Published Data API" has no single all-games endpoint like lichess, and no
+// count-limited one either — games are grouped into monthly archives. To offer a "max games" control
+// that matches lichess's, this walks archives newest-month-first, fetching one month at a time (has
+// to be sequential, not parallel, since it needs to know the running total before deciding whether
+// another month is needed) and stops as soon as it has enough, then trims to exactly that count — a
+// month's own games arrive oldest-first, so the trim keeps its most recent games too.
 interface ChessComArchivesResponse { archives: string[]; }
 interface ChessComGamesResponse { games: { pgn?: string; url?: string }[]; }
 
@@ -330,9 +332,9 @@ async function fetchFromChessCom() {
     chesscomStatusEl.textContent = 'Enter a chess.com username first.';
     return;
   }
-  const monthsBack = parseInt(chesscomMonthsSelect.value, 10);
+  const maxGames = parseInt(chesscomMaxSelect.value, 10);
   chesscomFetchBtn.disabled = true;
-  chesscomStatusEl.textContent = `Fetching up to ${monthsBack} month(s) of games for ${username} from chess.com…`;
+  chesscomStatusEl.textContent = `Fetching up to ${maxGames} game(s) for ${username} from chess.com…`;
   try {
     const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
     if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
@@ -343,24 +345,24 @@ async function fetchFromChessCom() {
       chesscomStatusEl.textContent = `${username} has no game archives on chess.com.`;
       return;
     }
-    const selected = archives.slice(-monthsBack); // archives are oldest-first; take the most recent N
-    const monthResults = await Promise.all(
-      selected.map(async (url) => {
-        try {
-          const r = await fetch(url);
-          if (!r.ok) return [];
-          const data: ChessComGamesResponse = await r.json();
-          return (data.games ?? [])
-            .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
-            .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn));
-        } catch {
-          return []; // one bad month shouldn't sink the whole fetch
-        }
-      })
-    );
-    const allPgns = monthResults.flat();
+    const pgns: string[] = []; // accumulated newest-first
+    for (let i = archives.length - 1; i >= 0 && pgns.length < maxGames; i--) {
+      try {
+        const r = await fetch(archives[i]);
+        if (!r.ok) continue;
+        const data: ChessComGamesResponse = await r.json();
+        const monthPgns = (data.games ?? [])
+          .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
+          .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn))
+          .reverse(); // a month's games arrive oldest-first; reverse so newest-first holds within it too
+        pgns.push(...monthPgns);
+      } catch {
+        // one bad month shouldn't sink the whole fetch
+      }
+    }
+    const allPgns = pgns.slice(0, maxGames);
     if (!allPgns.length) {
-      chesscomStatusEl.textContent = `No games found for ${username} in the selected range.`;
+      chesscomStatusEl.textContent = `No games found for ${username}.`;
       return;
     }
     fetchedUsernames.add(username);
