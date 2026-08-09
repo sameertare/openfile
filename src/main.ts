@@ -383,7 +383,15 @@ analyzeBtn.addEventListener('click', () => void runAnalysis());
 async function runAnalysis() {
   const username = detectedUsername;
   const matchKeys = detectedMatchKeys;
-  if (!username || !matchKeys) return;
+  if (!username || !matchKeys) {
+    // Reachable whenever detectMainPlayer() can't identify a player (e.g. PGNs with no White/Black
+    // headers) — the config card still shows in that case (it's gated on having games loaded, not on
+    // a successful detection), so without this the button did nothing with zero feedback.
+    progressWrap.hidden = false;
+    progressFill.style.width = '0%';
+    progressText.textContent = "Couldn't detect a player in the loaded games — check that your PGN files include White/Black player names.";
+    return;
+  }
   const depth = parseInt(depthSelect.value, 10);
   const useEngine = depth > 0;
 
