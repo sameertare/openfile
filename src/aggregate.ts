@@ -474,17 +474,29 @@ function worstMoment(
   analyzed: GameRecord[],
   opts: { phase?: Phase; kinds?: WorstMove['kind'][] } = {}
 ): { game: GameRecord; move: WorstMove } | null {
-  let best: { game: GameRecord; move: WorstMove } | null = null;
-  let bestSwing = -Infinity;
+  return worstMoments(analyzed, opts, 1)[0] ?? null;
+}
+
+/** Every recorded moment matching a phase and/or WorstMove kinds, worst swing first. A training
+ *  plan can dedicate every single day to one recommendation (e.g. only one weak area was found at
+ *  all) — citing just the single worst moment made every revisit of that area cite the identical
+ *  example, which is exactly as repetitive as a canned line. Pulling several distinct real moments
+ *  lets each revisit reference a different one, for as long as the player's own games supply them. */
+function worstMoments(
+  analyzed: GameRecord[],
+  opts: { phase?: Phase; kinds?: WorstMove['kind'][] } = {},
+  limit = 1
+): { game: GameRecord; move: WorstMove }[] {
+  const all: { game: GameRecord; move: WorstMove }[] = [];
   for (const g of analyzed) {
     for (const m of g.worstMoves) {
       if (opts.phase && m.phase !== opts.phase) continue;
       if (opts.kinds && !opts.kinds.includes(m.kind)) continue;
-      const swing = m.winPctBefore - m.winPctAfter;
-      if (swing > bestSwing) { bestSwing = swing; best = { game: g, move: m }; }
+      all.push({ game: g, move: m });
     }
   }
-  return best;
+  all.sort((a, b) => (b.move.winPctBefore - b.move.winPctAfter) - (a.move.winPctBefore - a.move.winPctAfter));
+  return all.slice(0, limit);
 }
 
 function describeMoment(m: { game: GameRecord; move: WorstMove }): string {
@@ -542,18 +554,24 @@ function recommend(
       drills = [
         'A light monthly review is enough here — no dedicated drilling needed right now.',
         commonType ? `Your most common endgame is ${commonType}; a quick refresh of its key technique keeps it sharp.` : 'Keep an eye on whichever endgame type comes up most in your games.',
+        'Time saved here is better spent on whichever other area is actually costing you games.',
+        'Solve a handful of general endgame puzzles for maintenance, nothing more targeted needed.',
       ];
     } else {
       why = `Endgame accuracy is ${p.avgAccuracy ?? '—'}%, with ${p.blunders} blunder(s), ${p.mistakes} mistake(s) and ${p.inaccuracies} inaccuracy(ies) across ${analyzed.length} analyzed game(s). ${p.decisiveErrorsInLosses} loss(es) were decided here` +
         (commonType ? `; the endgame type you reach most is ${commonType}.` : '.');
-      const worst = worstMoment(analyzed, { phase: 'endgame' });
+      // A recommendation can end up carrying an entire training plan alone (only one weak area
+      // found at all) — every one of its own moments gets cited, one per revisit, rather than
+      // just the single worst, or a plan longer than a few days would cite the same example
+      // every time it comes back around.
+      const moments = worstMoments(analyzed, { phase: 'endgame' }, 6);
       drills = [
         'Practice K+P vs K opposition and the "square of the pawn" until automatic.',
         'Learn the Lucena and Philidor rook-endgame positions.',
+        'Play out won endgames vs an engine from your own games.',
+        'Drill the most common endgame type from your games until the technique is automatic.',
       ];
-      drills.push(worst
-        ? `Start with your own worst moment: ${describeMoment(worst)} — cost ${swingPct(worst.move)}% win probability.`
-        : 'Play out won endgames vs an engine from your own games.');
+      moments.forEach((m) => drills.push(`Review your own moment: ${describeMoment(m)} — cost ${swingPct(m.move)}% win probability.`));
     }
     recs.push({ area: 'Endgame technique', severity: sev, why, themes: t([...new Set(themes)]), drills });
   }
@@ -570,16 +588,22 @@ function recommend(
       drills = [
         'No dedicated drilling needed — this is already solid; revisit only if accuracy drops.',
         'If you want to sharpen further anyway, 5–10 minutes of mixed tactics a week is plenty.',
+        'Time saved here is better spent on whichever other area is actually costing you games.',
+        'Solve a handful of general middlegame puzzles for maintenance, nothing more targeted needed.',
       ];
     } else {
       why = `Middlegame accuracy is ${p.avgAccuracy ?? '—'}%, with ${p.blunders} blunder(s), ${p.mistakes} mistake(s) and ${p.inaccuracies} inaccuracy(ies) across ${analyzed.length} analyzed game(s). ${p.decisiveErrorsInLosses} loss(es) were decided here` +
         (p.blundersPerGame > 0 ? `, roughly 1 blunder every ${Math.round(1 / p.blundersPerGame)} game(s) in this phase.` : '.');
-      const worst = worstMoment(analyzed, { phase: 'middlegame' });
-      drills = ['Before every move, run a blunder check: "What are ALL checks, captures, and threats against me?"'];
-      drills.push(worst
-        ? `Start by annotating your worst middlegame moment: ${describeMoment(worst)} — a ${swingPct(worst.move)}% swing.`
-        : 'Annotate one of your middlegame losses per week without an engine first.');
-      drills.push('Do 15 minutes of mixed tactics daily at slow pace — accuracy over speed.');
+      // See the endgame block above for why this pulls several moments instead of just the worst
+      // one — a recommendation can end up carrying an entire training plan alone.
+      const moments = worstMoments(analyzed, { phase: 'middlegame' }, 6);
+      drills = [
+        'Before every move, run a blunder check: "What are ALL checks, captures, and threats against me?"',
+        'Do 15 minutes of mixed tactics daily at slow pace — accuracy over speed.',
+        'Annotate one of your middlegame losses per week without an engine first.',
+        'Play the critical position again from scratch, out loud, before checking the engine line.',
+      ];
+      moments.forEach((m) => drills.push(`Review your own moment: ${describeMoment(m)} — a ${swingPct(m.move)}% swing.`));
     }
     recs.push({ area: 'Middlegame calculation', severity: sev, why, themes: t(['middlegame', 'fork', 'pin', 'discoveredAttack', 'hangingPiece']), drills });
   }
@@ -592,12 +616,14 @@ function recommend(
       (p.blunders || p.mistakes ? `, with ${p.blunders} blunder(s) and ${p.mistakes} mistake(s) in this phase` : '') +
       '.' + (openingList ? ` Worst-scoring openings: ${openingList}.` : '');
     const drills: string[] = [];
-    if (openingList) {
-      drills.push(`Start with your worst-scoring opening: ${weakest[0].family} (${weakest[0].wins}W-${weakest[0].draws}D-${weakest[0].losses}L) — review those losses before anything else.`);
-    }
+    // Cite every weak opening in turn, not just the single worst — same reasoning as the phase
+    // blocks above: a recommendation can end up carrying an entire training plan alone.
+    weakest.slice(0, 6).forEach((o) => {
+      drills.push(`Review your losses in ${o.family} (${o.wins}W-${o.draws}D-${o.losses}L) — where did the game actually leave your prep?`);
+    });
     if (sev === 'low' && !openingList) {
       why += ' No real weak spot here — opening prep is not the priority right now.';
-      // Two distinct entries even in the "nothing to fix" case — trainingPlan.ts rotates through
+      // Distinct entries even in the "nothing to fix" case — trainingPlan.ts rotates through
       // drills by visit count (drills[visit % drills.length]), so a single-entry array here would
       // show the exact same task text every time this area recurs in the plan.
       drills.push('No dedicated opening work needed — keep playing what you know.');
@@ -605,57 +631,63 @@ function recommend(
     } else {
       drills.push('Pick ONE reply to 1.e4 and ONE to 1.d4 and build a 6–8 move repertoire file.');
       drills.push('After every loss, check where the game left your known theory and learn one move deeper.');
+      drills.push('Drill your repertoire lines on a board until recall is instant.');
     }
     recs.push({ area: 'Opening preparation', severity: sev, why, themes: t(['opening']), drills });
   }
 
   if (tactics.missedMates >= 1) {
-    const worst = worstMoment(analyzed, { kinds: ['missed mate'] });
-    // Two entries even when no specific example was found — see the opening-prep comment above for
-    // why a single-entry drills array breaks trainingPlan.ts's per-visit rotation.
+    const moments = worstMoments(analyzed, { kinds: ['missed mate'] }, 6);
     const drills = [
       'Do 10 mate-in-1 and 10 mate-in-2 puzzles daily for two weeks — pattern recognition compounds fast.',
       'Review your last few decisive games for missed forced sequences, not just missed mates.',
+      'Set up the position right before your worst missed mate and solve it again from memory.',
     ];
-    if (worst) drills.unshift(`You missed one ${describeMoment(worst)} — worth re-solving until the pattern is instant.`);
+    moments.forEach((m) => drills.unshift(`You missed one ${describeMoment(m)} — worth re-solving until the pattern is instant.`));
     recs.push({
       area: 'Checkmate patterns',
       severity: tactics.missedMates >= 3 ? 'high' : 'medium',
-      why: `${tactics.missedMates} forced mate(s) were missed in analyzed games` + (worst ? ` — the clearest was ${describeMoment(worst)}.` : '.'),
+      why: `${tactics.missedMates} forced mate(s) were missed in analyzed games` + (moments[0] ? ` — the clearest was ${describeMoment(moments[0])}.` : '.'),
       themes: t(['mateIn1', 'mateIn2', 'backRankMate', 'mate']),
       drills,
     });
   }
 
   if (tactics.missedTactics >= 2 || tactics.blundersTotal >= 3) {
-    const worst = worstMoment(analyzed, { kinds: ['blunder'] });
+    const moments = worstMoments(analyzed, { kinds: ['blunder'] }, 6);
+    const drills = [
+      'Adopt a pre-move checklist: checks, captures, threats — for BOTH sides.',
+      'Puzzle Streak / Puzzle Rush 5 minutes daily.',
+      'Before checking the engine, write down what you think the best move is and why.',
+    ];
+    moments.forEach((m) => drills.push(`Review your own blunder: ${describeMoment(m)} — a ${swingPct(m.move)}% swing.`));
     recs.push({
       area: 'Tactical awareness & board vision',
       severity: 'high',
       why: `${tactics.blundersTotal} blunder(s) and ${tactics.missedTactics} missed tactic(s) (engine's best move was a capture/check that went unplayed)` +
-        (worst ? ` — the costliest was ${describeMoment(worst)}, a ${swingPct(worst.move)}% swing.` : '.'),
+        (moments[0] ? ` — the costliest was ${describeMoment(moments[0])}, a ${swingPct(moments[0].move)}% swing.` : '.'),
       themes: t(['hangingPiece', 'fork', 'skewer', 'crushing']),
-      drills: [
-        'Adopt a pre-move checklist: checks, captures, threats — for BOTH sides.',
-        'Puzzle Streak / Puzzle Rush 5 minutes daily.',
-      ],
+      drills,
     });
   }
 
   if (patterns.lostFromWinning.length >= 1 || (patterns.conversionRate !== null && patterns.conversionRate < 70 && patterns.gamesReachedWinning >= 3)) {
-    const example = patterns.lostFromWinning[0];
-    const exampleNote = example
-      ? ` Worst case: your game vs ${(example.userColor === 'w' ? example.black : example.white) || 'your opponent'} (${example.date || 'undated'}) reached ${example.bestWinPct}% before slipping away.`
+    const examples = patterns.lostFromWinning.slice(0, 6);
+    const exampleNote = examples[0]
+      ? ` Worst case: your game vs ${(examples[0].userColor === 'w' ? examples[0].black : examples[0].white) || 'your opponent'} (${examples[0].date || 'undated'}) reached ${examples[0].bestWinPct}% before slipping away.`
       : '';
+    const drills = [
+      'When winning: trade pieces, not pawns; keep asking "what is my opponent\'s only hope?"',
+      'Play out +2 positions from your games vs an engine until you win 5 in a row.',
+      'Before every move while winning, ask: does this simplify, or give counterplay?',
+    ];
+    examples.forEach((g) => drills.push(`Replay your win-turned-loss vs ${(g.userColor === 'w' ? g.black : g.white) || 'your opponent'} (${g.date || 'undated'}) and find where you should have simplified instead.`));
     recs.push({
       area: 'Converting winning positions',
       severity: patterns.lostFromWinning.length >= 2 ? 'high' : 'medium',
       why: `${patterns.lostFromWinning.length} win(s) thrown away; conversion rate from winning positions is ${patterns.conversionRate ?? '—'}%.` + exampleNote,
       themes: t(['advantage', 'crushing', 'defensiveMove', 'quietMove']),
-      drills: [
-        'When winning: trade pieces, not pawns; keep asking "what is my opponent\'s only hope?"',
-        'Play out +2 positions from your games vs an engine until you win 5 in a row.',
-      ],
+      drills,
     });
   }
 
@@ -668,6 +700,7 @@ function recommend(
       drills: [
         'Set a personal rule: never below 50% of the opponent\'s clock before move 20.',
         'Train at one time control slower than your usual (e.g. 15+10 instead of 10+0).',
+        'After each game, note the move where your clock first dropped under a minute.',
       ],
     });
   }
