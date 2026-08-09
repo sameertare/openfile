@@ -597,7 +597,11 @@ function recommend(
     }
     if (sev === 'low' && !openingList) {
       why += ' No real weak spot here — opening prep is not the priority right now.';
+      // Two distinct entries even in the "nothing to fix" case — trainingPlan.ts rotates through
+      // drills by visit count (drills[visit % drills.length]), so a single-entry array here would
+      // show the exact same task text every time this area recurs in the plan.
       drills.push('No dedicated opening work needed — keep playing what you know.');
+      drills.push('Worth a re-check only if a new loss traces back to opening theory.');
     } else {
       drills.push('Pick ONE reply to 1.e4 and ONE to 1.d4 and build a 6–8 move repertoire file.');
       drills.push('After every loss, check where the game left your known theory and learn one move deeper.');
@@ -607,7 +611,12 @@ function recommend(
 
   if (tactics.missedMates >= 1) {
     const worst = worstMoment(analyzed, { kinds: ['missed mate'] });
-    const drills = ['Do 10 mate-in-1 and 10 mate-in-2 puzzles daily for two weeks — pattern recognition compounds fast.'];
+    // Two entries even when no specific example was found — see the opening-prep comment above for
+    // why a single-entry drills array breaks trainingPlan.ts's per-visit rotation.
+    const drills = [
+      'Do 10 mate-in-1 and 10 mate-in-2 puzzles daily for two weeks — pattern recognition compounds fast.',
+      'Review your last few decisive games for missed forced sequences, not just missed mates.',
+    ];
     if (worst) drills.unshift(`You missed one ${describeMoment(worst)} — worth re-solving until the pattern is instant.`);
     recs.push({
       area: 'Checkmate patterns',
