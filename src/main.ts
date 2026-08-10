@@ -46,10 +46,12 @@ const dropzone = $('#dropzone');
 const fileSummary = $('#file-summary');
 const lichessUsernameInput = $('#lichess-username') as HTMLInputElement;
 const lichessMaxSelect = $('#lichess-max') as HTMLSelectElement;
+const lichessMaxLabel = $('#lichess-max-label');
 const lichessFetchBtn = $('#lichess-fetch-btn') as HTMLButtonElement;
 const lichessStatusEl = $('#lichess-status');
 const chesscomUsernameInput = $('#chesscom-username') as HTMLInputElement;
 const chesscomMaxSelect = $('#chesscom-max') as HTMLSelectElement;
+const chesscomMaxLabel = $('#chesscom-max-label');
 const chesscomFetchBtn = $('#chesscom-fetch-btn') as HTMLButtonElement;
 const chesscomStatusEl = $('#chesscom-status');
 const configCard = $('#config-card');
@@ -281,8 +283,14 @@ lichessUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromLichess();
 });
 
-async function fetchLichessPgnText(username: string, max: string): Promise<string> {
-  const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=false&clocks=false&evals=false&opening=false`;
+// `max` and `sinceMs` are independent lichess API params — the game-count dropdown passes `max`
+// only, the combined-report date picker passes `sinceMs` only (omitting `max` streams every game
+// since that date, per lichess's own API default).
+async function fetchLichessPgnText(username: string, opts: { max?: string; sinceMs?: number }): Promise<string> {
+  const params = new URLSearchParams({ pgnInJson: 'false', clocks: 'false', evals: 'false', opening: 'false' });
+  if (opts.max) params.set('max', opts.max);
+  if (opts.sinceMs) params.set('since', String(opts.sinceMs));
+  const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?${params}`;
   const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
   if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
   if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
@@ -300,7 +308,7 @@ async function fetchFromLichess() {
   lichessFetchBtn.disabled = true;
   lichessStatusEl.textContent = `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
   try {
-    const text = await fetchLichessPgnText(username, max);
+    const text = await fetchLichessPgnText(username, { max });
     if (!text.trim()) {
       lichessStatusEl.textContent = `${username} has no games matching this request.`;
       return;
@@ -323,7 +331,7 @@ async function fetchFromLichess() {
 // another month is needed) and stops as soon as it has enough, then trims to exactly that count — a
 // month's own games arrive oldest-first, so the trim keeps its most recent games too.
 interface ChessComArchivesResponse { archives: string[]; }
-interface ChessComGamesResponse { games: { pgn?: string; url?: string }[]; }
+interface ChessComGamesResponse { games: { pgn?: string; url?: string; end_time?: number }[]; }
 
 // Chess.com's own [Site] header is never a URL ("Chess.com", not a link), so the game's separate
 // `url` field is injected as a [Link] header so gameLink() can still resolve a "View" link
@@ -342,21 +350,36 @@ chesscomUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromChessCom();
 });
 
-async function fetchChessComPgnText(username: string, maxGames: number): Promise<string> {
+// `maxGames` and `sinceMs` are independent limits — the game-count dropdown passes `maxGames` only
+// (walk newest-month-first, stop once there are enough); the combined-report date picker passes
+// `sinceMs` only (walk newest-month-first, stop once a whole archive month falls before the date,
+// filtering individual games by their own `end_time` for day-level precision within the boundary
+// month, since an archive covers a full calendar month regardless of the chosen day).
+async function fetchChessComPgnText(username: string, opts: { maxGames?: number; sinceMs?: number }): Promise<string> {
   const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
   if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
   if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status}`);
   const archivesData: ChessComArchivesResponse = await archivesResp.json();
   const archives = archivesData.archives ?? [];
   if (!archives.length) return '';
+  const sinceSec = opts.sinceMs ? Math.floor(opts.sinceMs / 1000) : null;
   const pgns: string[] = []; // accumulated newest-first
-  for (let i = archives.length - 1; i >= 0 && pgns.length < maxGames; i--) {
+  for (let i = archives.length - 1; i >= 0; i--) {
+    if (opts.maxGames !== undefined && pgns.length >= opts.maxGames) break;
+    const m = archives[i].match(/\/(\d{4})\/(\d{2})$/);
+    if (sinceSec !== null && m) {
+      // an archive covers the whole month; once that month's own end is before the cutoff, every
+      // earlier archive (we're walking newest-first) is too — safe to stop entirely.
+      const archiveMonthEndSec = Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10), 1) / 1000;
+      if (archiveMonthEndSec <= sinceSec) break;
+    }
     try {
       const r = await fetch(archives[i]);
       if (!r.ok) continue;
       const data: ChessComGamesResponse = await r.json();
       const monthPgns = (data.games ?? [])
-        .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
+        .filter((g): g is { pgn: string; url?: string; end_time?: number } => !!g.pgn)
+        .filter((g) => sinceSec === null || (g.end_time ?? 0) >= sinceSec)
         .map((g) => injectLinkHeader(g.pgn, g.url))
         .reverse(); // a month's games arrive oldest-first; reverse so newest-first holds within it too
       pgns.push(...monthPgns);
@@ -364,7 +387,7 @@ async function fetchChessComPgnText(username: string, maxGames: number): Promise
       // one bad month shouldn't sink the whole fetch
     }
   }
-  return pgns.slice(0, maxGames).join('\n\n');
+  return (opts.maxGames !== undefined ? pgns.slice(0, opts.maxGames) : pgns).join('\n\n');
 }
 
 async function fetchFromChessCom() {
@@ -377,7 +400,7 @@ async function fetchFromChessCom() {
   chesscomFetchBtn.disabled = true;
   chesscomStatusEl.textContent = `Fetching up to ${maxGames} game(s) for ${username} from chess.com…`;
   try {
-    const text = await fetchChessComPgnText(username, maxGames);
+    const text = await fetchChessComPgnText(username, { maxGames });
     if (!text.trim()) {
       chesscomStatusEl.textContent = `No games found for ${username}.`;
       return;
@@ -403,11 +426,17 @@ const combineToggle = $('#combine-toggle') as HTMLInputElement;
 const combineRow = $('#combine-row');
 const combineBtn = $('#combine-btn') as HTMLButtonElement;
 const combineStatusEl = $('#combine-status');
+const combineSinceInput = $('#combine-since') as HTMLInputElement;
 
 function updateCombineUi() {
   const on = combineToggle.checked;
   lichessFetchBtn.hidden = on;
   chesscomFetchBtn.hidden = on;
+  // The combined path fetches by date instead of game count — a "since" date applies naturally to
+  // both platforms at once, where "N games" doesn't (200 games means very different date ranges for
+  // a bullet grinder vs. a daily-game player). The individual fetch rows keep their count dropdowns.
+  lichessMaxLabel.hidden = on;
+  chesscomMaxLabel.hidden = on;
   combineRow.hidden = !on;
 }
 combineToggle.addEventListener('change', updateCombineUi);
@@ -422,13 +451,16 @@ async function fetchCombined() {
     combineStatusEl.textContent = 'Enter at least one username above.';
     return;
   }
+  // Parsed as local midnight rather than UTC (bare "YYYY-MM-DD" is UTC per spec) so "since Aug 1"
+  // means Aug 1 in the browser's own timezone, matching what the date picker visually shows.
+  const sinceMs = combineSinceInput.value ? new Date(`${combineSinceInput.value}T00:00:00`).getTime() : undefined;
   combineBtn.disabled = true;
   combineStatusEl.textContent = 'Fetching…';
   try {
     const files: File[] = [];
     if (lichessUsername) {
       combineStatusEl.textContent = `Fetching ${lichessUsername} from lichess…`;
-      const text = await fetchLichessPgnText(lichessUsername, lichessMaxSelect.value);
+      const text = await fetchLichessPgnText(lichessUsername, { sinceMs });
       if (text.trim()) {
         fetchedUsernames.add(lichessUsername);
         files.push(new File([text], `${lichessUsername}-lichess.pgn`));
@@ -436,7 +468,7 @@ async function fetchCombined() {
     }
     if (chesscomUsername) {
       combineStatusEl.textContent = `Fetching ${chesscomUsername} from chess.com…`;
-      const text = await fetchChessComPgnText(chesscomUsername, parseInt(chesscomMaxSelect.value, 10));
+      const text = await fetchChessComPgnText(chesscomUsername, { sinceMs });
       if (text.trim()) {
         fetchedUsernames.add(chesscomUsername);
         files.push(new File([text], `${chesscomUsername}-chesscom.pgn`));

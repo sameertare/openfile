@@ -60,7 +60,7 @@
             <label>Lichess username
               <input type="text" id="lichess-username" class="text-input" placeholder="e.g. DrNykterstein" />
             </label>
-            <label>Max games
+            <label id="lichess-max-label">Max games
               <select id="lichess-max">
                 <option value="100">100</option>
                 <option value="200" selected>200</option>
@@ -79,7 +79,7 @@
             <label>Chess.com username
               <input type="text" id="chesscom-username" class="text-input" placeholder="e.g. Hikaru" />
             </label>
-            <label>Max games
+            <label id="chesscom-max-label">Max games
               <select id="chesscom-max">
                 <option value="100">100</option>
                 <option value="200" selected>200</option>
@@ -93,7 +93,13 @@
         </div>
 
         <div class="bulk-fetch" id="combine-row" hidden>
-          <button id="combine-btn" class="btn btn-primary">🔗 Build combined report</button>
+          <div class="config-row">
+            <label>Games since
+              <input type="date" id="combine-since" class="text-input" />
+            </label>
+            <button id="combine-btn" class="btn btn-primary">🔗 Build combined report</button>
+          </div>
+          <p class="hint" style="margin:6px 0 0;">Leave blank to fetch each account's full history — one shared date applies to both platforms instead of separate game-count limits.</p>
           <div id="combine-status" class="hint"></div>
         </div>
 
