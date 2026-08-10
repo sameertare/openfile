@@ -39,6 +39,17 @@ export interface FamilyGroup {
 }
 
 export type TournamentFormat = 'swiss' | 'round-robin' | 'knockout';
+// 'swiss' = today's pragmatic best-effort pairing: guarantees every round actually gets paired,
+// relaxing rematch-avoidance or colour balance as a last resort if the field genuinely requires it.
+// 'fide' = strict FIDE (Dutch) System behavior for the two things most likely to matter to a TD
+// running a FIDE-rated event: a repeat pairing (C1) or an absolute-colour-preference clash between
+// two non-topscorers (C3) is never produced, even as a last resort — pairing that round throws a
+// descriptive error instead — and colour is allocated via FIDE's own priority order (see
+// assignColorsFide) rather than the simplified strength-sum heuristic assignColors uses. It is not
+// a full implementation of every C1–C21 criterion (in particular, it doesn't re-run the multi-level
+// bracket transposition/exchange search real pairing engines like JaVaFo use when a bracket can't
+// be pleased at all — it fails loudly there instead of restructuring brackets further).
+export type PairingMethod = 'swiss' | 'fide';
 
 export interface Tournament {
   name: string;
@@ -50,11 +61,20 @@ export interface Tournament {
   // Optional (not `swiss`) so tournaments saved before this field existed still load correctly —
   // read via tournamentFormat(t) rather than t.format directly, everywhere but createTournament.
   format?: TournamentFormat;
+  // Only meaningful when format is 'swiss' (round-robin/knockout don't use rematch/colour logic the
+  // same way). Same optional/back-compat pattern as `format` — read via pairingMethod(t).
+  pairingMethod?: PairingMethod;
 }
 
 /** t.format, defaulting to 'swiss' for tournaments saved before the field existed. */
 export function tournamentFormat(t: Tournament): TournamentFormat {
   return t.format ?? 'swiss';
+}
+
+/** t.pairingMethod, defaulting to 'swiss' for tournaments saved before the field existed, or where
+ *  the TD didn't opt into strict FIDE-rule pairing. */
+export function pairingMethod(t: Tournament): PairingMethod {
+  return t.pairingMethod ?? 'swiss';
 }
 
 // ---------------- roster parsing ----------------
@@ -337,12 +357,14 @@ export function createTournament(
   name: string,
   roster: RosterEntry[],
   totalRounds?: number,
-  format: TournamentFormat = 'swiss'
+  format: TournamentFormat = 'swiss',
+  method: PairingMethod = 'swiss'
 ): Tournament {
   const defaultName = format === 'round-robin' ? 'Round-Robin Tournament' : format === 'knockout' ? 'Knockout Tournament' : 'Swiss Tournament';
   return {
     name: name || defaultName,
     format,
+    pairingMethod: method,
     createdAt: new Date().toISOString(),
     players: roster.map((r, i) => ({
       id: i + 1,
@@ -612,7 +634,14 @@ function lastColor(p: Player): Color | null {
   return p.colors.length ? p.colors[p.colors.length - 1] : null;
 }
 
-type ColorPreference = { color: Color; strength: 1 | 2 | 3; label: 'alternation' | 'equalization' | 'consecutive-colors' } | null;
+type ColorPreference = {
+  color: Color; strength: 1 | 2 | 3; label: 'alternation' | 'equalization' | 'consecutive-colors';
+  // FIDE's own definition of an "absolute" colour preference (Handbook C.04.3): a colour difference
+  // of more than one, or the same colour in the two latest rounds played — exactly the strength-3
+  // cases here. Used by absoluteColorClash()/assignColorsFide() for FIDE-mode pairing; Swiss mode
+  // ignores this field entirely.
+  absolute: boolean;
+} | null;
 
 /**
  * Color due: a third consecutive color or a +/-2 imbalance is strongest;
@@ -623,14 +652,23 @@ function colorPreference(p: Player): ColorPreference {
   const balance = colorBalance(p);
   const lastTwo = p.colors.slice(-2);
   if (lastTwo.length === 2 && lastTwo[0] === lastTwo[1]) {
-    return { color: lastTwo[1] === 'w' ? 'b' : 'w', strength: 3, label: 'consecutive-colors' };
+    return { color: lastTwo[1] === 'w' ? 'b' : 'w', strength: 3, label: 'consecutive-colors', absolute: true };
   }
-  if (balance <= -2) return { color: 'w', strength: 3, label: 'equalization' };
-  if (balance >= 2) return { color: 'b', strength: 3, label: 'equalization' };
-  if (balance < 0) return { color: 'w', strength: 2, label: 'equalization' };
-  if (balance > 0) return { color: 'b', strength: 2, label: 'equalization' };
+  if (balance <= -2) return { color: 'w', strength: 3, label: 'equalization', absolute: true };
+  if (balance >= 2) return { color: 'b', strength: 3, label: 'equalization', absolute: true };
+  if (balance < 0) return { color: 'w', strength: 2, label: 'equalization', absolute: false };
+  if (balance > 0) return { color: 'b', strength: 2, label: 'equalization', absolute: false };
   const last = lastColor(p);
-  return last ? { color: last === 'w' ? 'b' : 'w', strength: 1, label: 'alternation' } : null;
+  return last ? { color: last === 'w' ? 'b' : 'w', strength: 1, label: 'alternation', absolute: false } : null;
+}
+
+/** FIDE C3: two non-topscorers who both have an absolute colour preference for the same colour must
+ *  not be paired together (the round's top score bracket is exempt — see pairNextRound, which only
+ *  applies this check to brackets below the top one, matching FIDE's own exemption for leaders). */
+function absoluteColorClash(a: Player, b: Player): boolean {
+  const pa = colorPreference(a);
+  const pb = colorPreference(b);
+  return !!pa && !!pb && pa.absolute && pb.absolute && pa.color === pb.color;
 }
 
 /** Decide who gets white in a pairing between a (higher seed) and b. */
@@ -645,6 +683,39 @@ function assignColors(a: Player, b: Player): { whiteId: number; blackId: number 
   // preference, using a deterministic last-resort instead of a random coin flip.
   const aWhite = aWhiteScore === bWhiteScore ? a.id < b.id : aWhiteScore > bWhiteScore;
   return aWhite ? { whiteId: a.id, blackId: b.id } : { whiteId: b.id, blackId: a.id };
+}
+
+/**
+ * FIDE's own colour-allocation priority order (Handbook C.04.3, colour allocation rules), applied
+ * in strict order rather than assignColors' single weighted-sum shortcut:
+ *   1. Both players have a preference and they don't clash → grant both.
+ *   2. Only one player has a preference → grant it.
+ *   3. Preferences clash (both want the same colour) → grant to whichever preference is stronger
+ *      (absolute beats non-absolute); if both are equally strong, grant to the larger colour
+ *      imbalance.
+ *   4. Still tied (including: neither has any preference, e.g. round 1) → the higher-ranked player
+ *      (lower id — ids are assigned in roster/seed order) gets White.
+ */
+function assignColorsFide(a: Player, b: Player): { whiteId: number; blackId: number } {
+  const pa = colorPreference(a);
+  const pb = colorPreference(b);
+  const grant = (winner: Player, pref: NonNullable<ColorPreference>) =>
+    pref.color === 'w'
+      ? { whiteId: winner.id, blackId: winner === a ? b.id : a.id }
+      : { blackId: winner.id, whiteId: winner === a ? b.id : a.id };
+
+  if (pa && pb && pa.color !== pb.color) return grant(a, pa); // rule 1: both satisfied either way
+  if (pa && !pb) return grant(a, pa); // rule 2
+  if (pb && !pa) return grant(b, pb); // rule 2
+  if (pa && pb) {
+    // rule 3: a genuine clash (same wanted colour) — stronger preference wins
+    if (pa.strength !== pb.strength) return grant(pa.strength > pb.strength ? a : b, pa.strength > pb.strength ? pa : pb);
+    const balA = Math.abs(colorBalance(a));
+    const balB = Math.abs(colorBalance(b));
+    if (balA !== balB) return grant(balA > balB ? a : b, balA > balB ? pa : pb);
+  }
+  // rule 4: no preference at all, or every tiebreak above was exactly even
+  return a.id < b.id ? { whiteId: a.id, blackId: b.id } : { whiteId: b.id, blackId: a.id };
 }
 
 /**
@@ -707,31 +778,65 @@ function generalPair(pool: Player[], allowRematch: boolean, isFamilyConflict: (a
   return null;
 }
 
-/** Best even-bracket pairing: textbook fold first, then any rematch/family-conflict-free pairing, then relax. */
-function pairEven(pool: Player[], isFamilyConflict: (a: Player, b: Player) => boolean): [Player, Player][] {
-  return (
-    foldPair(pool, false, isFamilyConflict) ??
-    generalPair(pool, false, isFamilyConflict) ??
-    foldPair(pool, true, isFamilyConflict) ??
-    generalPair(pool, true, isFamilyConflict) ??
-    []
-  );
+/** Best even-bracket pairing: textbook fold first, then any conflict-free pairing, then relax by
+ *  allowing a conflict (rematch/family/colour-clash, whatever `isConflict` checks) — unless `strict`
+ *  (FIDE mode), which never takes that relaxed step and returns null instead, so a conflict is
+ *  never silently produced. */
+function pairEven(pool: Player[], isConflict: (a: Player, b: Player) => boolean, strict: boolean): [Player, Player][] | null {
+  const clean = foldPair(pool, false, isConflict) ?? generalPair(pool, false, isConflict);
+  if (clean) return clean;
+  if (strict) return null;
+  return foldPair(pool, true, isConflict) ?? generalPair(pool, true, isConflict) ?? [];
 }
 
-/** Pair a score bracket (possibly odd → one player down-floats). Returns pairs + the floater. */
-function pairBracket(pool: Player[], isFamilyConflict: (a: Player, b: Player) => boolean): { pairs: [Player, Player][]; floater: Player | null } {
-  if (pool.length % 2 === 0) return { pairs: pairEven(pool, isFamilyConflict), floater: null };
+/**
+ * Pair a score bracket, floating players down into the next lower bracket (by returning them
+ * unpaired in `floaters`, which the caller merges into the next score group) as needed:
+ *  - odd bracket → exactly one player must float regardless (someone has to be left over);
+ *  - even bracket → floats too, but only in strict (FIDE) mode, and only if it can't be paired at
+ *    all as-is. This matters more than it might look: an even bracket can still be genuinely
+ *    unpairable — e.g. exactly two players on 0.5 points because they just drew *each other*, with
+ *    no one else sharing that score. Only odd brackets floating was the original (simpler, and
+ *    adequate for Swiss mode's own last-resort rematch fallback) assumption; strict mode has no such
+ *    fallback, so it needs the even case handled too, or a single isolated draw would make every
+ *    FIDE-mode round after it fail outright.
+ * Returns null only in strict mode, and only once a bracket has floated everyone it has and still
+ * can't complete — i.e. pairing this round truly isn't possible without an absolute-criteria
+ * violation anywhere in the field.
+ */
+function pairBracket(
+  pool: Player[],
+  isConflict: (a: Player, b: Player) => boolean,
+  strict: boolean
+): { pairs: [Player, Player][]; floaters: Player[] } | null {
+  if (pool.length === 0) return { pairs: [], floaters: [] };
+  if (pool.length % 2 === 0) {
+    const pairs = pairEven(pool, isConflict, strict);
+    if (pairs !== null) return { pairs, floaters: [] };
+    if (!strict) return { pairs: [], floaters: [] }; // matches the pre-existing "give up" behavior
+    // Float the bottom seed down and recurse on the rest (now odd) — see doc comment above.
+    const floater = pool[pool.length - 1];
+    const rest = pairBracket(pool.slice(0, -1), isConflict, strict);
+    if (rest === null) return null;
+    return { pairs: rest.pairs, floaters: [...rest.floaters, floater] };
+  }
   // Odd: float one player down. Try floating from the lowest upward until the rest pair cleanly.
-  for (const relax of [false, true]) {
+  for (const relax of strict ? [false] : [false, true]) {
     for (let k = pool.length - 1; k >= 0; k--) {
       const rest = pool.filter((_, idx) => idx !== k);
       const pairs = relax
-        ? generalPair(rest, true, isFamilyConflict)
-        : (foldPair(rest, false, isFamilyConflict) ?? generalPair(rest, false, isFamilyConflict));
-      if (pairs) return { pairs, floater: pool[k] };
+        ? generalPair(rest, true, isConflict)
+        : (foldPair(rest, false, isConflict) ?? generalPair(rest, false, isConflict));
+      if (pairs) return { pairs, floaters: [pool[k]] };
     }
   }
-  return { pairs: [], floater: pool[pool.length - 1] };
+  if (!strict) return { pairs: [], floaters: [pool[pool.length - 1]] };
+  // Strict, and no single floater choice produced a clean pairing of the rest — float the bottom
+  // seed unconditionally and recurse (the now-even rest can itself cascade via the branch above).
+  const floater = pool[pool.length - 1];
+  const rest = pairBracket(pool.slice(0, -1), isConflict, strict);
+  if (rest === null) return null;
+  return { pairs: rest.pairs, floaters: [...rest.floaters, floater] };
 }
 
 /** The earliest round number that hasn't been paired yet — the only rounds a bye request can
@@ -1071,6 +1176,7 @@ export function pairNextRound(t: Tournament): Round {
   if (tournamentFormat(t) === 'knockout') {
     return t.rounds.length === 0 ? pairFirstRoundKnockout(t) : pairNextRoundKnockout(t);
   }
+  const strict = pairingMethod(t) === 'fide';
   const nextRoundNo = t.rounds.length + 1;
   const active = t.players.filter((p) => !p.withdrawn && !p.isHouse);
   const isFamilyConflict = (a: Player, b: Player) => sameFamilyGroup(t, a.id, b.id);
@@ -1088,7 +1194,9 @@ export function pairNextRound(t: Tournament): Round {
   let byePlayer: Player | null = null;
   let pool = sorted;
   if (sorted.length % 2 === 1) {
-    // bye to the lowest-standing player who has had the fewest byes
+    // bye to the lowest-standing player who has had the fewest byes — already satisfies FIDE C2
+    // (no second pairing-allocated bye while anyone with zero byes remains) since it's the primary
+    // sort key, so this doesn't need a separate strict-mode path.
     const candidates = [...sorted].sort(
       (x, y) => (x.byes ?? 0) - (y.byes ?? 0) || x.score - y.score || (x.rating ?? 0) - (y.rating ?? 0)
     );
@@ -1099,31 +1207,69 @@ export function pairNextRound(t: Tournament): Round {
   // Process score brackets from the top, down-floating odd players into the next bracket.
   // This favours score-integrity (players meet others on the same score).
   const scores = [...new Set(pool.map((p) => p.score))].sort((a, b) => b - a);
+  const topScore = scores[0];
+  // FIDE C3: an absolute colour-preference clash is treated exactly like a rematch (never allowed)
+  // for every bracket except the top one, which FIDE exempts — avoiding a repeat pairing among the
+  // leaders matters more there than colour purity. Swiss mode never applies this check at all; it
+  // only resolves colour after two players are already paired (assignColors vs assignColorsFide).
+  const isConflict = (bracketScore: number) => (a: Player, b: Player) =>
+    isFamilyConflict(a, b) || (strict && bracketScore !== topScore && absoluteColorClash(a, b));
+
+  // isConflict, applied without the per-bracket topScore exemption — used once pairing falls back
+  // to a whole-field search below, where "bracket" no longer means anything.
+  const isConflictGlobal = (a: Player, b: Player) =>
+    isFamilyConflict(a, b) || (strict && !(a.score === topScore && b.score === topScore) && absoluteColorClash(a, b));
+
   let pairs: [Player, Player][] = [];
   let floaters: Player[] = [];
+  let bracketMethodFailed = false;
   for (const sc of scores) {
     const bracket = [...floaters, ...pool.filter((p) => p.score === sc)].sort(bySeed);
-    const { pairs: bp, floater } = pairBracket(bracket, isFamilyConflict);
-    pairs.push(...bp);
-    floaters = floater ? [floater] : [];
+    const result = pairBracket(bracket, isConflict(sc), strict);
+    if (result === null) { bracketMethodFailed = true; break; }
+    pairs.push(...result.pairs);
+    floaters = result.floaters;
   }
-  if (floaters.length) {
-    const extra = foldPair(floaters.sort(bySeed), true, isFamilyConflict);
+  if (!bracketMethodFailed && floaters.length) {
+    // Whatever fell through every score bracket unpaired — always an even count, since every pair
+    // formed anywhere consumes exactly 2 players from an originally-even pool (byePlayer already
+    // removed the one odd-one-out, if any, before this loop started).
+    const extra = strict
+      ? foldPair(floaters.sort(bySeed), false, (a, b) => isFamilyConflict(a, b) || absoluteColorClash(a, b))
+      : foldPair(floaters.sort(bySeed), true, isFamilyConflict);
     if (extra) pairs.push(...extra);
+    else if (strict) bracketMethodFailed = true;
   }
 
-  // If the bracket method produced any rematch or family conflict, prefer a globally clean
-  // pairing when one exists (exhaustive fold-biased backtracking over the whole field).
+  // If the bracket-by-bracket method produced any rematch or family conflict (Swiss mode only —
+  // strict mode's pairBracket never lets either slip through) or failed outright (strict mode: the
+  // bracket-adjacent floating search above is intentionally simpler than a full FIDE engine's
+  // multi-level bracket transposition/exchange search, so it can decline a round that a truly
+  // exhaustive search would still solve — see the module-level PairingMethod doc comment), fall back
+  // to a full-field exhaustive search before accepting defeat.
   const rematches = (ps: [Player, Player][]) =>
     ps.filter(([a, b]) => a.opponents.includes(b.id)).length;
   const familyConflicts = (ps: [Player, Player][]) => ps.filter(([a, b]) => isFamilyConflict(a, b)).length;
-  if (rematches(pairs) > 0 || familyConflicts(pairs) > 0) {
-    const global = generalPair(pool, false, isFamilyConflict);
-    if (global && rematches(global) === 0 && familyConflicts(global) === 0) pairs = global;
+  const colorClashes = (ps: [Player, Player][]) =>
+    ps.filter(([a, b]) => !(a.score === topScore && b.score === topScore) && absoluteColorClash(a, b)).length;
+  const needsGlobalRetry = bracketMethodFailed || rematches(pairs) > 0 || familyConflicts(pairs) > 0;
+  if (needsGlobalRetry) {
+    const global = generalPair(pool, false, strict ? isConflictGlobal : isFamilyConflict);
+    const clean = global && rematches(global) === 0 && familyConflicts(global) === 0 && (!strict || colorClashes(global) === 0);
+    if (clean) {
+      pairs = global!;
+    } else if (strict) {
+      throw new Error(
+        `Could not find a FIDE-compliant pairing for round ${nextRoundNo} — no arrangement of the field avoids repeating an earlier pairing or an absolute colour clash. Switch this section to Swiss pairing to pair this round anyway, or check for withdrawals/byes narrowing the field.`
+      );
+    }
+    // Non-strict and the exhaustive search also failed: keep whatever the bracket method produced
+    // (which may still include a conflict) — same "always complete the round somehow" guarantee
+    // Swiss mode has always made, now just backed by a more thorough search first.
   }
 
   const pairings: Pairing[] = pairs.map(([a, b], i) => {
-    const { whiteId, blackId } = assignColors(a, b);
+    const { whiteId, blackId } = strict ? assignColorsFide(a, b) : assignColors(a, b);
     return { board: i + 1, whiteId, blackId, byeId: null, result: null };
   });
   for (const p of requestedOut) {
@@ -1212,7 +1358,7 @@ export function addExtraGameForBye(
   t.players.push(house);
 
   // Pair them for real, honouring the bye recipient's actual color balance/history.
-  const { whiteId, blackId } = assignColors(player, house);
+  const { whiteId, blackId } = pairingMethod(t) === 'fide' ? assignColorsFide(player, house) : assignColors(player, house);
   pr.byeId = null;
   pr.byePoints = undefined;
   pr.whiteId = whiteId;
@@ -1263,7 +1409,17 @@ export function redoLatestRound(t: Tournament): boolean {
   }
   t.rounds.pop();
 
-  const fresh = pairNextRound(t);
+  let fresh: Round;
+  try {
+    fresh = pairNextRound(t);
+  } catch (e) {
+    // Re-pairing can fail under strict FIDE rules (e.g. a family group just added makes the
+    // now-current field unpaireable) — restore exactly what was just undone via the same forward
+    // logic commitRound itself uses, rather than leaving the round discarded with nothing to
+    // replace it, and let the caller see why.
+    commitRound(t, round);
+    throw e;
+  }
   commitRound(t, fresh);
   return true;
 }

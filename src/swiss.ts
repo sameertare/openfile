@@ -1,11 +1,12 @@
 import './style.css';
 import {
   addExtraGameForBye, addFamilyGroup, cancelByeRequest, commitRound, createTournament, estimatedCurrentRating,
-  explainPairing, explainPairingDetail, explainRound, isNwchessRoster, nextRoundNumber, pairNextRound, parseRoster,
-  recommendedRounds, recommendedRoundsKnockout, recommendedRoundsRoundRobin, redoLatestRound, removeFamilyGroup,
-  requestByeForRound, setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards, tournamentFormat,
+  explainPairing, explainPairingDetail, explainRound, isNwchessRoster, nextRoundNumber, pairingMethod, pairNextRound,
+  parseRoster, recommendedRounds, recommendedRoundsKnockout, recommendedRoundsRoundRobin, redoLatestRound,
+  removeFamilyGroup, requestByeForRound, setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
+  tournamentFormat,
 } from './swissEngine';
-import type { GameResult, Round, RosterEntry, RosterFormat, Tournament, TournamentFormat } from './swissEngine';
+import type { GameResult, PairingMethod, Round, RosterEntry, RosterFormat, Tournament, TournamentFormat } from './swissEngine';
 import { knockoutPlacementsTableHtml, standingsTableHtml, wallChartHtml } from './swissViews';
 import { downloadTrf } from './trfExport';
 import { registerServiceWorker } from './pwa';
@@ -106,6 +107,9 @@ function currentFormat(): RosterFormat {
 }
 function currentTourneyFormat(): TournamentFormat {
   return (($('#tourney-format-select') as HTMLSelectElement).value as TournamentFormat) || 'swiss';
+}
+function currentPairingMethod(): PairingMethod {
+  return (($('#pairing-method-select') as HTMLSelectElement).value as PairingMethod) || 'swiss';
 }
 /** Round-robin and knockout both pair strictly by a fixed schedule/bracket, with no per-round
  *  score-group decision to explain, avoid a rematch in, or steer with a bye/family-group request. */
@@ -208,6 +212,7 @@ $('#sample-roster').addEventListener('click', () => {
 });
 ($('#format-select') as HTMLSelectElement).addEventListener('change', () => { applyFormatHint(); previewRoster(); });
 ($('#tourney-format-select') as HTMLSelectElement).addEventListener('change', previewRoster);
+($('#pairing-method-select') as HTMLSelectElement).addEventListener('change', previewRoster);
 ($('#roster-text') as HTMLTextAreaElement).addEventListener('input', previewRoster);
 $('#roster-file').addEventListener('change', async () => {
   const f = ($('#roster-file') as HTMLInputElement).files?.[0];
@@ -254,6 +259,13 @@ function previewSelection(roster: RosterEntry[]): RosterEntry[] {
   return !sel || sel === '__ALL__' ? roster : roster.filter((p) => p.section === sel);
 }
 
+/** The pairing-method choice (Swiss vs. FIDE) only makes sense for a Swiss-format NWChess import —
+ *  round-robin/knockout pair by a fixed schedule regardless, and the strict-FIDE rematch/colour
+ *  logic isn't something a plain or table roster's TD is likely running a FIDE-rated event from. */
+function pairingMethodApplies(fmt: RosterFormat, tfmt: TournamentFormat): boolean {
+  return fmt === 'nwchess' && tfmt === 'swiss';
+}
+
 function previewRoster() {
   const text = ($('#roster-text') as HTMLTextAreaElement).value;
   const fmt = currentFormat();
@@ -261,6 +273,7 @@ function previewRoster() {
   const prev = $('#roster-preview');
   if (!all.length) {
     ($('#section-row') as HTMLElement).hidden = true;
+    ($('#pairing-method-row') as HTMLElement).hidden = !pairingMethodApplies(fmt, currentTourneyFormat());
     $('#rounds-hint').textContent = '';
     prev.innerHTML = text.trim()
       ? `<p class="neg">No players parsed as <b>${esc(($('#format-select') as HTMLSelectElement).selectedOptions[0].text)}</b>. Check that the roster matches the selected format.</p>`
@@ -270,6 +283,13 @@ function previewRoster() {
   const secs = syncSectionUI(all);
   const roster = previewSelection(all);
   const tfmt = currentTourneyFormat();
+  const showPairingMethod = pairingMethodApplies(fmt, tfmt);
+  ($('#pairing-method-row') as HTMLElement).hidden = !showPairingMethod;
+  $('#pairing-method-hint').textContent = showPairingMethod
+    ? (currentPairingMethod() === 'fide'
+        ? 'FIDE mode never produces a repeat pairing or an absolute-colour clash, even as a last resort — pairing a round fails loudly with an explanation instead, rather than silently bending a rule.'
+        : 'Swiss mode (default) guarantees every round gets paired, relaxing rematch-avoidance or colour balance only if the field genuinely leaves no other option.')
+    : '';
   const rr =
     tfmt === 'round-robin' ? recommendedRoundsRoundRobin(roster.length)
     : tfmt === 'knockout' ? recommendedRoundsKnockout(roster.length)
@@ -349,7 +369,8 @@ $('#parse-btn').addEventListener('click', () => {
   const roundsRaw = ($('#rounds-input') as HTMLInputElement).value.trim();
   const roundsOverride = roundsRaw ? Math.max(1, Math.min(30, parseInt(roundsRaw, 10))) : undefined;
   const tfmt = currentTourneyFormat();
-  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride, tfmt)), active: 0 };
+  const pmethod = pairingMethodApplies(currentFormat(), tfmt) ? currentPairingMethod() : 'swiss';
+  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride, tfmt, pmethod)), active: 0 };
   save();
   renderAll();
   if (skipped.length) {
@@ -373,10 +394,18 @@ $('#pair-btn').addEventListener('click', () => {
       !confirm(`This event was set up for ${ev.sections[0].totalRounds} round(s), which have already been paired. Pair an extra round anyway?`)) {
     return;
   }
-  for (const s of ev.sections) {
-    const round = pairNextRound(s);
-    commitRound(s, round);
+  // Pair every section before committing any of them — a FIDE-mode section can throw (no
+  // conflict-free pairing exists under strict rules) partway through the loop, and committing
+  // section 1 before section 2 fails would leave that section's round mutated in memory but never
+  // saved, silently double-pairing it on the next successful click.
+  const paired: { section: Tournament; round: Round }[] = [];
+  try {
+    for (const s of ev.sections) paired.push({ section: s, round: pairNextRound(s) });
+  } catch (e) {
+    alert(e instanceof Error ? e.message : String(e));
+    return;
   }
+  for (const { section, round } of paired) commitRound(section, round);
   viewingRoundNo = null; // jump the round-tab strip to the freshly paired round
   save();
   renderAll();
@@ -561,7 +590,8 @@ function renderAll() {
   const evLabel = ev.sections.length > 1
     ? `<b>${esc(ev.name)}</b> · ${ev.sections.length} sections · round ${pairedRounds} · viewing <b>${esc(t.name)}</b> (${t.players.length} players, ${completedRounds}/${rr} rounds)`
     : `<b>${esc(t.name)}</b> · ${t.players.length} players · ${completedRounds}/${rr} rounds played`;
-  $('#round-info').innerHTML = evLabel;
+  const fideBadge = pairingMethod(t) === 'fide' ? ` <span class="dev-status-chip dev-full" title="Strict FIDE rules: never a repeat pairing or an absolute colour clash, even as a last resort.">FIDE pairing</span>` : '';
+  $('#round-info').innerHTML = evLabel + fideBadge;
 
   renderRounds(t);
   renderByeRequestCard(t);
@@ -1053,7 +1083,13 @@ function renderRounds(t: Tournament) {
       const t2 = cur();
       if (!t2) return;
       if (!confirm('Discard this round\'s pairings and generate a fresh set? This re-applies the current family groups, bye requests, and withdrawals — it will not touch any earlier round.')) return;
-      const ok = redoLatestRound(t2);
+      let ok: boolean;
+      try {
+        ok = redoLatestRound(t2);
+      } catch (e) {
+        alert(e instanceof Error ? e.message : String(e));
+        return;
+      }
       if (!ok) { alert('Could not re-pair this round — a result may already have been entered on one of its boards.'); return; }
       save();
       renderAll();
