@@ -440,6 +440,16 @@ async function fetchFromLichess() {
 interface ChessComArchivesResponse { archives: string[]; }
 interface ChessComGamesResponse { games: { pgn?: string; url?: string }[]; }
 
+// Inserted right after [Event] rather than before it — splitPgn() treats any `\n` immediately
+// followed by `[Event` as a new-game boundary (that's how it finds boundaries in a multi-game file
+// at all), so putting Link *before* Event created a spurious boundary there: the Link line got
+// split off into its own one-line "game" (which then failed to parse, surfacing as a bogus parse
+// error) and the real game lost its Link header entirely.
+function injectLinkHeader(pgn: string, url: string | undefined): string {
+  if (!url || /\[Link /.test(pgn)) return pgn;
+  return pgn.replace(/^(\[Event\s[^\n]*\n)/, `$1[Link "${url}"]\n`);
+}
+
 chesscomFetchBtn.addEventListener('click', () => void fetchFromChessCom());
 chesscomUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromChessCom();
@@ -460,7 +470,7 @@ async function fetchChessComPgnText(username: string, maxGames: number | 'all'):
       const data: ChessComGamesResponse = await r.json();
       const monthPgns = (data.games ?? [])
         .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
-        .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn))
+        .map((g) => injectLinkHeader(g.pgn, g.url))
         .reverse(); // a month's games arrive oldest-first; reverse so newest-first holds within it too
       pgns.push(...monthPgns);
     } catch {

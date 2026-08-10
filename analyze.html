@@ -50,6 +50,11 @@
         <button id="load-sample" class="btn btn-ghost">…or try the bundled sample games</button>
 
         <div class="bulk-fetch">
+          <label style="display:block; margin-bottom:4px; cursor:pointer;">
+            <input type="checkbox" id="combine-toggle" /> 🔗 Build one combined report from both accounts
+          </label>
+          <p class="hint" style="margin:0 0 10px;">Off: each fetch below adds to the report independently (still the same player automatically — see note below). On: both usernames are fetched together in one action, for when you want to do it in a single step.</p>
+
           <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch a lichess account's games directly</strong></p>
           <div class="config-row">
             <label>Lichess username
@@ -86,6 +91,12 @@
           </div>
           <div id="chesscom-status" class="hint"></div>
         </div>
+
+        <div class="bulk-fetch" id="combine-row" hidden>
+          <button id="combine-btn" class="btn btn-primary">🔗 Build combined report</button>
+          <div id="combine-status" class="hint"></div>
+        </div>
+
         <p class="hint">Fetching from both counts as the same player automatically — even if your lichess and chess.com usernames differ — so one report can combine both platforms' games.</p>
       </section>
 

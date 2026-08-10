@@ -281,6 +281,15 @@ lichessUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromLichess();
 });
 
+async function fetchLichessPgnText(username: string, max: string): Promise<string> {
+  const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=false&clocks=false&evals=false&opening=false`;
+  const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
+  if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
+  if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return resp.text();
+}
+
 async function fetchFromLichess() {
   const username = lichessUsernameInput.value.trim();
   if (!username) {
@@ -291,12 +300,7 @@ async function fetchFromLichess() {
   lichessFetchBtn.disabled = true;
   lichessStatusEl.textContent = `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
   try {
-    const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?max=${max}&pgnInJson=false&clocks=false&evals=false&opening=false`;
-    const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
-    if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
-    if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const text = await resp.text();
+    const text = await fetchLichessPgnText(username, max);
     if (!text.trim()) {
       lichessStatusEl.textContent = `${username} has no games matching this request.`;
       return;
@@ -321,10 +325,47 @@ async function fetchFromLichess() {
 interface ChessComArchivesResponse { archives: string[]; }
 interface ChessComGamesResponse { games: { pgn?: string; url?: string }[]; }
 
+// Chess.com's own [Site] header is never a URL ("Chess.com", not a link), so the game's separate
+// `url` field is injected as a [Link] header so gameLink() can still resolve a "View" link
+// downstream. Inserted right after [Event] rather than before it — splitPgn() treats any `\n`
+// immediately followed by `[Event` as a new-game boundary (that's how it finds game boundaries in a
+// multi-game file at all), so putting Link *before* Event created a spurious boundary there: the
+// Link line got split off into its own one-line "game" (which then failed to parse, surfacing as a
+// bogus parse error) and the real game lost its Link header entirely.
+function injectLinkHeader(pgn: string, url: string | undefined): string {
+  if (!url || /\[Link /.test(pgn)) return pgn;
+  return pgn.replace(/^(\[Event\s[^\n]*\n)/, `$1[Link "${url}"]\n`);
+}
+
 chesscomFetchBtn.addEventListener('click', () => void fetchFromChessCom());
 chesscomUsernameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') void fetchFromChessCom();
 });
+
+async function fetchChessComPgnText(username: string, maxGames: number): Promise<string> {
+  const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
+  if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
+  if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status}`);
+  const archivesData: ChessComArchivesResponse = await archivesResp.json();
+  const archives = archivesData.archives ?? [];
+  if (!archives.length) return '';
+  const pgns: string[] = []; // accumulated newest-first
+  for (let i = archives.length - 1; i >= 0 && pgns.length < maxGames; i--) {
+    try {
+      const r = await fetch(archives[i]);
+      if (!r.ok) continue;
+      const data: ChessComGamesResponse = await r.json();
+      const monthPgns = (data.games ?? [])
+        .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
+        .map((g) => injectLinkHeader(g.pgn, g.url))
+        .reverse(); // a month's games arrive oldest-first; reverse so newest-first holds within it too
+      pgns.push(...monthPgns);
+    } catch {
+      // one bad month shouldn't sink the whole fetch
+    }
+  }
+  return pgns.slice(0, maxGames).join('\n\n');
+}
 
 async function fetchFromChessCom() {
   const username = chesscomUsernameInput.value.trim();
@@ -336,44 +377,83 @@ async function fetchFromChessCom() {
   chesscomFetchBtn.disabled = true;
   chesscomStatusEl.textContent = `Fetching up to ${maxGames} game(s) for ${username} from chess.com…`;
   try {
-    const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
-    if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
-    if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status}`);
-    const archivesData: ChessComArchivesResponse = await archivesResp.json();
-    const archives = archivesData.archives ?? [];
-    if (!archives.length) {
-      chesscomStatusEl.textContent = `${username} has no game archives on chess.com.`;
-      return;
-    }
-    const pgns: string[] = []; // accumulated newest-first
-    for (let i = archives.length - 1; i >= 0 && pgns.length < maxGames; i--) {
-      try {
-        const r = await fetch(archives[i]);
-        if (!r.ok) continue;
-        const data: ChessComGamesResponse = await r.json();
-        const monthPgns = (data.games ?? [])
-          .filter((g): g is { pgn: string; url?: string } => !!g.pgn)
-          .map((g) => (g.url && !/\[Link /.test(g.pgn) ? `[Link "${g.url}"]\n${g.pgn}` : g.pgn))
-          .reverse(); // a month's games arrive oldest-first; reverse so newest-first holds within it too
-        pgns.push(...monthPgns);
-      } catch {
-        // one bad month shouldn't sink the whole fetch
-      }
-    }
-    const allPgns = pgns.slice(0, maxGames);
-    if (!allPgns.length) {
+    const text = await fetchChessComPgnText(username, maxGames);
+    if (!text.trim()) {
       chesscomStatusEl.textContent = `No games found for ${username}.`;
       return;
     }
     fetchedUsernames.add(username);
-    const text = allPgns.join('\n\n');
     const file = new File([text], `${username}-chesscom.pgn`);
     await handleFiles([file]);
-    chesscomStatusEl.textContent = `Loaded ${allPgns.length} game(s) for ${username} from chess.com.`;
+    chesscomStatusEl.textContent = `Loaded games for ${username} from chess.com.`;
   } catch (e) {
     chesscomStatusEl.textContent = `Could not fetch from chess.com: ${e instanceof Error ? e.message : String(e)}`;
   } finally {
     chesscomFetchBtn.disabled = false;
+  }
+}
+
+// ---------- combined lichess + chess.com fetch, one action ----------
+// Both fetches already merge into the same report on their own — parsedGames/fetchedUsernames
+// accumulate across calls rather than resetting, and detectMainPlayer() folds every explicitly
+// fetched username into the same identity (see the fetchedUsernames comment above). This toggle
+// exists purely as a one-click convenience over fetching each account separately, not because the
+// separate path is broken.
+const combineToggle = $('#combine-toggle') as HTMLInputElement;
+const combineRow = $('#combine-row');
+const combineBtn = $('#combine-btn') as HTMLButtonElement;
+const combineStatusEl = $('#combine-status');
+
+function updateCombineUi() {
+  const on = combineToggle.checked;
+  lichessFetchBtn.hidden = on;
+  chesscomFetchBtn.hidden = on;
+  combineRow.hidden = !on;
+}
+combineToggle.addEventListener('change', updateCombineUi);
+updateCombineUi();
+
+combineBtn.addEventListener('click', () => void fetchCombined());
+
+async function fetchCombined() {
+  const lichessUsername = lichessUsernameInput.value.trim();
+  const chesscomUsername = chesscomUsernameInput.value.trim();
+  if (!lichessUsername && !chesscomUsername) {
+    combineStatusEl.textContent = 'Enter at least one username above.';
+    return;
+  }
+  combineBtn.disabled = true;
+  combineStatusEl.textContent = 'Fetching…';
+  try {
+    const files: File[] = [];
+    if (lichessUsername) {
+      combineStatusEl.textContent = `Fetching ${lichessUsername} from lichess…`;
+      const text = await fetchLichessPgnText(lichessUsername, lichessMaxSelect.value);
+      if (text.trim()) {
+        fetchedUsernames.add(lichessUsername);
+        files.push(new File([text], `${lichessUsername}-lichess.pgn`));
+      }
+    }
+    if (chesscomUsername) {
+      combineStatusEl.textContent = `Fetching ${chesscomUsername} from chess.com…`;
+      const text = await fetchChessComPgnText(chesscomUsername, parseInt(chesscomMaxSelect.value, 10));
+      if (text.trim()) {
+        fetchedUsernames.add(chesscomUsername);
+        files.push(new File([text], `${chesscomUsername}-chesscom.pgn`));
+      }
+    }
+    if (!files.length) {
+      combineStatusEl.textContent = 'No games found for the given username(s).';
+      return;
+    }
+    // One handleFiles call for both files — a single combined status message and a single
+    // config-card re-render/scroll, instead of the double-render two sequential fetches give.
+    await handleFiles(files);
+    combineStatusEl.textContent = `Loaded games from ${[lichessUsername && 'lichess', chesscomUsername && 'chess.com'].filter(Boolean).join(' + ')}.`;
+  } catch (e) {
+    combineStatusEl.textContent = `Could not fetch: ${e instanceof Error ? e.message : String(e)}`;
+  } finally {
+    combineBtn.disabled = false;
   }
 }
 
