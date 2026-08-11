@@ -189,13 +189,16 @@ function previewRoster() {
   const all = parseRoster(text, 'nwchess');
   const prev = $('#roster-preview');
   const tfmt = currentTourneyFormat();
+  // Unlike swiss.html, the pairing-method choice stays visible here regardless of tournament
+  // type — this page exists specifically so it's never hidden behind a conditional toggle — but
+  // for round-robin/knockout it doesn't actually steer anything (see tourney-format-hint below),
+  // so the hint here says so explicitly instead of describing Swiss/FIDE behavior that won't apply.
   const showPairingMethod = pairingMethodApplies(tfmt);
-  ($('#pairing-method-row') as HTMLElement).hidden = !showPairingMethod;
   $('#pairing-method-hint').textContent = showPairingMethod
     ? (currentPairingMethod() === 'fide'
         ? 'FIDE mode never produces a repeat pairing or an absolute-colour clash, even as a last resort — pairing a round fails loudly with an explanation instead, rather than silently bending a rule.'
         : 'Swiss mode (default) guarantees every round gets paired, relaxing rematch-avoidance or colour balance only if the field genuinely leaves no other option.')
-    : '';
+    : 'Has no effect for round-robin or knockout — both pair by a fixed schedule with no dynamic pairing to steer.';
   if (!all.length) {
     ($('#section-row') as HTMLElement).hidden = true;
     $('#rounds-hint').textContent = '';
@@ -221,7 +224,7 @@ function previewRoster() {
     tfmt === 'round-robin'
       ? 'Round-robin: pairings for every round are fixed by roster order up front — no bye requests or family-group avoidance (there\'s no dynamic pairing to steer). Withdrawing a player still works; their remaining opponents get a walkover.'
       : tfmt === 'knockout'
-      ? 'Knockout: round 1 is seeded by rating; later rounds pair whoever won each side of the bracket. Drawn games aren\'t allowed on the result — settle a tie with a playoff/Armageddon game before entering the result here. No bye requests or family-group avoidance, and the pairing method choice above has no effect (there\'s no dynamic pairing to steer).'
+      ? 'Knockout: round 1 is seeded by rating; later rounds pair whoever won each side of the bracket. Drawn games aren\'t allowed on the result — settle a tie with a playoff/Armageddon game before entering the result here. No bye requests or family-group avoidance.'
       : '';
   const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded.` +
       (secs.length > 1 ? ` Creating sets up all <b>${secs.length}</b> sections; “Pair next round” pairs them together.` : '') + `</p>`;

@@ -15,11 +15,11 @@ export interface Player {
   byeRequests: number[];  // round numbers the player asked to sit out, from the roster import
   withdrawn: boolean;
   isHouse?: boolean;      // a one-off fill-in added to play a bye recipient; excluded from standings & future pairing
-  // Parallel to opponents/colors (one entry per round played, byes included as `false`) — `true`
-  // for a round in which the player was downfloated (paired against a lower score group) to
-  // complete a bracket. Optional so tournaments saved before this field existed still load;
-  // read via floatedRecently() below rather than indexing directly. Used to steer FIDE C14/C15
-  // (avoid repeating a downfloat in consecutive rounds) — see pairBracket's floatPenalty param.
+  // Parallel to opponents (one entry per round played, byes included as `false`) — `true` for a
+  // round in which the player was downfloated (paired against a lower score group) to complete a
+  // bracket. Optional so tournaments saved before this field existed still load. Used to steer
+  // FIDE C14/C15 (avoid repeating a downfloat in consecutive rounds) — see the floatPenalty
+  // closure built in pairNextRound and consumed by pairBracket's floatPenalty param.
   floatHistory?: boolean[];
 }
 
