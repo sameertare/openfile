@@ -1576,6 +1576,14 @@ export function swapByeWithPlayer(t: Tournament, roundNo: number, byeId: number,
   if (otherWasWhite) otherPr.whiteId = byeId;
   else otherPr.blackId = byeId;
 
+  // Keep floatHistory's this-round entry honest for every player whose pairing just changed —
+  // otherwise a stale downfloat flag left over from the pre-swap pairing would wrongly bias
+  // floater selection (FIDE C14/C15) in a future round. Byes never float; a real game floats
+  // whichever side has the higher pre-round score (mirrors pairNextRound's own downfloatIds calc).
+  if (otherPlayer.floatHistory?.length) otherPlayer.floatHistory[otherPlayer.floatHistory.length - 1] = false;
+  if (byePlayer.floatHistory?.length) byePlayer.floatHistory[byePlayer.floatHistory.length - 1] = byePlayer.score > thirdPlayer.score;
+  if (thirdPlayer.floatHistory?.length) thirdPlayer.floatHistory[thirdPlayer.floatHistory.length - 1] = thirdPlayer.score > byePlayer.score;
+
   round.complete = round.pairings.every((p) => p.byeId != null || p.result != null);
   return true;
 }
@@ -1622,6 +1630,17 @@ export function swapPlayersAcrossBoards(t: Tournament, roundNo: number, playerAI
 
   if (aWasWhite) prA.whiteId = playerBId; else prA.blackId = playerBId;
   if (bWasWhite) prB.whiteId = playerAId; else prB.blackId = playerAId;
+
+  // Recompute floatHistory's this-round entry for all four players — each is now paired against
+  // a different opponent than the one their downfloat status was originally computed against, so
+  // the stale flag would otherwise mislead a future round's floater selection (FIDE C14/C15).
+  const setFloated = (p: Player, opp: Player) => {
+    if (p.floatHistory?.length) p.floatHistory[p.floatHistory.length - 1] = p.score > opp.score;
+  };
+  setFloated(playerA, bOpponent);
+  setFloated(bOpponent, playerA);
+  setFloated(playerB, aOpponent);
+  setFloated(aOpponent, playerB);
   return true;
 }
 
