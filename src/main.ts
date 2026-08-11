@@ -285,10 +285,12 @@ lichessUsernameInput.addEventListener('keydown', (e) => {
 
 // `max` and `sinceMs` are independent lichess API params — the game-count dropdown passes `max`
 // only, the combined-report date picker passes `sinceMs` only (omitting `max` streams every game
-// since that date, per lichess's own API default).
+// since that date, per lichess's own API default). `max === 'all'` also omits the param entirely
+// — lichess streams the account's full history (unbounded) when it's left off, rather than there
+// being an explicit "unlimited" sentinel value on lichess's own end.
 async function fetchLichessPgnText(username: string, opts: { max?: string; sinceMs?: number }): Promise<string> {
   const params = new URLSearchParams({ pgnInJson: 'false', clocks: 'false', evals: 'false', opening: 'false' });
-  if (opts.max) params.set('max', opts.max);
+  if (opts.max && opts.max !== 'all') params.set('max', opts.max);
   if (opts.sinceMs) params.set('since', String(opts.sinceMs));
   const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?${params}`;
   const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
@@ -306,7 +308,10 @@ async function fetchFromLichess() {
   }
   const max = lichessMaxSelect.value;
   lichessFetchBtn.disabled = true;
-  lichessStatusEl.textContent = `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
+  lichessStatusEl.textContent =
+    max === 'all'
+      ? `Fetching ${username}'s entire lichess history… this can take a while for a long-tenured account.`
+      : `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
   try {
     const text = await fetchLichessPgnText(username, { max });
     if (!text.trim()) {
@@ -396,9 +401,13 @@ async function fetchFromChessCom() {
     chesscomStatusEl.textContent = 'Enter a chess.com username first.';
     return;
   }
-  const maxGames = parseInt(chesscomMaxSelect.value, 10);
+  const maxRaw = chesscomMaxSelect.value;
+  const maxGames = maxRaw === 'all' ? undefined : parseInt(maxRaw, 10);
   chesscomFetchBtn.disabled = true;
-  chesscomStatusEl.textContent = `Fetching up to ${maxGames} game(s) for ${username} from chess.com…`;
+  chesscomStatusEl.textContent =
+    maxGames === undefined
+      ? `Fetching ${username}'s entire chess.com history… this can take a while for a long-tenured account.`
+      : `Fetching up to ${maxGames} game(s) for ${username} from chess.com…`;
   try {
     const text = await fetchChessComPgnText(username, { maxGames });
     if (!text.trim()) {
@@ -519,7 +528,7 @@ async function runAnalysis() {
   let engine: Engine | null = null;
   try {
     if (useEngine && toAnalyze.some((g) => positionsNeeded(g, true) > 0)) {
-      progressText.textContent = 'Loading Stockfish 16 (first load fetches the neural network — ~38 MB)…';
+      progressText.textContent = 'Loading Stockfish 18 (first load fetches the neural network — ~38 MB)…';
       engine = new Engine();
       await engine.init();
     }
