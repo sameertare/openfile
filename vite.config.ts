@@ -19,6 +19,7 @@ export default defineConfig({
         analyze: page('./analyze.html'),
         live: page('./live.html'),
         swiss: page('./swiss.html'),
+        nwchessPairings: page('./nwchess-pairings.html'),
         wallchartDisplay: page('./wallchart-display.html'),
         openingExplorer: page('./opening-explorer.html'),
         scoutingReport: page('./scouting-report.html'),

@@ -15,6 +15,12 @@ export interface Player {
   byeRequests: number[];  // round numbers the player asked to sit out, from the roster import
   withdrawn: boolean;
   isHouse?: boolean;      // a one-off fill-in added to play a bye recipient; excluded from standings & future pairing
+  // Parallel to opponents/colors (one entry per round played, byes included as `false`) — `true`
+  // for a round in which the player was downfloated (paired against a lower score group) to
+  // complete a bracket. Optional so tournaments saved before this field existed still load;
+  // read via floatedRecently() below rather than indexing directly. Used to steer FIDE C14/C15
+  // (avoid repeating a downfloat in consecutive rounds) — see pairBracket's floatPenalty param.
+  floatHistory?: boolean[];
 }
 
 export interface Pairing {
@@ -30,6 +36,12 @@ export interface Round {
   number: number;
   pairings: Pairing[];
   complete: boolean;
+  // Ids of players who were downfloated (paired against a lower score bracket) to complete this
+  // round's pairing, however it was produced (bracket-by-bracket or the whole-field fallback) —
+  // determined structurally after the fact (see pairNextRound) by comparing each pair's pre-round
+  // scores, not by trusting any one code path's own bookkeeping. Read by commitRound to update
+  // each paired player's floatHistory; absent (or empty) means no one floated this round.
+  downfloatIds?: number[];
 }
 
 export interface FamilyGroup {
@@ -41,14 +53,22 @@ export interface FamilyGroup {
 export type TournamentFormat = 'swiss' | 'round-robin' | 'knockout';
 // 'swiss' = today's pragmatic best-effort pairing: guarantees every round actually gets paired,
 // relaxing rematch-avoidance or colour balance as a last resort if the field genuinely requires it.
-// 'fide' = strict FIDE (Dutch) System behavior for the two things most likely to matter to a TD
-// running a FIDE-rated event: a repeat pairing (C1) or an absolute-colour-preference clash between
-// two non-topscorers (C3) is never produced, even as a last resort — pairing that round throws a
-// descriptive error instead — and colour is allocated via FIDE's own priority order (see
-// assignColorsFide) rather than the simplified strength-sum heuristic assignColors uses. It is not
-// a full implementation of every C1–C21 criterion (in particular, it doesn't re-run the multi-level
-// bracket transposition/exchange search real pairing engines like JaVaFo use when a bracket can't
-// be pleased at all — it fails loudly there instead of restructuring brackets further).
+// 'fide' = strict FIDE (Dutch) System behavior: a repeat pairing (C1), a second pairing-allocated
+// bye (C2), or an absolute-colour-preference clash between two non-topscorers (C3) is never
+// produced, even as a last resort — pairing that round throws a descriptive error instead — and
+// colour is allocated via FIDE's own priority order (see assignColorsFide) rather than the
+// simplified strength-sum heuristic assignColors uses. Beyond the absolute criteria, the quality/
+// preference criteria (C6–C21) are approximated, not run as JaVaFo's own multi-level bracket
+// transposition/exchange search would: brackets are processed top-down with a single adjacent-
+// bracket downfloat step (approximating C6/C7/C13/C18–C21, which favour few, low, and small-gap
+// downfloats, since a floater only ever drops one score level at a time here), floater choice
+// within a bracket prefers whoever hasn't downfloated in the last one or two rounds (C14/C15 —
+// see pairBracket's floatPenalty param and Player.floatHistory), and a whole-field exhaustive
+// search is tried before giving up on a round (approximating the bracket-transposition search,
+// though not identically). Both modes have no notion of upfloating (pulling a player up from a
+// lower bracket rather than pairing them down), so C16/C17 (upfloat repetition) don't apply. This
+// is a close practical approximation of the Dutch system for a club/scholastic TD, not a
+// certified implementation — for FIDE-rated norm events, cross-check pairings with JaVaFo.
 export type PairingMethod = 'swiss' | 'fide';
 
 export interface Tournament {
@@ -373,6 +393,7 @@ export function createTournament(
       score: 0,
       opponents: [],
       colors: [],
+      floatHistory: [],
       byes: 0,
       requestedByes: 0,
       byeRequests: r.byeRounds ?? [],
@@ -800,6 +821,12 @@ function pairEven(pool: Player[], isConflict: (a: Player, b: Player) => boolean,
  *    adequate for Swiss mode's own last-resort rematch fallback) assumption; strict mode has no such
  *    fallback, so it needs the even case handled too, or a single isolated draw would make every
  *    FIDE-mode round after it fail outright.
+ * `floatPenalty` (FIDE C14/C15) ranks candidates for who floats when more than one player could
+ * fill that role without breaking the pairing: whoever downfloated most recently is tried last,
+ * so the same player isn't picked to float round after round unless the bracket structurally
+ * requires it. It only ever reorders an already-valid choice — it never causes a bracket that
+ * would otherwise pair cleanly to fail, since every candidate order is tried in full before
+ * giving up.
  * Returns null only in strict mode, and only once a bracket has floated everyone it has and still
  * can't complete — i.e. pairing this round truly isn't possible without an absolute-criteria
  * violation anywhere in the field.
@@ -807,22 +834,32 @@ function pairEven(pool: Player[], isConflict: (a: Player, b: Player) => boolean,
 function pairBracket(
   pool: Player[],
   isConflict: (a: Player, b: Player) => boolean,
-  strict: boolean
+  strict: boolean,
+  floatPenalty: (p: Player) => number = () => 0
 ): { pairs: [Player, Player][]; floaters: Player[] } | null {
   if (pool.length === 0) return { pairs: [], floaters: [] };
+  // Candidate float order: least-recently-floated first, then the original lowest-seed-first
+  // tiebreak (pool is already sorted best-to-worst, so a larger index is a lower seed).
+  const floatOrder = (candidates: Player[]): number[] =>
+    candidates
+      .map((_, k) => k)
+      .sort((k1, k2) => floatPenalty(candidates[k1]) - floatPenalty(candidates[k2]) || k2 - k1);
+
   if (pool.length % 2 === 0) {
     const pairs = pairEven(pool, isConflict, strict);
     if (pairs !== null) return { pairs, floaters: [] };
     if (!strict) return { pairs: [], floaters: [] }; // matches the pre-existing "give up" behavior
-    // Float the bottom seed down and recurse on the rest (now odd) — see doc comment above.
-    const floater = pool[pool.length - 1];
-    const rest = pairBracket(pool.slice(0, -1), isConflict, strict);
-    if (rest === null) return null;
-    return { pairs: rest.pairs, floaters: [...rest.floaters, floater] };
+    // Float a player down and recurse on the rest (now odd) — see doc comment above.
+    for (const k of floatOrder(pool)) {
+      const floater = pool[k];
+      const rest = pairBracket(pool.filter((_, idx) => idx !== k), isConflict, strict, floatPenalty);
+      if (rest !== null) return { pairs: rest.pairs, floaters: [...rest.floaters, floater] };
+    }
+    return null;
   }
-  // Odd: float one player down. Try floating from the lowest upward until the rest pair cleanly.
+  // Odd: float one player down. Try candidates in floatOrder until the rest pair cleanly.
   for (const relax of strict ? [false] : [false, true]) {
-    for (let k = pool.length - 1; k >= 0; k--) {
+    for (const k of floatOrder(pool)) {
       const rest = pool.filter((_, idx) => idx !== k);
       const pairs = relax
         ? generalPair(rest, true, isConflict)
@@ -831,12 +868,15 @@ function pairBracket(
     }
   }
   if (!strict) return { pairs: [], floaters: [pool[pool.length - 1]] };
-  // Strict, and no single floater choice produced a clean pairing of the rest — float the bottom
-  // seed unconditionally and recurse (the now-even rest can itself cascade via the branch above).
-  const floater = pool[pool.length - 1];
-  const rest = pairBracket(pool.slice(0, -1), isConflict, strict);
-  if (rest === null) return null;
-  return { pairs: rest.pairs, floaters: [...rest.floaters, floater] };
+  // Strict, and no single floater choice produced a clean pairing of the rest — float a player
+  // unconditionally (still floatOrder-ranked) and recurse (the now-even rest can itself cascade
+  // via the branch above).
+  for (const k of floatOrder(pool)) {
+    const floater = pool[k];
+    const rest = pairBracket(pool.filter((_, idx) => idx !== k), isConflict, strict, floatPenalty);
+    if (rest !== null) return { pairs: rest.pairs, floaters: [...rest.floaters, floater] };
+  }
+  return null;
 }
 
 /** The earliest round number that hasn't been paired yet — the only rounds a bye request can
@@ -1220,12 +1260,23 @@ export function pairNextRound(t: Tournament): Round {
   const isConflictGlobal = (a: Player, b: Player) =>
     isFamilyConflict(a, b) || (strict && !(a.score === topScore && b.score === topScore) && absoluteColorClash(a, b));
 
+  // FIDE C14/C15: when a bracket has more than one valid choice of who floats down, prefer
+  // whoever hasn't downfloated recently over whoever has, rather than always picking the same
+  // (bottom) seed — see pairBracket's floatOrder and Player.floatHistory.
+  const floatPenalty = (p: Player): number => {
+    const h = p.floatHistory;
+    if (!h || !h.length) return 0;
+    if (h[h.length - 1]) return 2; // floated down last round — avoid repeating (C14)
+    if (h.length >= 2 && h[h.length - 2]) return 1; // floated down two rounds ago (C15)
+    return 0;
+  };
+
   let pairs: [Player, Player][] = [];
   let floaters: Player[] = [];
   let bracketMethodFailed = false;
   for (const sc of scores) {
     const bracket = [...floaters, ...pool.filter((p) => p.score === sc)].sort(bySeed);
-    const result = pairBracket(bracket, isConflict(sc), strict);
+    const result = pairBracket(bracket, isConflict(sc), strict, floatPenalty);
     if (result === null) { bracketMethodFailed = true; break; }
     pairs.push(...result.pairs);
     floaters = result.floaters;
@@ -1268,6 +1319,16 @@ export function pairNextRound(t: Tournament): Round {
     // Swiss mode has always made, now just backed by a more thorough search first.
   }
 
+  // Determined structurally from the final pairing (whichever code path produced it), not by
+  // trusting pairBracket's own floaters bookkeeping — a whole-field fallback pairing (above)
+  // wouldn't have gone through pairBracket at all, but "paired against a lower score group" is
+  // still exactly what a downfloat is, however the pairing was found.
+  const downfloatIds = new Set<number>();
+  for (const [a, b] of pairs) {
+    if (a.score > b.score) downfloatIds.add(a.id);
+    else if (b.score > a.score) downfloatIds.add(b.id);
+  }
+
   const pairings: Pairing[] = pairs.map(([a, b], i) => {
     const { whiteId, blackId } = strict ? assignColorsFide(a, b) : assignColors(a, b);
     return { board: i + 1, whiteId, blackId, byeId: null, result: null };
@@ -1279,26 +1340,28 @@ export function pairNextRound(t: Tournament): Round {
     pairings.push({ board: pairings.length + 1, whiteId: null, blackId: null, byeId: byePlayer.id, byePoints: 1, result: null });
   }
 
-  const round: Round = { number: nextRoundNo, pairings, complete: false };
+  const round: Round = { number: nextRoundNo, pairings, complete: false, downfloatIds: [...downfloatIds] };
   return round;
 }
 
-/** Apply a freshly created round (records opponents/colors; auto-scores byes). */
+/** Apply a freshly created round (records opponents/colors/floats; auto-scores byes). */
 export function commitRound(t: Tournament, round: Round) {
   const byId = new Map(t.players.map((p) => [p.id, p]));
+  const floated = new Set(round.downfloatIds ?? []);
   for (const pr of round.pairings) {
     if (pr.byeId != null) {
       const p = byId.get(pr.byeId)!;
       const points = pr.byePoints ?? 1;
       p.opponents.push(-1);
+      p.floatHistory?.push(false);
       if (points === 0.5) p.requestedByes = (p.requestedByes ?? 0) + 1;
       else p.byes = (p.byes ?? 0) + 1;
       p.score += points;
     } else {
       const w = byId.get(pr.whiteId!)!;
       const b = byId.get(pr.blackId!)!;
-      w.opponents.push(b.id); w.colors.push('w');
-      b.opponents.push(w.id); b.colors.push('b');
+      w.opponents.push(b.id); w.colors.push('w'); w.floatHistory?.push(floated.has(w.id));
+      b.opponents.push(w.id); b.colors.push('b'); b.floatHistory?.push(floated.has(b.id));
     }
   }
   t.rounds.push(round);
@@ -1337,6 +1400,7 @@ export function addExtraGameForBye(
   const points = pr.byePoints ?? 1;
   player.score -= points;
   player.opponents.pop(); // the -1 recorded by commitRound
+  player.floatHistory?.pop(); // byes never float — a plain `false` recorded alongside it
   if (points === 0.5) player.requestedByes = Math.max(0, (player.requestedByes ?? 0) - 1);
   else player.byes = Math.max(0, (player.byes ?? 0) - 1);
 
@@ -1349,6 +1413,7 @@ export function addExtraGameForBye(
     score: 0,
     opponents: [],
     colors: [],
+    floatHistory: [],
     byes: 0,
     requestedByes: 0,
     byeRequests: [],
@@ -1367,8 +1432,8 @@ export function addExtraGameForBye(
 
   const w = whiteId === player.id ? player : house;
   const b = blackId === player.id ? player : house;
-  w.opponents.push(b.id); w.colors.push('w');
-  b.opponents.push(w.id); b.colors.push('b');
+  w.opponents.push(b.id); w.colors.push('w'); w.floatHistory?.push(false);
+  b.opponents.push(w.id); b.colors.push('b'); b.floatHistory?.push(false);
 
   round.complete = round.pairings.every((p) => p.byeId != null || p.result != null);
   return true;
@@ -1398,13 +1463,14 @@ export function redoLatestRound(t: Tournament): boolean {
       const points = pr.byePoints ?? 1;
       p.score -= points;
       p.opponents.pop();
+      p.floatHistory?.pop();
       if (points === 0.5) p.requestedByes = Math.max(0, (p.requestedByes ?? 0) - 1);
       else p.byes = Math.max(0, (p.byes ?? 0) - 1);
     } else {
       const w = pr.whiteId != null ? byId.get(pr.whiteId) : undefined;
       const b = pr.blackId != null ? byId.get(pr.blackId) : undefined;
-      w?.opponents.pop(); w?.colors.pop();
-      b?.opponents.pop(); b?.colors.pop();
+      w?.opponents.pop(); w?.colors.pop(); w?.floatHistory?.pop();
+      b?.opponents.pop(); b?.colors.pop(); b?.floatHistory?.pop();
     }
   }
   t.rounds.pop();

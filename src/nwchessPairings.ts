@@ -1,12 +1,12 @@
 import './style.css';
 import {
   addExtraGameForBye, addFamilyGroup, cancelByeRequest, commitRound, createTournament, estimatedCurrentRating,
-  explainPairing, explainPairingDetail, explainRound, nextRoundNumber, pairNextRound,
+  explainPairing, explainPairingDetail, explainRound, nextRoundNumber, pairingMethod, pairNextRound,
   parseRoster, recommendedRounds, recommendedRoundsKnockout, recommendedRoundsRoundRobin, redoLatestRound,
   removeFamilyGroup, requestByeForRound, setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
   tournamentFormat,
 } from './swissEngine';
-import type { GameResult, Round, RosterEntry, RosterFormat, Tournament, TournamentFormat } from './swissEngine';
+import type { GameResult, PairingMethod, Round, RosterEntry, Tournament, TournamentFormat } from './swissEngine';
 import { knockoutPlacementsTableHtml, standingsTableHtml, wallChartHtml } from './swissViews';
 import { downloadTrf } from './trfExport';
 import { registerServiceWorker } from './pwa';
@@ -16,6 +16,11 @@ registerServiceWorker();
 initTheme();
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
+// Same storage key as swiss.html on purpose — this page and Swiss Pairings are two different setup
+// front-doors onto the same single active event/tournament the app already only ever holds one of
+// at a time (see SwissEvent below); a tournament created here can equally be viewed/managed from
+// swiss.html afterward, and vice versa. wallchart-display.html already reads this key too, so
+// sharing it means no changes were needed there for this page to work with the big-screen display.
 const STORE_KEY = 'openfile-swiss';
 
 /** An event holds one Swiss tournament per section; all sections advance round-by-round together. */
@@ -102,11 +107,13 @@ function nameWithRatingOf(t: Tournament, id: number | null, showEstimate = false
 }
 
 // ---------- setup ----------
-function currentFormat(): RosterFormat {
-  return (($('#format-select') as HTMLSelectElement).value as RosterFormat) || 'plain';
-}
+// This page only ever imports an NWChess RosterTable.csv — unlike swiss.html, there's no roster
+// format picker at all.
 function currentTourneyFormat(): TournamentFormat {
   return (($('#tourney-format-select') as HTMLSelectElement).value as TournamentFormat) || 'swiss';
+}
+function currentPairingMethod(): PairingMethod {
+  return (($('#pairing-method-select') as HTMLSelectElement).value as PairingMethod) || 'swiss';
 }
 /** Round-robin and knockout both pair strictly by a fixed schedule/bracket, with no per-round
  *  score-group decision to explain, avoid a rematch in, or steer with a bye/family-group request. */
@@ -114,70 +121,31 @@ function isFixedFormat(t: Tournament): boolean {
   const fmt = tournamentFormat(t);
   return fmt === 'round-robin' || fmt === 'knockout';
 }
-
-const FORMAT_HINT: Record<string, string> = {
-  plain: 'One player per line: “Name”, “Name Rating”, or “Name, Rating” (optional leading “1.” numbering).',
-  table: 'A delimited table whose header row labels the columns (tab- or comma-separated). The Name and Rating columns are used; #, ID and bye columns are ignored.',
-};
-const FORMAT_LABEL: Record<string, string> = { plain: 'Plain list', table: 'US Chess table' };
-
-/**
- * If parsing with the currently-selected format leaves numbers stuck in player names (a strong
- * sign the wrong format is selected — e.g. a tab/space table parsed as a plain list), check
- * whether the other format parses the same text into fully clean names, and suggest switching to
- * it. Returns null if the current format looks fine.
- */
-function suggestBetterFormat(text: string, current: RosterFormat, currentRoster: RosterEntry[]) {
-  const dirty = currentRoster.filter((p) => /\d/.test(p.name)).length;
-  if (dirty === 0) return null;
-  const other: RosterFormat = current === 'plain' ? 'table' : 'plain';
-  const roster = parseRoster(text, other);
-  if (roster.length < Math.max(3, currentRoster.length * 0.4)) return null;
-  if (roster.some((p) => /\d/.test(p.name))) return null;
-  return { format: other, roster };
+/** The pairing-method choice (Swiss vs. FIDE) only makes sense for a Swiss-format tournament —
+ *  round-robin/knockout pair by a fixed schedule regardless. */
+function pairingMethodApplies(tfmt: TournamentFormat): boolean {
+  return tfmt === 'swiss';
 }
 
-const SAMPLES: Record<string, { text: string; tname: string }> = {
-  plain: {
-    tname: 'Club Championship',
-    text: `1. Ava Thompson, 1580
-2. Ben Carter 1490
-3. Chloe Martinez, 1725
-4. Diego Rossi 1310
-5. Emma Nguyen 1655
-6. Farid Hassan, 1205
-7. Grace Kim 1802
-8. Henry Walsh 1440
-9. Isla Robinson 1360
-10. Jack Owens`,
-  },
-  table: {
-    tname: 'US Chess Open',
-    text: `#\tName\tUS Chess ID\tRating\tBye Rds
-1\tYogi Saputra\t13838368\t2057\t
-2\tLucas Maokhampio\t31368597\t2015\t3
-3\tEdwin Battistella\t12474865\t1932\t
-4\tJeremy Campbell\t32332565\t1863\t
-5\tDavid Murray\t12678095\t1853\t
-6\tJason Richner\t12398033\t1802\t`,
-  },
+const SAMPLE_NWCHESS = {
+  tname: 'Scholastic Championship',
+  text: `" ","Name","NWSRS","USCF","FIDE","NWChess","Byes","Fees"
+"","","First","","","","ID","","ID","","","ID","Title","","Rounds","Status"
+"Open","Smith","Alice","6","Sample ES","1600","SMP001A","1550","30000001","01/2027","0","0","","","","Paid"
+"Open","Jones","Bob","7","Sample MS","1400","SMP002B","1480","30000002","01/2027","0","0","","","","Paid"
+"Open","Chen","Cara","5","Sample ES","1520","SMP003C","1495","30000003","01/2027","0","0","","","","Paid"
+"U1000","Lee","Dan","4","Sample ES","1000","SMP004D","950","30000004","01/2027","0","0","","","","Paid"
+"U1000","Kim","Eve","3","Sample ES","900","SMP005E","0","","","0","0","","","","Paid"
+"U1000","Park","Zoe","6","Sample ES","1100","SMP006Z","1080","30000006","01/2027","0","0","","","","Withdrew"`,
 };
-
-function applyFormatHint() {
-  // Plain list is self-explanatory from the textarea's own label — only spell out the hint for
-  // the labeled-table format.
-  const fmt = currentFormat();
-  $('#format-hint').textContent = fmt === 'plain' ? '' : (FORMAT_HINT[fmt] ?? '');
-}
 
 $('#sample-roster').addEventListener('click', () => {
-  const s = SAMPLES[currentFormat()] ?? SAMPLES.plain;
-  ($('#roster-text') as HTMLTextAreaElement).value = s.text;
-  if (!($('#tname') as HTMLInputElement).value) ($('#tname') as HTMLInputElement).value = s.tname;
+  ($('#roster-text') as HTMLTextAreaElement).value = SAMPLE_NWCHESS.text;
+  if (!($('#tname') as HTMLInputElement).value) ($('#tname') as HTMLInputElement).value = SAMPLE_NWCHESS.tname;
   previewRoster();
 });
-($('#format-select') as HTMLSelectElement).addEventListener('change', () => { applyFormatHint(); previewRoster(); });
 ($('#tourney-format-select') as HTMLSelectElement).addEventListener('change', previewRoster);
+($('#pairing-method-select') as HTMLSelectElement).addEventListener('change', previewRoster);
 ($('#roster-text') as HTMLTextAreaElement).addEventListener('input', previewRoster);
 $('#roster-file').addEventListener('change', async () => {
   const f = ($('#roster-file') as HTMLInputElement).files?.[0];
@@ -218,20 +186,26 @@ function previewSelection(roster: RosterEntry[]): RosterEntry[] {
 
 function previewRoster() {
   const text = ($('#roster-text') as HTMLTextAreaElement).value;
-  const fmt = currentFormat();
-  const all = parseRoster(text, fmt);
+  const all = parseRoster(text, 'nwchess');
   const prev = $('#roster-preview');
+  const tfmt = currentTourneyFormat();
+  const showPairingMethod = pairingMethodApplies(tfmt);
+  ($('#pairing-method-row') as HTMLElement).hidden = !showPairingMethod;
+  $('#pairing-method-hint').textContent = showPairingMethod
+    ? (currentPairingMethod() === 'fide'
+        ? 'FIDE mode never produces a repeat pairing or an absolute-colour clash, even as a last resort — pairing a round fails loudly with an explanation instead, rather than silently bending a rule.'
+        : 'Swiss mode (default) guarantees every round gets paired, relaxing rematch-avoidance or colour balance only if the field genuinely leaves no other option.')
+    : '';
   if (!all.length) {
     ($('#section-row') as HTMLElement).hidden = true;
     $('#rounds-hint').textContent = '';
     prev.innerHTML = text.trim()
-      ? `<p class="neg">No players parsed as <b>${esc(($('#format-select') as HTMLSelectElement).selectedOptions[0].text)}</b>. Check that the roster matches the selected format.</p>`
+      ? `<p class="neg">No players parsed. Make sure this is an NWChess RosterTable.csv export — check for the header row containing "NWSRS", "USCF", and "FIDE".</p>`
       : '';
     return;
   }
   const secs = syncSectionUI(all);
   const roster = previewSelection(all);
-  const tfmt = currentTourneyFormat();
   const rr =
     tfmt === 'round-robin' ? recommendedRoundsRoundRobin(roster.length)
     : tfmt === 'knockout' ? recommendedRoundsKnockout(roster.length)
@@ -247,17 +221,12 @@ function previewRoster() {
     tfmt === 'round-robin'
       ? 'Round-robin: pairings for every round are fixed by roster order up front — no bye requests or family-group avoidance (there\'s no dynamic pairing to steer). Withdrawing a player still works; their remaining opponents get a walkover.'
       : tfmt === 'knockout'
-      ? 'Knockout: round 1 is seeded by rating; later rounds pair whoever won each side of the bracket. Drawn games aren\'t allowed on the result — settle a tie with a playoff/Armageddon game before entering the result here. No bye requests or family-group avoidance.'
+      ? 'Knockout: round 1 is seeded by rating; later rounds pair whoever won each side of the bracket. Drawn games aren\'t allowed on the result — settle a tie with a playoff/Armageddon game before entering the result here. No bye requests or family-group avoidance, and the pairing method choice above has no effect (there\'s no dynamic pairing to steer).'
       : '';
-  const note = '';
+  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded.` +
+      (secs.length > 1 ? ` Creating sets up all <b>${secs.length}</b> sections; “Pair next round” pairs them together.` : '') + `</p>`;
   const unrated = roster.filter((p) => p.rating == null).length;
   const withByes = roster.filter((p) => p.byeRounds && p.byeRounds.length).length;
-
-  const suggestion = suggestBetterFormat(text, fmt, all);
-  const warning = suggestion
-    ? `<div class="format-warning">⚠ These names still contain numbers — this usually means the wrong roster format is selected. This looks like <b>${FORMAT_LABEL[suggestion.format]}</b> instead.
-        <button id="switch-format-btn" class="btn btn-primary" data-fmt="${suggestion.format}">Switch to ${FORMAT_LABEL[suggestion.format]} →</button></div>`
-    : '';
 
   const showSection = secs.length > 1;
   const rows = roster
@@ -273,19 +242,11 @@ function previewRoster() {
     .join('');
 
   prev.innerHTML =
-    warning +
     note +
     `<p class="hint">Previewing ${roster.length} players${secs.length > 1 ? '' : ` · recommended rounds: <b>${rr}</b>`}${unrated ? ` · ${unrated} unrated` : ''}${withByes ? ` · ${withByes} with a requested bye` : ''}</p>` +
     `<div class="roster-table-wrap"><table class="roster-table"><thead><tr>
         <th class="num">#</th><th>Name</th><th class="num">Rating</th><th class="num">Bye</th>${showSection ? '<th>Section</th>' : ''}
       </tr></thead><tbody>${rows}</tbody></table></div>`;
-
-  $('#switch-format-btn')?.addEventListener('click', () => {
-    const btn = $('#switch-format-btn') as HTMLButtonElement;
-    ($('#format-select') as HTMLSelectElement).value = btn.dataset.fmt!;
-    applyFormatHint();
-    previewRoster();
-  });
 }
 
 ($('#section-filter') as HTMLSelectElement).addEventListener('change', previewRoster);
@@ -298,8 +259,8 @@ function buildSectionGroups(all: RosterEntry[], eventName: string): { name: stri
 }
 
 $('#parse-btn').addEventListener('click', () => {
-  const all = parseRoster(($('#roster-text') as HTMLTextAreaElement).value, currentFormat());
-  if (all.length < 2) { $('#roster-preview').innerHTML = `<p class="neg">Need at least 2 players (parsed as the selected format).</p>`; return; }
+  const all = parseRoster(($('#roster-text') as HTMLTextAreaElement).value, 'nwchess');
+  if (all.length < 2) { $('#roster-preview').innerHTML = `<p class="neg">Need at least 2 players parsed as an NWChess roster.</p>`; return; }
   const eventName = ($('#tname') as HTMLInputElement).value.trim() || 'Swiss Tournament';
   const groups = buildSectionGroups(all, eventName);
   const usable = groups.filter((g) => g.roster.length >= 2);
@@ -308,7 +269,8 @@ $('#parse-btn').addEventListener('click', () => {
   const roundsRaw = ($('#rounds-input') as HTMLInputElement).value.trim();
   const roundsOverride = roundsRaw ? Math.max(1, Math.min(30, parseInt(roundsRaw, 10))) : undefined;
   const tfmt = currentTourneyFormat();
-  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride, tfmt)), active: 0 };
+  const pmethod = pairingMethodApplies(tfmt) ? currentPairingMethod() : 'swiss';
+  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride, tfmt, pmethod)), active: 0 };
   save();
   renderAll();
   if (skipped.length) {
@@ -332,9 +294,10 @@ $('#pair-btn').addEventListener('click', () => {
       !confirm(`This event was set up for ${ev.sections[0].totalRounds} round(s), which have already been paired. Pair an extra round anyway?`)) {
     return;
   }
-  // Pair every section before committing any of them — a section can throw partway through the
-  // loop, and committing section 1 before section 2 fails would leave that section's round
-  // mutated in memory but never saved, silently double-pairing it on the next successful click.
+  // Pair every section before committing any of them — a FIDE-mode section can throw (no
+  // conflict-free pairing exists under strict rules) partway through the loop, and committing
+  // section 1 before section 2 fails would leave that section's round mutated in memory but never
+  // saved, silently double-pairing it on the next successful click.
   const paired: { section: Tournament; round: Round }[] = [];
   try {
     for (const s of ev.sections) paired.push({ section: s, round: pairNextRound(s) });
@@ -424,9 +387,9 @@ $('#reset-tourn').addEventListener('click', () => {
   }
 });
 
-// Non-destructive: reveal the roster screen again (same roster text/format still in the
-// textarea) so a wrong-format or otherwise broken tournament can be fixed and re-created,
-// without deleting anything unless "Create tournament" is actually clicked again.
+// Non-destructive: reveal the roster screen again (same roster text still in the textarea) so a
+// broken tournament can be fixed and re-created, without deleting anything unless "Create
+// tournament" is actually clicked again.
 $('#edit-roster-btn').addEventListener('click', () => {
   ($('#setup-card') as HTMLElement).hidden = false;
   ($('#control-card') as HTMLElement).hidden = true;
@@ -527,7 +490,8 @@ function renderAll() {
   const evLabel = ev.sections.length > 1
     ? `<b>${esc(ev.name)}</b> · ${ev.sections.length} sections · round ${pairedRounds} · viewing <b>${esc(t.name)}</b> (${t.players.length} players, ${completedRounds}/${rr} rounds)`
     : `<b>${esc(t.name)}</b> · ${t.players.length} players · ${completedRounds}/${rr} rounds played`;
-  $('#round-info').innerHTML = evLabel;
+  const fideBadge = pairingMethod(t) === 'fide' ? ` <span class="dev-status-chip dev-full" title="Strict FIDE rules: never a repeat pairing or an absolute colour clash, even as a last resort.">FIDE pairing</span>` : '';
+  $('#round-info').innerHTML = evLabel + fideBadge;
 
   renderRounds(t);
   renderByeRequestCard(t);
@@ -1125,7 +1089,6 @@ if (saved) {
     else if (isValidTournament(data)) ev = { name: data.name || 'Swiss', sections: [data], active: 0 }; // migrate old single-tournament save
   } catch { ev = null; }
 }
-applyFormatHint();
 try {
   renderAll();
 } catch (e) {

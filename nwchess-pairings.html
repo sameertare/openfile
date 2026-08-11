@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Swiss Pairings — OpenFile</title>
+    <title>NWChess Pairings — OpenFile</title>
     <link rel="icon" href="/logo-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -18,8 +18,8 @@
         <a href="index.html">🏠 Home</a>
         <a href="analyze.html">Performance Analysis</a>
         <a href="live.html">Game Analysis</a>
-        <a href="swiss.html" class="active">Swiss Pairings</a>
-        <a href="nwchess-pairings.html">NWChess Pairings</a>
+        <a href="swiss.html">Swiss Pairings</a>
+        <a href="nwchess-pairings.html" class="active">NWChess Pairings</a>
         <a href="opening-explorer.html">Opening Explorer</a>
         <a href="opening-deviation.html">Openings Deviation</a>
         <a href="compare-reports.html">Compare Reports</a>
@@ -35,8 +35,8 @@
     <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
     <div id="app">
       <header class="app-header">
-        <h1>🏆 Swiss Pairings</h1>
-        <p class="tagline">Run a full Swiss tournament: paste or upload a roster, generate pairings each round, enter results, and track standings with tiebreaks.</p>
+        <h1>🏫 NWChess Pairings</h1>
+        <p class="tagline">Run a tournament from an NWChess RosterTable.csv export, with a choice of pairing engine: best-effort Swiss, or strict FIDE (Dutch) System rules for FIDE-rated events.</p>
       </header>
 
       <div class="card-grid">
@@ -45,12 +45,6 @@
         <div class="config-row">
           <label class="stack" style="flex:1; min-width:220px;">Tournament name
             <input type="text" id="tname" class="text-input" placeholder="Spring Scholastic Open" />
-          </label>
-          <label class="stack">Roster format
-            <select id="format-select">
-              <option value="plain" selected>Plain list (Name / Name Rating)</option>
-              <option value="table">US Chess table (labeled columns)</option>
-            </select>
           </label>
           <label class="stack">Tournament type
             <select id="tourney-format-select">
@@ -63,16 +57,20 @@
             <input type="number" id="rounds-input" class="text-input" min="1" max="30" placeholder="auto" style="width:90px;" />
           </label>
         </div>
-        <p class="hint" id="format-hint"></p>
+        <p class="hint" id="format-hint">An NWChess RosterTable.csv export. FIDE ratings ignored; seeded by max(NWSRS, USCF); withdrawn players excluded; multiple sections supported.</p>
+        <div class="config-row" id="pairing-method-row">
+          <label class="stack">Pairing method
+            <select id="pairing-method-select">
+              <option value="swiss" selected>Swiss (best-effort — always pairs every round)</option>
+              <option value="fide">FIDE (strict — never repeats an opponent or an absolute colour clash)</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint" id="pairing-method-hint"></p>
         <p class="hint" id="tourney-format-hint"></p>
         <p class="hint" id="rounds-hint"></p>
-        <label class="stack">Paste players (one per line — <code>Name</code>, <code>Name Rating</code>, or <code>Name, Rating</code>). Importing an NWChess RosterTable.csv? Use the <a href="nwchess-pairings.html">NWChess Pairings</a> page instead.
-          <textarea id="roster-text" class="text-area" rows="8" placeholder="1. Magnus Carlsen, 2839
-Hikaru Nakamura 2794
-Fabiano Caruana, 2776
-Alireza Firouzja 2777
-Ding Liren
-Ian Nepomniachtchi 2758"></textarea>
+        <label class="stack">Paste or upload an NWChess RosterTable.csv export
+          <textarea id="roster-text" class="text-area" rows="8" placeholder="Paste the exported RosterTable.csv contents here, or use Upload below."></textarea>
         </label>
         <div class="config-row" id="section-row" hidden>
           <label class="stack">Section to pair
@@ -80,7 +78,7 @@ Ian Nepomniachtchi 2758"></textarea>
           </label>
         </div>
         <div class="btn-row">
-          <label class="btn" for="roster-file">📂 Upload roster file (.txt / .csv)</label>
+          <label class="btn" for="roster-file">📂 Upload roster file (.csv)</label>
           <input type="file" id="roster-file" accept=".txt,.csv" hidden />
           <button id="parse-btn" class="btn btn-primary">Create tournament →</button>
           <button id="sample-roster" class="btn btn-ghost">Load a sample roster</button>
@@ -121,8 +119,8 @@ Ian Nepomniachtchi 2758"></textarea>
                 <ol>
                   <li><b>Requested byes:</b> players who requested the round sit out first and receive ½ point.</li>
                   <li><b>Score groups:</b> remaining players are grouped by current score, highest group first.</li>
-                  <li><b>Floaters:</b> an odd score group sends its lowest seed down one score group so everyone can be paired.</li>
-                  <li><b>Illegal matchups:</b> the engine backtracks to avoid a previous opponent. A rematch is used only if no rematch-free arrangement is available.</li>
+                  <li><b>Floaters:</b> a score group that can't pair internally (odd, or its only members already played each other) sends its lowest-priority player down into the next group so everyone can be paired.</li>
+                  <li><b>Illegal matchups:</b> the engine backtracks to avoid a previous opponent. In <b>Swiss</b> mode a rematch is used only as a last resort if no rematch-free arrangement is available; in <b>FIDE</b> mode a rematch is never used — pairing the round fails with an explanation instead.</li>
                   <li><b>Full bye:</b> if the eligible field is still odd, the player with the fewest prior full byes is preferred; ties go to the lower score, then lower rating.</li>
                 </ol>
               </section>
@@ -133,13 +131,13 @@ Ian Nepomniachtchi 2758"></textarea>
                   <span>W or B: White–Black balance is unequal</span><b>→</b><span>Next: equalize the color count</span>
                   <span>Balance equal and no severe conflict</span><b>→</b><span>Alternate last color; then use a deterministic fallback</span>
                 </div>
-                <p class="hint">W/B means due White/Black for equalization; WW/BB marks the stronger consecutive-color issue. A balance of −1 means one more Black than White. Byes do not count as a color.</p>
+                <p class="hint">W/B means due White/Black for equalization; WW/BB marks the stronger consecutive-color issue. A balance of −1 means one more Black than White. Byes do not count as a color. <b>FIDE</b> mode allocates colour via FIDE's own priority order instead (grant both sides' preference if possible, else the stronger/more urgent one, else the higher-ranked player).</p>
               </section>
             </div>
 
             <section class="swiss-limit">
               <h3>Family, siblings, teams, and other protected pairings</h3>
-              <p>Use the <b>Family / sibling groups</b> card below to mark players who shouldn't meet — siblings, parent/child, spouses, or any other group. It's treated as a soft rule, the same way rematches are: avoided whenever an alternative pairing exists, and only allowed if the round genuinely can't be paired evenly otherwise. Team/school/club exclusions beyond marked groups aren't collected, so review the generated boards and use <em>“Fix a mistake in this round”</em> if you need a manual swap for something the engine doesn't know about.</p>
+              <p>Use the <b>Family / sibling groups</b> card below to mark players who shouldn't meet — siblings, parent/child, spouses, or any other group. In Swiss mode it's a soft rule, avoided whenever an alternative pairing exists but relaxed if the round genuinely can't be paired evenly otherwise; in FIDE mode it's enforced exactly as strictly as an absolute criterion. Team/school/club exclusions beyond marked groups aren't collected, so review the generated boards and use <em>“Fix a mistake in this round”</em> if you need a manual swap for something the engine doesn't know about.</p>
             </section>
             <p class="hint">Pairings are deterministic for the same roster and entered results. Manual swaps change the displayed pairing but do not add a permanent exclusion rule for later rounds.</p>
           </div>
@@ -179,7 +177,7 @@ Ian Nepomniachtchi 2758"></textarea>
       <section class="card" id="family-group-card" hidden>
         <details id="family-group-details">
           <summary><h2>Family / sibling groups <span id="family-group-count" class="hint"></span></h2></summary>
-          <p class="hint">Mark players who shouldn't be paired against each other when it can be avoided — siblings, parent/child, spouses, etc. The pairing engine treats this the same way it treats rematches: avoided whenever an alternative pairing exists, but not a hard rule that could leave the round unpairable.</p>
+          <p class="hint">Mark players who shouldn't be paired against each other when it can be avoided — siblings, parent/child, spouses, etc. Swiss mode treats this the same way it treats rematches: avoided whenever an alternative pairing exists, but not a hard rule that could leave the round unpairable. FIDE mode enforces it strictly.</p>
           <div id="family-player-list" class="bye-player-list"></div>
           <div class="config-row" style="align-items:center;">
             <label>Group label <span class="hint">(optional)</span>
@@ -224,6 +222,6 @@ Ian Nepomniachtchi 2758"></textarea>
     </div>
     </div>
     </div>
-    <script type="module" src="/src/swiss.ts"></script>
+    <script type="module" src="/src/nwchessPairings.ts"></script>
   </body>
 </html>
