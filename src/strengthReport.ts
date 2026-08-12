@@ -35,6 +35,10 @@ const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as
 const fileInput = $('#file-input') as HTMLInputElement;
 const dropzone = $('#dropzone');
 const fileSummary = $('#file-summary');
+const pastePgnInput = $('#paste-pgn') as HTMLTextAreaElement;
+const pastePgnBtn = $('#paste-pgn-btn') as HTMLButtonElement;
+const pastePgnClearBtn = $('#paste-pgn-clear-btn') as HTMLButtonElement;
+const pastePgnStatusEl = $('#paste-pgn-status');
 const lichessUsernameInput = $('#lichess-username') as HTMLInputElement;
 const lichessMaxSelect = $('#lichess-max') as HTMLSelectElement;
 const lichessMaxLabel = $('#lichess-max-label');
@@ -83,7 +87,8 @@ function esc(s: string): string {
 }
 
 // ---------- file loading ----------
-async function handleFiles(files: FileList | File[]) {
+async function handleFiles(files: FileList | File[]): Promise<{ parsed: number; failed: number; botExcluded: number }> {
+  let parsed = 0;
   let failed = 0;
   let botExcluded = 0;
   const failureCounts = new Map<string, { count: number; sample: string }>();
@@ -104,6 +109,7 @@ async function handleFiles(files: FileList | File[]) {
           continue;
         }
         parsedGames.push(game);
+        parsed++;
       } else {
         failed++;
         if (error) recordFailure(error);
@@ -148,6 +154,7 @@ async function handleFiles(files: FileList | File[]) {
     configCard.hidden = false;
     configCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+  return { parsed, failed, botExcluded };
 }
 
 // Auto-detects who the report is for: the player appearing in the most games. Name variants that
@@ -202,6 +209,29 @@ $('#load-sample').addEventListener('click', async () => {
   const text = await resp.text();
   const file = new File([text], 'sample-games.pgn');
   await handleFiles([file]);
+});
+
+// ---------- paste a single game's PGN ----------
+pastePgnBtn.addEventListener('click', () => void loadPastedPgn());
+
+async function loadPastedPgn() {
+  const text = pastePgnInput.value.trim();
+  if (!text) {
+    pastePgnStatusEl.textContent = 'Paste a game\'s PGN text first.';
+    return;
+  }
+  const { parsed, failed } = await handleFiles([new File([text], 'pasted-game.pgn')]);
+  if (parsed > 0) {
+    pastePgnStatusEl.textContent = `Loaded ${parsed} game${parsed === 1 ? '' : 's'} from the pasted PGN.`;
+  } else if (failed > 0) {
+    pastePgnStatusEl.textContent = 'Could not parse the pasted text as a game — check that it includes move text, not just headers.';
+  } else {
+    pastePgnStatusEl.textContent = 'No new game found — this game (or a bot/computer game) was already loaded or excluded.';
+  }
+}
+pastePgnClearBtn.addEventListener('click', () => {
+  pastePgnInput.value = '';
+  pastePgnStatusEl.textContent = '';
 });
 
 // ---------- lichess / chess.com account fetch (cross-platform merge) ----------

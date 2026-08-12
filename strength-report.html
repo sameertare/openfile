@@ -52,6 +52,21 @@
         <button id="load-sample" class="btn btn-ghost">…or try the bundled sample games</button>
 
         <div class="bulk-fetch">
+          <p class="hint" style="margin:0 0 8px;"><strong>…or paste a single game's PGN directly</strong> — no file needed, for a quick one-game check.</p>
+          <textarea id="paste-pgn" class="text-area" rows="6" placeholder='[Event &quot;Casual game&quot;]
+[White &quot;Alice&quot;]
+[Black &quot;Bob&quot;]
+[Result &quot;1-0&quot;]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 ...'></textarea>
+          <div class="btn-row" style="margin-top:8px;">
+            <button id="paste-pgn-btn" class="btn btn-primary">Load pasted game</button>
+            <button id="paste-pgn-clear-btn" class="btn btn-ghost">Clear</button>
+          </div>
+          <div id="paste-pgn-status" class="hint"></div>
+        </div>
+
+        <div class="bulk-fetch">
           <label style="display:block; margin-bottom:4px; cursor:pointer;">
             <input type="checkbox" id="combine-toggle" /> 🔗 Build one combined report from both accounts
           </label>
