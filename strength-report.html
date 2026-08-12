@@ -37,7 +37,7 @@
     <div id="app">
       <header class="app-header">
         <h1>🧠 Strength Report</h1>
-        <p class="tagline">Upload or fetch a whole game set — combined across chess.com and lichess, or one platform at a time — and get a single-purpose Stockfish 18 report: opening strengths and weaknesses, middlegame and endgame accuracy, and which tactical motifs you handle well versus miss.</p>
+        <p class="tagline">Drop your PGN — a whole game set, or a single game — and get a single-purpose Stockfish 18 report: opening strengths and weaknesses, middlegame and endgame accuracy, and which tactical motifs you handle well versus miss.</p>
       </header>
 
       <section class="card" id="load-card">
@@ -65,64 +65,6 @@
           </div>
           <div id="paste-pgn-status" class="hint"></div>
         </div>
-
-        <div class="bulk-fetch">
-          <label style="display:block; margin-bottom:4px; cursor:pointer;">
-            <input type="checkbox" id="combine-toggle" /> 🔗 Build one combined report from both accounts
-          </label>
-          <p class="hint" style="margin:0 0 10px;">Off: each fetch below adds to the report independently (still the same player automatically — see note below). On: both usernames are fetched together in one action, for when you want the whole cross-platform game set at once.</p>
-
-          <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch a lichess account's games directly</strong></p>
-          <div class="config-row">
-            <label>Lichess username
-              <input type="text" id="lichess-username" class="text-input" placeholder="e.g. DrNykterstein" />
-            </label>
-            <label id="lichess-max-label">Max games
-              <select id="lichess-max">
-                <option value="100">100</option>
-                <option value="200" selected>200</option>
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-                <option value="all">All (can take a while)</option>
-              </select>
-            </label>
-            <button id="lichess-fetch-btn" class="btn btn-primary">Fetch from lichess</button>
-          </div>
-          <div id="lichess-status" class="hint"></div>
-        </div>
-
-        <div class="bulk-fetch">
-          <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch a chess.com account's games directly</strong></p>
-          <div class="config-row">
-            <label>Chess.com username
-              <input type="text" id="chesscom-username" class="text-input" placeholder="e.g. Hikaru" />
-            </label>
-            <label id="chesscom-max-label">Max games
-              <select id="chesscom-max">
-                <option value="100">100</option>
-                <option value="200" selected>200</option>
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-                <option value="all">All (can take a while)</option>
-              </select>
-            </label>
-            <button id="chesscom-fetch-btn" class="btn btn-primary">Fetch from chess.com</button>
-          </div>
-          <div id="chesscom-status" class="hint"></div>
-        </div>
-
-        <div class="bulk-fetch" id="combine-row" hidden>
-          <div class="config-row">
-            <label>Games since
-              <input type="date" id="combine-since" class="text-input" />
-            </label>
-            <button id="combine-btn" class="btn btn-primary">🔗 Build combined report</button>
-          </div>
-          <p class="hint" style="margin:6px 0 0;">Leave blank to fetch each account's full history — one shared date applies to both platforms instead of separate game-count limits.</p>
-          <div id="combine-status" class="hint"></div>
-        </div>
-
-        <p class="hint">Fetching from both counts as the same player automatically — even if your lichess and chess.com usernames differ — so one report can combine both platforms' games.</p>
       </section>
 
       <section class="card" id="config-card" hidden>

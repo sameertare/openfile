@@ -14,21 +14,18 @@ import { groupPlayerNames, nameKey } from './playerMatch';
 registerServiceWorker();
 initTheme();
 
-// A leaner, single-purpose sibling of Performance Analysis (src/main.ts): same upload/fetch and
-// engine-analysis pipeline, but the report itself only covers opening/phase/tactics strengths and
-// weaknesses — no training-plan generator, puzzle trainer, head-to-head, time-trouble section, or
-// report persistence (download/re-upload to extend over time). Each analysis run here is a
-// self-contained, one-off report, not something meant to accumulate across sessions.
+// A leaner, single-purpose sibling of Performance Analysis (src/main.ts): drop/upload a PGN (or
+// paste a single game's text directly) and run it through the same Stockfish analysis core, but
+// the report itself only covers opening/phase/tactics strengths and weaknesses — no lichess/
+// chess.com account fetching, training-plan generator, puzzle trainer, head-to-head, time-trouble
+// section, or report persistence (download/re-upload to extend over time). Each analysis run here
+// is a self-contained, one-off report, not something meant to accumulate across sessions.
 
 // ---------- state ----------
 let parsedGames: ParsedGame[] = [];
 let records: GameRecord[] = [];
 let detectedUsername: string | null = null;
 let detectedMatchKeys: Set<string> | null = null;
-// Every username explicitly fetched via the lichess/chess.com account-fetch below — a self-declared
-// "this is me" that detectMainPlayer() folds into the primary identity's matchKeys even when it's a
-// different literal handle than the other platform, so one report can combine both.
-let fetchedUsernames: Set<string> = new Set();
 
 // ---------- dom ----------
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -39,21 +36,6 @@ const pastePgnInput = $('#paste-pgn') as HTMLTextAreaElement;
 const pastePgnBtn = $('#paste-pgn-btn') as HTMLButtonElement;
 const pastePgnClearBtn = $('#paste-pgn-clear-btn') as HTMLButtonElement;
 const pastePgnStatusEl = $('#paste-pgn-status');
-const lichessUsernameInput = $('#lichess-username') as HTMLInputElement;
-const lichessMaxSelect = $('#lichess-max') as HTMLSelectElement;
-const lichessMaxLabel = $('#lichess-max-label');
-const lichessFetchBtn = $('#lichess-fetch-btn') as HTMLButtonElement;
-const lichessStatusEl = $('#lichess-status');
-const chesscomUsernameInput = $('#chesscom-username') as HTMLInputElement;
-const chesscomMaxSelect = $('#chesscom-max') as HTMLSelectElement;
-const chesscomMaxLabel = $('#chesscom-max-label');
-const chesscomFetchBtn = $('#chesscom-fetch-btn') as HTMLButtonElement;
-const chesscomStatusEl = $('#chesscom-status');
-const combineToggle = $('#combine-toggle') as HTMLInputElement;
-const combineRow = $('#combine-row');
-const combineSinceInput = $('#combine-since') as HTMLInputElement;
-const combineBtn = $('#combine-btn') as HTMLButtonElement;
-const combineStatusEl = $('#combine-status');
 const configCard = $('#config-card');
 const detectedPlayerName = $('#detected-player-name');
 const detectedPlayerCount = $('#detected-player-count');
@@ -175,19 +157,7 @@ function detectMainPlayer(): { name: string; count: number; matchKeys: Set<strin
   const groups = groupPlayerNames(counts);
   groups.sort((a, b) => b.count - a.count);
   const best = groups[0];
-
-  // Fold in every explicitly-fetched username's group, even ones groupPlayerNames wouldn't treat
-  // as a variant of the primary name (e.g. a chess.com handle that looks nothing like the lichess
-  // one) — fetching an account here is an explicit "this is me" the frequency heuristic can't infer.
-  const matchKeys = new Set(best.keys);
-  for (const uname of fetchedUsernames) {
-    const key = nameKey(uname);
-    matchKeys.add(key);
-    for (const g of groups) {
-      if (g !== best && g.keys.has(key)) for (const k of g.keys) matchKeys.add(k);
-    }
-  }
-  return { name: best.display, count: best.count, matchKeys };
+  return { name: best.display, count: best.count, matchKeys: new Set(best.keys) };
 }
 
 fileInput.addEventListener('change', () => {
@@ -233,198 +203,6 @@ pastePgnClearBtn.addEventListener('click', () => {
   pastePgnInput.value = '';
   pastePgnStatusEl.textContent = '';
 });
-
-// ---------- lichess / chess.com account fetch (cross-platform merge) ----------
-lichessFetchBtn.addEventListener('click', () => void fetchFromLichess());
-lichessUsernameInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') void fetchFromLichess();
-});
-
-// `max` and `sinceMs` are independent lichess API params — the game-count dropdown passes `max`
-// only, the combined-report date picker passes `sinceMs` only (omitting `max` streams every game
-// since that date, per lichess's own API default). `max === 'all'` also omits the param entirely
-// — lichess streams the account's full history (unbounded) when it's left off.
-async function fetchLichessPgnText(username: string, opts: { max?: string; sinceMs?: number }): Promise<string> {
-  const params = new URLSearchParams({ pgnInJson: 'false', clocks: 'false', evals: 'false', opening: 'false' });
-  if (opts.max && opts.max !== 'all') params.set('max', opts.max);
-  if (opts.sinceMs) params.set('since', String(opts.sinceMs));
-  const url = `https://lichess.org/api/games/user/${encodeURIComponent(username)}?${params}`;
-  const resp = await fetch(url, { headers: { Accept: 'application/x-chess-pgn' } });
-  if (resp.status === 404) throw new Error(`No lichess account named "${username}" found.`);
-  if (resp.status === 429) throw new Error('Lichess is rate-limiting this request — wait a minute and try again.');
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  return resp.text();
-}
-
-async function fetchFromLichess() {
-  const username = lichessUsernameInput.value.trim();
-  if (!username) {
-    lichessStatusEl.textContent = 'Enter a lichess username first.';
-    return;
-  }
-  const max = lichessMaxSelect.value;
-  lichessFetchBtn.disabled = true;
-  lichessStatusEl.textContent =
-    max === 'all'
-      ? `Fetching ${username}'s entire lichess history… this can take a while for a long-tenured account.`
-      : `Fetching up to ${max} games for ${username} from lichess… this can take a moment for larger counts.`;
-  try {
-    const text = await fetchLichessPgnText(username, { max });
-    if (!text.trim()) {
-      lichessStatusEl.textContent = `${username} has no games matching this request.`;
-      return;
-    }
-    fetchedUsernames.add(username);
-    const file = new File([text], `${username}-lichess.pgn`);
-    await handleFiles([file]);
-    lichessStatusEl.textContent = `Loaded games for ${username} from lichess.`;
-  } catch (e) {
-    lichessStatusEl.textContent = `Could not fetch from lichess: ${e instanceof Error ? e.message : String(e)}`;
-  } finally {
-    lichessFetchBtn.disabled = false;
-  }
-}
-
-// Chess.com's public "Published Data API" has no single all-games endpoint like lichess, and no
-// count-limited one either — games are grouped into monthly archives. To offer a "max games"
-// control that matches lichess's, this walks archives newest-month-first, fetching one month at a
-// time (has to be sequential, not parallel, since it needs to know the running total before
-// deciding whether another month is needed) and stops as soon as it has enough, then trims to
-// exactly that count — a month's own games arrive oldest-first, so the trim keeps its most recent
-// games too.
-interface ChessComArchivesResponse { archives: string[]; }
-interface ChessComGamesResponse { games: { pgn?: string; url?: string; end_time?: number }[]; }
-
-// Chess.com's own [Site] header is never a URL ("Chess.com", not a link), so the game's separate
-// `url` field is injected as a [Link] header so gameLink()-style downstream code can still resolve
-// a "View" link. Inserted right after [Event] rather than before it — splitPgn() treats any `\n`
-// immediately followed by `[Event` as a new-game boundary.
-function injectLinkHeader(pgn: string, url: string | undefined): string {
-  if (!url || /\[Link /.test(pgn)) return pgn;
-  return pgn.replace(/^(\[Event\s[^\n]*\n)/, `$1[Link "${url}"]\n`);
-}
-
-chesscomFetchBtn.addEventListener('click', () => void fetchFromChessCom());
-chesscomUsernameInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') void fetchFromChessCom();
-});
-
-async function fetchChessComPgnText(username: string, opts: { maxGames?: number; sinceMs?: number }): Promise<string> {
-  const archivesResp = await fetch(`https://api.chess.com/pub/player/${encodeURIComponent(username.toLowerCase())}/games/archives`);
-  if (archivesResp.status === 404) throw new Error(`No chess.com account named "${username}" found.`);
-  if (!archivesResp.ok) throw new Error(`HTTP ${archivesResp.status}`);
-  const archivesData: ChessComArchivesResponse = await archivesResp.json();
-  const archives = archivesData.archives ?? [];
-  if (!archives.length) return '';
-  const sinceSec = opts.sinceMs ? Math.floor(opts.sinceMs / 1000) : null;
-  const pgns: string[] = []; // accumulated newest-first
-  for (let i = archives.length - 1; i >= 0; i--) {
-    if (opts.maxGames !== undefined && pgns.length >= opts.maxGames) break;
-    const m = archives[i].match(/\/(\d{4})\/(\d{2})$/);
-    if (sinceSec !== null && m) {
-      const archiveMonthEndSec = Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10), 1) / 1000;
-      if (archiveMonthEndSec <= sinceSec) break;
-    }
-    try {
-      const r = await fetch(archives[i]);
-      if (!r.ok) continue;
-      const data: ChessComGamesResponse = await r.json();
-      const monthPgns = (data.games ?? [])
-        .filter((g): g is { pgn: string; url?: string; end_time?: number } => !!g.pgn)
-        .filter((g) => sinceSec === null || (g.end_time ?? 0) >= sinceSec)
-        .map((g) => injectLinkHeader(g.pgn, g.url))
-        .reverse(); // a month's games arrive oldest-first; reverse so newest-first holds within it too
-      pgns.push(...monthPgns);
-    } catch {
-      // one bad month shouldn't sink the whole fetch
-    }
-  }
-  return (opts.maxGames !== undefined ? pgns.slice(0, opts.maxGames) : pgns).join('\n\n');
-}
-
-async function fetchFromChessCom() {
-  const username = chesscomUsernameInput.value.trim();
-  if (!username) {
-    chesscomStatusEl.textContent = 'Enter a chess.com username first.';
-    return;
-  }
-  const maxRaw = chesscomMaxSelect.value;
-  const maxGames = maxRaw === 'all' ? undefined : parseInt(maxRaw, 10);
-  chesscomFetchBtn.disabled = true;
-  chesscomStatusEl.textContent =
-    maxGames === undefined
-      ? `Fetching ${username}'s entire chess.com history… this can take a while for a long-tenured account.`
-      : `Fetching up to ${maxGames} game(s) for ${username} from chess.com…`;
-  try {
-    const text = await fetchChessComPgnText(username, { maxGames });
-    if (!text.trim()) {
-      chesscomStatusEl.textContent = `No games found for ${username}.`;
-      return;
-    }
-    fetchedUsernames.add(username);
-    const file = new File([text], `${username}-chesscom.pgn`);
-    await handleFiles([file]);
-    chesscomStatusEl.textContent = `Loaded games for ${username} from chess.com.`;
-  } catch (e) {
-    chesscomStatusEl.textContent = `Could not fetch from chess.com: ${e instanceof Error ? e.message : String(e)}`;
-  } finally {
-    chesscomFetchBtn.disabled = false;
-  }
-}
-
-function updateCombineUi() {
-  const on = combineToggle.checked;
-  lichessFetchBtn.hidden = on;
-  chesscomFetchBtn.hidden = on;
-  lichessMaxLabel.hidden = on;
-  chesscomMaxLabel.hidden = on;
-  combineRow.hidden = !on;
-}
-combineToggle.addEventListener('change', updateCombineUi);
-updateCombineUi();
-
-combineBtn.addEventListener('click', () => void fetchCombined());
-
-async function fetchCombined() {
-  const lichessUsername = lichessUsernameInput.value.trim();
-  const chesscomUsername = chesscomUsernameInput.value.trim();
-  if (!lichessUsername && !chesscomUsername) {
-    combineStatusEl.textContent = 'Enter at least one username above.';
-    return;
-  }
-  const sinceMs = combineSinceInput.value ? new Date(`${combineSinceInput.value}T00:00:00`).getTime() : undefined;
-  combineBtn.disabled = true;
-  combineStatusEl.textContent = 'Fetching…';
-  try {
-    const files: File[] = [];
-    if (lichessUsername) {
-      combineStatusEl.textContent = `Fetching ${lichessUsername} from lichess…`;
-      const text = await fetchLichessPgnText(lichessUsername, { sinceMs });
-      if (text.trim()) {
-        fetchedUsernames.add(lichessUsername);
-        files.push(new File([text], `${lichessUsername}-lichess.pgn`));
-      }
-    }
-    if (chesscomUsername) {
-      combineStatusEl.textContent = `Fetching ${chesscomUsername} from chess.com…`;
-      const text = await fetchChessComPgnText(chesscomUsername, { sinceMs });
-      if (text.trim()) {
-        fetchedUsernames.add(chesscomUsername);
-        files.push(new File([text], `${chesscomUsername}-chesscom.pgn`));
-      }
-    }
-    if (!files.length) {
-      combineStatusEl.textContent = 'No games found for the given username(s).';
-      return;
-    }
-    await handleFiles(files);
-    combineStatusEl.textContent = `Loaded games from ${[lichessUsername && 'lichess', chesscomUsername && 'chess.com'].filter(Boolean).join(' + ')}.`;
-  } catch (e) {
-    combineStatusEl.textContent = `Could not fetch: ${e instanceof Error ? e.message : String(e)}`;
-  } finally {
-    combineBtn.disabled = false;
-  }
-}
 
 // ---------- analysis ----------
 analyzeBtn.addEventListener('click', () => void runAnalysis());
