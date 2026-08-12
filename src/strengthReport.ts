@@ -7,6 +7,8 @@ import { aggregate, scorePct, themeUrl } from './aggregate';
 import type { Aggregates, OpeningRow, WDL } from './aggregate';
 import type { GameRecord } from './types';
 import { renderLineChartSvg } from './linechart';
+import { renderSparklineSvg } from './sparkline';
+import { assessGame } from './gameAssessment';
 import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 import { groupPlayerNames, nameKey } from './playerMatch';
@@ -339,9 +341,80 @@ function mdBold(s: string): string {
   return s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 }
 
+// Per-game strength/weakness breakdown, derived purely from GameRecord fields already computed by
+// analyzeGame() — same source assessGame() (gameAssessment.ts) already powers on Performance
+// Analysis's games list. Cites the actual flagged moves for each phase rather than just an
+// accuracy number, and — unlike the aggregate-level "Patterns detected" section below — never
+// implies a repeatable trend from a single game (a one-off opening line is labeled as such, not
+// scored against a "weakest phase" that a sample of one can't actually establish).
+function assessmentHtml(g: GameRecord, openingsByFamily?: Map<string, OpeningRow>): string {
+  const a = assessGame(g, openingsByFamily?.get(g.family));
+  if (!a) return '<p class="section-note">No move-quality data for this game.</p>';
+  const verdictCls = (v: 'strength' | 'weakness' | 'neutral') => (v === 'strength' ? 'pos' : v === 'weakness' ? 'neg' : 'mid');
+  const verdictIcon = (v: 'strength' | 'weakness' | 'neutral') => (v === 'strength' ? '✓' : v === 'weakness' ? '✗' : '·');
+  const phaseRows = a.phases
+    .map(
+      (ph) =>
+        `<li><span class="${verdictCls(ph.verdict)}">${verdictIcon(ph.verdict)} ${ph.phase[0].toUpperCase() + ph.phase.slice(1)}</span> — ${mdBold(esc(ph.summary))}</li>`
+    )
+    .join('');
+  const strengthsHtml = a.strengths.length
+    ? `<p><b>Strengths</b></p><ul class="pattern-list">${a.strengths.map((s) => `<li><span class="pos">✓</span> ${mdBold(esc(s))}</li>`).join('')}</ul>`
+    : '';
+  const weaknessesHtml = a.weaknesses.length
+    ? `<p><b>Weaknesses</b></p><ul class="pattern-list">${a.weaknesses.map((s) => `<li><span class="neg">✗</span> ${mdBold(esc(s))}</li>`).join('')}</ul>`
+    : '';
+  return `
+    <p><b>Overall:</b> ${mdBold(esc(a.overall))}</p>
+    <p><b>By phase</b></p>
+    <ul class="pattern-list">${phaseRows}</ul>
+    ${strengthsHtml}
+    ${weaknessesHtml}
+  `;
+}
+
+function gamesSectionHtml(games: GameRecord[], openings: OpeningRow[]): string {
+  if (!games.length) return '';
+  const openingsByFamily = new Map(openings.map((o) => [o.family, o]));
+  const rows = [...games]
+    .sort((x, y) => y.date.localeCompare(x.date))
+    .map((g) => {
+      const resultCls = g.result === 'win' ? 'pos' : g.result === 'loss' ? 'neg' : g.result === 'draw' ? 'mid' : '';
+      const resultLabel = g.result === 'win' ? 'Win' : g.result === 'loss' ? 'Loss' : g.result === 'draw' ? 'Draw' : 'Unfinished';
+      const opponent = g.userColor === 'w' ? g.black : g.white;
+      const colorGlyph = g.userColor === 'w' ? '♔' : '♚';
+      const spark = g.evalGraph && g.evalGraph.length > 1
+        ? renderSparklineSvg(g.evalGraph, { width: 140, height: 28 })
+        : `<span class="hint">no engine data</span>`;
+      const assessBtn = g.analyzed
+        ? `<button class="btn-icon assess-btn" data-id="${esc(g.id)}" title="Detailed phase-by-phase analysis">🩺</button>`
+        : '';
+      const assessRow = g.analyzed
+        ? `<tr class="explain-row assess-row" data-id="${esc(g.id)}" hidden><td></td><td colspan="6">${assessmentHtml(g, openingsByFamily)}</td></tr>`
+        : '';
+      return `<tr>
+        <td>${esc(g.date)}</td>
+        <td>${colorGlyph} ${esc(opponent)}</td>
+        <td><span class="${resultCls}">${resultLabel}</span></td>
+        <td>${esc(g.family)}</td>
+        <td class="num">${g.accuracy.overall != null ? g.accuracy.overall + '%' : '—'}</td>
+        <td class="spark-cell">${spark}</td>
+        <td class="num">${assessBtn}</td>
+      </tr>${assessRow}`;
+    })
+    .join('');
+  return `<div class="card span-2"><h2>📈 Games</h2>
+    <div class="games-table-wrap"><table><thead><tr>
+      <th>Date</th><th>Opponent</th><th>Result</th><th>Opening</th><th class="num">Accuracy</th><th>Eval graph</th><th></th>
+    </tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="hint">Click 🩺 for a detailed, phase-by-phase strengths/weaknesses breakdown of that specific game — the source for what a single game's opening/middlegame/endgame play actually looked like, not just an aggregate accuracy number.</p>
+  </div>`;
+}
+
 function renderResults(a: Aggregates, username: string) {
   const p = a.patterns;
   const html: string[] = [];
+  const isSingleGame = a.analyzedCount <= 1;
 
   const unfinishedCount = records.length - a.total.games;
   html.push(`<div class="card">
@@ -359,6 +432,8 @@ function renderResults(a: Aggregates, username: string) {
       ${wdlRow('As Black', a.byColor.black)}
     </tbody></table>
   </div>`);
+
+  html.push(gamesSectionHtml(records, a.openings));
 
   const rc = a.repertoireCoverage;
   html.push(`<div class="card span-2"><h2>♟ Opening strength &amp; weakness</h2>
@@ -431,11 +506,19 @@ function renderResults(a: Aggregates, username: string) {
     </tbody></table>
   </div>`);
 
+  // For a single analyzed game, the aggregate narrative (e.g. "Phase gap: strongest phase is X,
+  // weakest is Y") reads as a repeatable trend when it isn't one — a single game's opening
+  // accuracy in particular is heavily shaped by what the opponent chose to play, not just your own
+  // prep, so calling it a "weakest phase" from one data point is misleading. Point to the per-game
+  // breakdown above instead, which grounds every phase verdict in this specific game's actual
+  // moves rather than an aggregate comparison that needs more than one game to mean anything.
   html.push(`<div class="card"><h2>🔍 Patterns detected</h2>
     ${
-      p.narrative.length
-        ? `<ul class="pattern-list">${p.narrative.map((n) => `<li>${mdBold(esc(n))}</li>`).join('')}</ul>`
-        : '<p class="section-note">Not enough analyzed games to detect reliable patterns yet — keep adding games.</p>'
+      isSingleGame
+        ? '<p class="section-note">Patterns need more than one game to mean anything reliable — a single game\'s phase accuracy is shaped as much by what your opponent played as by your own strengths. See the detailed, move-by-move breakdown for this game above (click 🩺 next to it).</p>'
+        : p.narrative.length
+          ? `<ul class="pattern-list">${p.narrative.map((n) => `<li>${mdBold(esc(n))}</li>`).join('')}</ul>`
+          : '<p class="section-note">Not enough analyzed games to detect reliable patterns yet — keep adding games.</p>'
     }
   </div>`);
 
@@ -460,3 +543,10 @@ function renderResults(a: Aggregates, username: string) {
   resultsEl.hidden = false;
   resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+resultsEl.addEventListener('click', (e) => {
+  const assessBtn = (e.target as HTMLElement).closest('.assess-btn') as HTMLButtonElement | null;
+  if (!assessBtn) return;
+  const row = assessBtn.closest('tr')?.nextElementSibling as HTMLElement | null;
+  if (row?.classList.contains('assess-row')) row.hidden = !row.hidden;
+});
