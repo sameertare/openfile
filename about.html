@@ -17,6 +17,7 @@
       <div class="sidebar-links">
         <a href="index.html">🏠 Home</a>
         <a href="analyze.html">Performance Analysis</a>
+        <a href="strength-report.html">Strength Report</a>
         <a href="live.html">Game Analysis</a>
         <a href="swiss.html">Swiss Pairings</a>
         <a href="nwchess-pairings.html">NWChess Pairings</a>
@@ -40,7 +41,7 @@
       </header>
 
       <div class="summary-cards">
-        <div class="stat-card"><span class="big">10</span><span class="label">Tools, one app</span></div>
+        <div class="stat-card"><span class="big">11</span><span class="label">Tools, one app</span></div>
         <div class="stat-card"><span class="big">100%</span><span class="label">Runs client-side</span></div>
         <div class="stat-card"><span class="big">$0</span><span class="label">Infra to operate</span></div>
         <div class="stat-card"><span class="big">PWA</span><span class="label">Installs, works offline</span></div>
@@ -49,12 +50,12 @@
       <div class="card-grid">
       <section class="card span-2">
         <h2>What this is</h2>
-        <p>OpenFile is a hub of ten small, focused chess tools covering the full arc of competitive improvement: understanding your own games, training against an engine, preparing an opening repertoire and checking it against your real games, running a tournament, and tracking a rating. Each is its own page, reachable from the <a href="index.html">home hub</a> — a player, a coach, and a tournament director each land on the page built for them, rather than one sprawling app to learn.</p>
+        <p>OpenFile is a hub of eleven small, focused chess tools covering the full arc of competitive improvement: understanding your own games, training against an engine, preparing an opening repertoire and checking it against your real games, running a tournament, and tracking a rating. Each is its own page, reachable from the <a href="index.html">home hub</a> — a player, a coach, and a tournament director each land on the page built for them, rather than one sprawling app to learn.</p>
         <p>Everything — including a full chess engine — runs in the browser. Game analysis uses <strong>Stockfish 18 (lite)</strong> compiled to WebAssembly and executed on your own machine; your PGNs and reports are never uploaded anywhere. Live games stream directly from the public lichess API straight to your browser, with no OpenFile server in that path. Reports save and load as plain files on your own machine — nothing is ever uploaded to any server.</p>
       </section>
 
       <section class="card span-2">
-        <h2>The ten tools</h2>
+        <h2>The eleven tools</h2>
 
         <div class="plan-section">
           <h3>For the player</h3>
@@ -62,6 +63,7 @@
             <thead><tr><th>Tool</th><th>What it's for</th></tr></thead>
             <tbody>
               <tr><td><a href="analyze.html">Performance Analysis</a></td><td>A full diagnostic report from your chess.com / lichess games — opening strengths and weaknesses, phase-by-phase accuracy, tactical misses, time-trouble patterns, head-to-head records, and a prioritized training plan. Reports save as portable files that grow over time, and export to PDF.</td></tr>
+              <tr><td><a href="strength-report.html">Strength Report</a></td><td>A leaner, single-purpose sibling of Performance Analysis — upload or fetch a whole game set (combined across platforms, or one at a time) and get straight to opening/middlegame/endgame strengths-and-weaknesses and tactical-motif misses, with no training plan, puzzle trainer, or head-to-head section.</td></tr>
               <tr><td><a href="live.html">Game Analysis</a></td><td>One board, four modes: analyze any position, play a full game against the engine, follow a live lichess game move-by-move with feedback on every move played, or drill tablebase endgames against the clock. Endgames with few pieces left get an instant tablebase-perfect verdict alongside Stockfish's own evaluation.</td></tr>
               <tr><td><a href="opening-explorer.html">Opening Explorer</a></td><td>Turns game history — yours, or an upcoming opponent's — into a browsable opening tree with win rates at every branch, then drills your repertoire with spaced repetition so weak lines surface more often until they stick.</td></tr>
               <tr><td><a href="opening-deviation.html">Openings Deviation</a></td><td>Checks your games against a prepared repertoire PGN (variations supported) move by move, reporting how many moves stayed in book, how many didn't, and exactly where each game first left prepared theory.</td></tr>

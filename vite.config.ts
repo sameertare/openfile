@@ -17,6 +17,7 @@ export default defineConfig({
       input: {
         main: page('./index.html'),
         analyze: page('./analyze.html'),
+        strengthReport: page('./strength-report.html'),
         live: page('./live.html'),
         swiss: page('./swiss.html'),
         nwchessPairings: page('./nwchess-pairings.html'),

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Performance Analysis — OpenFile</title>
+    <title>Strength Report — OpenFile</title>
     <link rel="icon" href="/logo-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -16,8 +16,8 @@
       <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
       <div class="sidebar-links">
         <a href="index.html">🏠 Home</a>
-        <a href="analyze.html" class="active">Performance Analysis</a>
-        <a href="strength-report.html">Strength Report</a>
+        <a href="analyze.html">Performance Analysis</a>
+        <a href="strength-report.html" class="active">Strength Report</a>
         <a href="live.html">Game Analysis</a>
         <a href="swiss.html">Swiss Pairings</a>
         <a href="nwchess-pairings.html">NWChess Pairings</a>
@@ -36,17 +36,17 @@
     <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
     <div id="app">
       <header class="app-header">
-        <h1>♞ Performance Analysis</h1>
-        <p class="tagline">Deep performance analysis from your chess.com / lichess PGN files — openings, phases, tactics, patterns &amp; a training plan.</p>
+        <h1>🧠 Strength Report</h1>
+        <p class="tagline">Upload or fetch a whole game set — combined across chess.com and lichess, or one platform at a time — and get a single-purpose Stockfish 18 report: opening strengths and weaknesses, middlegame and endgame accuracy, and which tactical motifs you handle well versus miss.</p>
       </header>
 
       <section class="card" id="load-card">
         <h2><span class="step">1</span> Load games</h2>
         <div id="dropzone" class="dropzone">
-          <p><strong>Drop PGN files here</strong> (or a previously saved report .md) — or</p>
+          <p><strong>Drop PGN files here</strong> — or</p>
           <label class="btn btn-primary" for="file-input">Choose files</label>
-          <input type="file" id="file-input" multiple accept=".pgn,.md,.txt" hidden />
-          <p class="hint">Multiple files supported. Add a saved <code>report.md</code> alongside new PGNs to update it incrementally.</p>
+          <input type="file" id="file-input" multiple accept=".pgn,.txt" hidden />
+          <p class="hint">Multiple files supported — combine games from several exports in one report.</p>
         </div>
         <div id="file-summary" class="file-summary"></div>
         <button id="load-sample" class="btn btn-ghost">…or try the bundled sample games</button>
@@ -55,7 +55,7 @@
           <label style="display:block; margin-bottom:4px; cursor:pointer;">
             <input type="checkbox" id="combine-toggle" /> 🔗 Build one combined report from both accounts
           </label>
-          <p class="hint" style="margin:0 0 10px;">Off: each fetch below adds to the report independently (still the same player automatically — see note below). On: both usernames are fetched together in one action, for when you want to do it in a single step.</p>
+          <p class="hint" style="margin:0 0 10px;">Off: each fetch below adds to the report independently (still the same player automatically — see note below). On: both usernames are fetched together in one action, for when you want the whole cross-platform game set at once.</p>
 
           <p class="hint" style="margin:14px 0 8px;"><strong>…or fetch a lichess account's games directly</strong></p>
           <div class="config-row">
@@ -132,75 +132,12 @@
 
       <section id="results" hidden></section>
 
-      <section class="card" id="puzzle-card" hidden>
-        <h2>🧩 Puzzle Trainer</h2>
-        <p class="hint">Every blunder, missed win, and missed mate the engine flagged in your games, turned into a "find the move" quiz. Uses spaced repetition — miss one and it comes back sooner, get it right and it comes back less often. Progress is saved in this browser, per player.</p>
-        <div id="puzzle-intro">
-          <p id="puzzle-due-count" class="hint"></p>
-          <button id="puzzle-start-btn" class="btn btn-primary">▶ Start drilling</button>
-        </div>
-        <div id="puzzle-session" class="explorer-layout" hidden>
-          <div class="explorer-board-col">
-            <div id="puzzle-board"></div>
-            <div id="puzzle-feedback" class="drill-feedback"></div>
-          </div>
-          <div class="explorer-side-col">
-            <div id="puzzle-context" class="hint"></div>
-            <div id="puzzle-progress" class="hint"></div>
-            <button id="puzzle-next-btn" class="btn btn-primary" hidden>Next →</button>
-            <button id="puzzle-stop-btn" class="btn btn-ghost">Stop drilling</button>
-          </div>
-        </div>
-        <div id="puzzle-summary" hidden></div>
-      </section>
-
-      <section class="card span-2" id="trainplan-card" hidden>
-        <h2>📅 Training Plan</h2>
-        <p class="hint">Turns the recommendations above into a day-by-day plan — higher-priority weaknesses come up more often. Progress is saved in this browser, per player.</p>
-        <div id="trainplan-setup">
-          <div class="config-row" style="align-items:center;">
-            <label>Duration
-              <select id="trainplan-duration">
-                <option value="7">7 days</option>
-                <option value="14" selected>14 days</option>
-                <option value="21">21 days</option>
-              </select>
-            </label>
-            <label>Detail level
-              <select id="trainplan-detail">
-                <option value="high-level">High-level — one focus per day</option>
-                <option value="detailed" selected>Detailed — full drills &amp; resources</option>
-              </select>
-            </label>
-            <button id="trainplan-generate-btn" class="btn btn-primary">Generate plan</button>
-          </div>
-        </div>
-        <div id="trainplan-active" hidden>
-          <div class="config-row" style="align-items:center;">
-            <span id="trainplan-progress" class="hint"></span>
-            <button id="trainplan-xlsx-btn" class="btn">⬇ Download as Excel (.xlsx)</button>
-            <button id="trainplan-regenerate-btn" class="btn btn-ghost">↻ Start a new plan</button>
-          </div>
-          <div id="trainplan-compare-note" class="rec-card sev-medium" style="margin-top:12px;"></div>
-          <div id="trainplan-days"></div>
-        </div>
-      </section>
-
-      <section class="card" id="export-card" hidden>
-        <h2><span class="step">3</span> Save &amp; track over time</h2>
-        <div class="config-row">
-          <button id="download-md" class="btn btn-primary">⬇ Download report.md</button>
-          <button id="export-pdf" class="btn">🖨️ Export as PDF</button>
-        </div>
-        <p class="hint">The .md report embeds machine-readable data. Load it back later with new PGN files and only the new games get analyzed — your history accumulates.</p>
-      </section>
-
       <footer class="app-footer">
-        OpenFile · analysis runs entirely in your browser with Stockfish 18 · reports are saved as Markdown you download &amp; re-upload
+        OpenFile · analysis runs entirely in your browser with Stockfish 18 (lite) · nothing is uploaded to any server
       </footer>
     </div>
     </div>
     </div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/strengthReport.ts"></script>
   </body>
 </html>
