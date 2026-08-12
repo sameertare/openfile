@@ -1,4 +1,4 @@
-import type { ErrCounts, GameRecord, Phase, WorstMove } from './types';
+import type { Color, ErrCounts, GameRecord, Phase, WorstMove } from './types';
 import type { OpeningRow } from './aggregate';
 
 const PHASES: Phase[] = ['opening', 'middlegame', 'endgame'];
@@ -49,6 +49,30 @@ function describeMove(m: WorstMove): string {
   return `**${m.san}** on move ${m.moveNo} ${kindPhrase}${bestNote} — win chance dropped ${swing} point${swing === 1 ? '' : 's'} (${m.winPctBefore}% → ${m.winPctAfter}%)`;
 }
 
+/** The user's own move at a given full-move number, read from the game's flat ply-ordered SAN
+ *  list (`g.sans`) — White's move N is ply 2(N-1), Black's is ply 2(N-1)+1. Used to give every
+ *  entry in `errorSeries` (every classified move, not just the handful `worstMoves` keeps) an
+ *  actual move to point to, since errorSeries itself only carries a move number and error kind. */
+function sanAt(g: GameRecord, moveNo: number, color: Color): string | null {
+  const ply = 2 * (moveNo - 1) + (color === 'w' ? 0 : 1);
+  return g.sans[ply] ?? null;
+}
+
+/** Every move in `phase` that errorSeries flagged (inaccuracy/mistake/blunder) but that isn't
+ *  already cited by `describeMove` above via `worstMoves` — worstMoves is deliberately capped
+ *  (top 3 swings globally, plus one per phase) so a phase with several smaller errors would
+ *  otherwise only ever surface its single worst move. This closes that gap using data
+ *  analyzeGame() already computes for every classified move, not just the kept ones. */
+function extraErrorDetail(g: GameRecord, phase: Phase, alreadyCited: Set<number>): string {
+  const extra = g.errorSeries.filter((e) => e.phase === phase && !alreadyCited.has(e.moveNo));
+  if (!extra.length) return '';
+  const parts = extra.map((e) => {
+    const san = sanAt(g, e.moveNo, g.userColor);
+    return san ? `**${san}** (move ${e.moveNo}, ${e.kind})` : `move ${e.moveNo} (${e.kind})`;
+  });
+  return ` Also flagged in this phase: ${parts.join('; ')}.`;
+}
+
 function assessPhase(g: GameRecord, phase: Phase, opening?: OpeningRow): PhaseAssessment {
   const accuracy = g.accuracy[phase];
   const errors = g.errors[phase];
@@ -77,6 +101,11 @@ function assessPhase(g: GameRecord, phase: Phase, opening?: OpeningRow): PhaseAs
   const decisiveFlag = isDecisive && g.decisiveErrorMove != null && !phaseMoves.some((m) => m.moveNo === g.decisiveErrorMove)
     ? ` This is where the game turned (move ${g.decisiveErrorMove}).`
     : '';
+  // moveDetail above only cites whichever moves worstMoves happened to keep (top 3 swings
+  // globally, plus one per phase) — extraDetail fills in every other errorSeries-flagged move in
+  // this phase so a phase with several smaller errors doesn't read as if it only had one.
+  const citedNos = new Set(phaseMoves.map((m) => m.moveNo));
+  const extraDetail = extraErrorDetail(g, phase, citedNos);
 
   let verdict: Verdict;
   let summary: string;
@@ -89,13 +118,13 @@ function assessPhase(g: GameRecord, phase: Phase, opening?: OpeningRow): PhaseAs
         : '';
     if ((b === 'excellent' || b === 'solid') && errors.blunders === 0 && !isDecisive) {
       verdict = 'strength';
-      summary = `${accuracy}% accuracy, no serious errors — left theory in good shape.${prepNote}`;
+      summary = `${accuracy}% accuracy, no serious errors — left theory in good shape.${extraDetail}${prepNote}`;
     } else if (b === 'weak' || errors.blunders > 0 || isDecisive) {
       verdict = 'weakness';
-      summary = `${accuracy}% accuracy in the opening.${moveDetail}${decisiveFlag}${prepNote}`;
+      summary = `${accuracy}% accuracy in the opening.${moveDetail}${extraDetail}${decisiveFlag}${prepNote}`;
     } else {
       verdict = 'neutral';
-      summary = `${accuracy}% accuracy — playable but not sharp.${moveDetail}${prepNote}`;
+      summary = `${accuracy}% accuracy — playable but not sharp.${moveDetail}${extraDetail}${prepNote}`;
     }
     return { phase, verdict, accuracy, errors, reached, summary };
   }
@@ -103,13 +132,13 @@ function assessPhase(g: GameRecord, phase: Phase, opening?: OpeningRow): PhaseAs
   if (phase === 'middlegame') {
     if ((b === 'excellent' || b === 'solid') && errors.blunders === 0 && !isDecisive) {
       verdict = 'strength';
-      summary = `${accuracy}% accuracy, no blunders — calculation held up under pressure.`;
+      summary = `${accuracy}% accuracy, no blunders — calculation held up under pressure.${extraDetail}`;
     } else if (b === 'weak' || errors.blunders > 0 || isDecisive) {
       verdict = 'weakness';
-      summary = `${accuracy}% accuracy in the middlegame.${moveDetail}${decisiveFlag}`;
+      summary = `${accuracy}% accuracy in the middlegame.${moveDetail}${extraDetail}${decisiveFlag}`;
     } else {
       verdict = 'neutral';
-      summary = `${accuracy}% accuracy — solid without being sharp.${moveDetail}`;
+      summary = `${accuracy}% accuracy — solid without being sharp.${moveDetail}${extraDetail}`;
     }
     return { phase, verdict, accuracy, errors, reached, summary };
   }
@@ -118,13 +147,13 @@ function assessPhase(g: GameRecord, phase: Phase, opening?: OpeningRow): PhaseAs
   const typeNote = g.endgameType ? ` (${g.endgameType})` : '';
   if ((b === 'excellent' || b === 'solid') && errors.blunders === 0 && !isDecisive) {
     verdict = 'strength';
-    summary = `${accuracy}% accuracy${typeNote} — technique held up.`;
+    summary = `${accuracy}% accuracy${typeNote} — technique held up.${extraDetail}`;
   } else if (b === 'weak' || errors.blunders > 0 || isDecisive) {
     verdict = 'weakness';
-    summary = `${accuracy}% accuracy${typeNote}.${moveDetail}${decisiveFlag}`;
+    summary = `${accuracy}% accuracy${typeNote}.${moveDetail}${extraDetail}${decisiveFlag}`;
   } else {
     verdict = 'neutral';
-    summary = `${accuracy}% accuracy${typeNote} — adequate but not precise.${moveDetail}`;
+    summary = `${accuracy}% accuracy${typeNote} — adequate but not precise.${moveDetail}${extraDetail}`;
   }
   return { phase, verdict, accuracy, errors, reached, summary };
 }
@@ -173,6 +202,9 @@ export function assessGame(g: GameRecord, opening?: OpeningRow): GameAssessment 
   }
   if (g.missedTactics > 0) {
     weaknesses.push(`Missed ${g.missedTactics} tactic${g.missedTactics === 1 ? '' : 's'} overall (engine's best move was an unplayed capture/check).`);
+  }
+  if (g.clockDataAvailable && g.timePressureBlunders > 0) {
+    weaknesses.push(`Time pressure: ${g.timePressureBlunders} error${g.timePressureBlunders === 1 ? '' : 's'} played with under 30 seconds on the clock.`);
   }
 
   const totalBlunders = PHASES.reduce((s, p) => s + g.errors[p].blunders, 0);
