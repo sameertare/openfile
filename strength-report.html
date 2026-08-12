@@ -69,7 +69,12 @@
 
       <section class="card" id="config-card" hidden>
         <h2><span class="step">2</span> Configure analysis</h2>
-        <p class="hint">Analyzing every game for <b id="detected-player-name">—</b><span id="detected-player-count"></span> — the player who appears most across the loaded games. Name variants (casing, "Last, First" order, or a nickname) are recognized as the same player automatically.</p>
+        <div class="config-row" id="analyze-for-row" hidden>
+          <label>Analyze for
+            <select id="analyze-for-select"></select>
+          </label>
+        </div>
+        <p class="hint">Analyzing every game for <b id="detected-player-name">—</b><span id="detected-player-count"></span> — the player who appears most across the loaded games, or whoever's picked above. Name variants (casing, "Last, First" order, or a nickname) are recognized as the same player automatically.</p>
         <div class="config-row">
           <label>Engine depth
             <select id="depth-select">

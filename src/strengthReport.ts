@@ -10,6 +10,7 @@ import { renderLineChartSvg } from './linechart';
 import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 import { groupPlayerNames, nameKey } from './playerMatch';
+import type { NameGroup } from './playerMatch';
 
 registerServiceWorker();
 initTheme();
@@ -26,6 +27,11 @@ let parsedGames: ParsedGame[] = [];
 let records: GameRecord[] = [];
 let detectedUsername: string | null = null;
 let detectedMatchKeys: Set<string> | null = null;
+// Every distinct player identity found across the loaded games (sorted most-games-first), so the
+// "Analyze for" selector can offer every side rather than silently committing to whichever name
+// detectMainPlayer() happens to pick — that matters most for a single pasted game, where White and
+// Black both appear exactly once and the frequency heuristic has no real signal to break the tie.
+let playerGroups: NameGroup[] = [];
 
 // ---------- dom ----------
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -37,6 +43,8 @@ const pastePgnBtn = $('#paste-pgn-btn') as HTMLButtonElement;
 const pastePgnClearBtn = $('#paste-pgn-clear-btn') as HTMLButtonElement;
 const pastePgnStatusEl = $('#paste-pgn-status');
 const configCard = $('#config-card');
+const analyzeForRow = $('#analyze-for-row');
+const analyzeForSelect = $('#analyze-for-select') as HTMLSelectElement;
 const detectedPlayerName = $('#detected-player-name');
 const detectedPlayerCount = $('#detected-player-count');
 const depthSelect = $('#depth-select') as HTMLSelectElement;
@@ -130,6 +138,7 @@ async function handleFiles(files: FileList | File[]): Promise<{ parsed: number; 
   fileSummary.innerHTML = html;
 
   if (parsedGames.length) {
+    populateAnalyzeForSelect();
     detectedPlayerName.textContent = detectedUsername ?? '—';
     const total = detectedMatchKeys ? gamesForPlayer(detectedMatchKeys).length : 0;
     detectedPlayerCount.textContent = detectedMatchKeys ? ` — ${total} game${total === 1 ? '' : 's'} will be analyzed` : '';
@@ -142,7 +151,10 @@ async function handleFiles(files: FileList | File[]): Promise<{ parsed: number; 
 // Auto-detects who the report is for: the player appearing in the most games. Name variants that
 // likely refer to the same person (different casing, "Last, First" vs "First Last", or a
 // nickname/first-name-only form) are folded together by groupPlayerNames() so a game set with
-// inconsistent naming doesn't silently drop that player's games from the report.
+// inconsistent naming doesn't silently drop that player's games from the report. Also refreshes
+// `playerGroups` with every distinct identity found, so populateAnalyzeForSelect() can offer a
+// manual override — the frequency heuristic here is a genuine coin-flip for a single game (White
+// and Black each appear exactly once), so it must never be the *only* way to pick a side.
 function detectMainPlayer(): { name: string; count: number; matchKeys: Set<string> } | null {
   const counts = new Map<string, number>();
   for (const g of parsedGames) {
@@ -152,13 +164,46 @@ function detectMainPlayer(): { name: string; count: number; matchKeys: Set<strin
       counts.set(name, (counts.get(name) ?? 0) + 1);
     }
   }
-  if (!counts.size) return null;
+  if (!counts.size) {
+    playerGroups = [];
+    return null;
+  }
 
   const groups = groupPlayerNames(counts);
   groups.sort((a, b) => b.count - a.count);
+  playerGroups = groups;
   const best = groups[0];
   return { name: best.display, count: best.count, matchKeys: new Set(best.keys) };
 }
+
+// Lets the TD/player override which side a loaded game set is analyzed for, instead of silently
+// trusting the most-games-wins heuristic — critical for a single pasted game, where White and
+// Black both appear exactly once and there's no real frequency signal to break the tie (it was
+// defaulting to whichever side detectMainPlayer() iterates first, which reads as "always analyzes
+// the opponent" for anyone who consistently pastes games where they played the other color).
+function populateAnalyzeForSelect() {
+  // Only surface the picker when the top spot is genuinely ambiguous (a tie on game count) — a
+  // single pasted game is the common case (White and Black both at 1), but any tie qualifies.
+  // A normal multi-game report has a clear most-frequent player and doesn't need this shown.
+  const ambiguous = playerGroups.length >= 2 && playerGroups[0].count === playerGroups[1].count;
+  analyzeForRow.hidden = !ambiguous;
+  const currentKey = detectedMatchKeys ? [...detectedMatchKeys][0] : null;
+  analyzeForSelect.innerHTML = playerGroups
+    .map((g, i) => {
+      const selected = currentKey !== null ? g.keys.has(currentKey) : i === 0;
+      return `<option value="${i}"${selected ? ' selected' : ''}>${esc(g.display)} (${g.count} game${g.count === 1 ? '' : 's'})</option>`;
+    })
+    .join('');
+}
+analyzeForSelect.addEventListener('change', () => {
+  const g = playerGroups[parseInt(analyzeForSelect.value, 10)];
+  if (!g) return;
+  detectedUsername = g.display;
+  detectedMatchKeys = new Set(g.keys);
+  detectedPlayerName.textContent = detectedUsername;
+  const total = gamesForPlayer(detectedMatchKeys).length;
+  detectedPlayerCount.textContent = ` — ${total} game${total === 1 ? '' : 's'} will be analyzed`;
+});
 
 fileInput.addEventListener('change', () => {
   if (fileInput.files?.length) void handleFiles(fileInput.files);
