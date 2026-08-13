@@ -28,10 +28,22 @@ export interface PlanTask {
   links: PlanLink[];
 }
 
+// Bump whenever a change to generateTrainingPlan()'s scheduling/rotation logic would produce
+// different task text for the same inputs — e.g. the day-clustering fix that replaced the
+// original repeated-copies queue with smoothWeightedSchedule(). A plan already generated and
+// persisted to localStorage under the OLD algorithm is not re-run by anything short of the user
+// explicitly starting a new plan, so without this a fixed bug stays permanently broken for
+// everyone who generated their plan before the fix shipped — the code changing underneath them
+// does nothing, since the stored output never gets touched again. main.ts's loadTrainPlan()
+// checks this against a stored plan's own algoVersion and discards (with an explanatory message)
+// anything that doesn't match, rather than rendering possibly-broken frozen output forever.
+export const PLAN_ALGO_VERSION = 2;
+
 export interface TrainingPlan {
   duration: PlanDuration;
   detailLevel: PlanDetail;
   generatedAt: string; // ISO
+  algoVersion: number;
   tasks: PlanTask[];
 }
 
@@ -84,7 +96,7 @@ export function generateTrainingPlan(
   detailLevel: PlanDetail
 ): TrainingPlan {
   const generatedAt = new Date().toISOString();
-  if (!recommendations.length) return { duration, detailLevel, generatedAt, tasks: [] };
+  if (!recommendations.length) return { duration, detailLevel, generatedAt, algoVersion: PLAN_ALGO_VERSION, tasks: [] };
 
   const schedule = smoothWeightedSchedule(recommendations, duration);
   // How many times each area has come up so far — used to rotate which specific drill is featured
@@ -157,7 +169,7 @@ export function generateTrainingPlan(
     }
   }
 
-  return { duration, detailLevel, generatedAt, tasks };
+  return { duration, detailLevel, generatedAt, algoVersion: PLAN_ALGO_VERSION, tasks };
 }
 
 /** Groups a flat task list back into day buckets, in day order, for rendering. */

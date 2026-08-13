@@ -20,7 +20,7 @@ import { derivePuzzles } from './puzzles';
 import type { Puzzle } from './puzzles';
 import { newCard, isDue, review } from './srs';
 import type { SrsCard } from './srs';
-import { generateTrainingPlan, tasksByDay } from './trainingPlan';
+import { generateTrainingPlan, tasksByDay, PLAN_ALGO_VERSION } from './trainingPlan';
 import type { PlanDetail, PlanDuration, PlanTask, TrainingPlan } from './trainingPlan';
 
 registerServiceWorker();
@@ -78,6 +78,7 @@ const puzzleSummary = $('#puzzle-summary');
 const puzzleBoard = new Board($('#puzzle-board'));
 const trainplanCard = $('#trainplan-card');
 const trainplanSetup = $('#trainplan-setup');
+const trainplanStaleNote = $('#trainplan-stale-note');
 const trainplanActive = $('#trainplan-active');
 const trainplanDurationSelect = $('#trainplan-duration') as HTMLSelectElement;
 const trainplanDetailSelect = $('#trainplan-detail') as HTMLSelectElement;
@@ -769,12 +770,29 @@ function trainPlanStorageKey(): string | null {
   return `openfile-trainplan:${detectedUsername.trim().toLowerCase()}`;
 }
 
+// Set when loadTrainPlan() just discarded a plan generated under an older PLAN_ALGO_VERSION —
+// updateTrainPlanCard() surfaces this once on the setup screen so "why did my plan disappear"
+// has an answer, instead of the checklist just silently resetting with no explanation.
+let staleTrainPlanDiscarded = false;
+
 function loadTrainPlan(): StoredTrainingPlan | null {
   const key = trainPlanStorageKey();
   if (!key) return null;
   try {
     const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const stored: StoredTrainingPlan = JSON.parse(raw);
+    // A plan persisted under an older scheduling algorithm (see trainingPlan.ts's PLAN_ALGO_VERSION
+    // doc comment) never gets re-run — only clicking "Start a new plan" calls generateTrainingPlan()
+    // again — so without this check, a fixed bug in the generator stays permanently broken for
+    // anyone who generated their plan before the fix shipped. Treat it as absent rather than
+    // rendering its possibly-broken frozen task text forever.
+    if (stored.plan.algoVersion !== PLAN_ALGO_VERSION) {
+      localStorage.removeItem(key);
+      staleTrainPlanDiscarded = true;
+      return null;
+    }
+    return stored;
   } catch {
     return null;
   }
@@ -812,6 +830,10 @@ function updateTrainPlanCard() {
   if (!stored) {
     trainplanSetup.hidden = false;
     trainplanActive.hidden = true;
+    trainplanStaleNote.hidden = !staleTrainPlanDiscarded;
+    if (staleTrainPlanDiscarded) {
+      trainplanStaleNote.innerHTML = `<h4>Your previous plan was reset</h4><p class="section-note">A fix to how the plan schedules tasks means an older plan (generated before this update) could show the same task text repeatedly instead of rotating through your drills — that plan has been cleared so a corrected one can replace it. Sorry for the lost checklist progress; generate a fresh plan below.</p>`;
+    }
     const hasRecs = currentAgg.recommendations.length > 0;
     trainplanGenerateBtn.disabled = !hasRecs;
     trainplanGenerateBtn.title = hasRecs ? '' : 'Run engine analysis to unlock personalized recommendations first.';
@@ -873,12 +895,14 @@ trainplanGenerateBtn.addEventListener('click', () => {
   const plan = generateTrainingPlan(currentAgg.recommendations, duration, detail);
   const stored: StoredTrainingPlan = { plan, done: {}, startDateISO: new Date().toISOString() };
   saveTrainPlan(stored);
+  staleTrainPlanDiscarded = false;
   updateTrainPlanCard();
 });
 
 trainplanRegenerateBtn.addEventListener('click', () => {
   if (!confirm('Start a new plan? This discards checked-off progress on the current one.')) return;
   saveTrainPlan(null);
+  staleTrainPlanDiscarded = false; // an intentional reset, not the auto-discard the note explains
   updateTrainPlanCard();
 });
 
