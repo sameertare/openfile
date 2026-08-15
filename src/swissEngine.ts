@@ -6,6 +6,12 @@ export type GameResult = '1-0' | '0-1' | '1/2-1/2' | null;
 export interface Player {
   id: number;
   name: string;
+  // Only populated from formats that carry separate name columns (currently just NWChess) — used
+  // as the FIDE-standard "alphabetical by last, then first" initial-ranking tiebreak (see bySeed in
+  // pairNextRound) when two players are otherwise tied on score and rating. Formats without them
+  // (plain list, US Chess table) fall through to the id-order tiebreak exactly as before.
+  lastName?: string;
+  firstName?: string;
   rating: number | null;
   score: number;
   opponents: number[];    // opponent ids per round played (byes recorded as -1)
@@ -66,8 +72,16 @@ export type TournamentFormat = 'swiss' | 'round-robin' | 'knockout';
 // see pairBracket's floatPenalty param and Player.floatHistory), and a whole-field exhaustive
 // search is tried before giving up on a round (approximating the bracket-transposition search,
 // though not identically). Both modes have no notion of upfloating (pulling a player up from a
-// lower bracket rather than pairing them down), so C16/C17 (upfloat repetition) don't apply. This
-// is a close practical approximation of the Dutch system for a club/scholastic TD, not a
+// lower bracket rather than pairing them down), so C16/C17 (upfloat repetition) don't apply.
+// Round 1 specifically — no score/colour history for anyone, so the whole quality-criteria search
+// above collapses to a single slide-paired bracket — was implemented against a spec independently
+// verified (by the person who wrote it) against bbpPairings, the FIDE-endorsed reference
+// implementation, board-for-board across multiple real rosters with zero mismatches: ranking
+// (rating desc, then alphabetical by last/first name — see byNameTiebreak, only populated for
+// NWChess-format rosters), pairing-allocated-bye placement (lowest rank), the slide split (S1[i]
+// vs S2[i], not a fold), and colour allocation (a drawn lot — fixed here as White, since there's
+// no literal coin to flip in a UI — to the S1 side on odd boards, alternating to S2 on even
+// boards; see assignColorsFide's aGetsWhiteOnNoHistory param). This is a close practical approximation of the Dutch system for a club/scholastic TD, not a
 // certified implementation — for FIDE-rated norm events, cross-check pairings with JaVaFo.
 export type PairingMethod = 'swiss' | 'fide';
 
@@ -103,6 +117,11 @@ export interface RosterEntry {
   rating: number | null;
   section?: string;
   byeRounds?: number[]; // round numbers this player requested off, if the roster specified any
+  // Only set by the NWChess parser (its CSV carries these as separate columns) — used for the
+  // FIDE-standard initial-ranking tiebreak (alphabetical by last name, then first) when two
+  // players are otherwise tied on rating. See Player.lastName/firstName and bySeed.
+  lastName?: string;
+  firstName?: string;
 }
 
 /** A rating token is valid only if it's a plausible chess rating (0/blank/unrated → absent). */
@@ -222,7 +241,7 @@ function parseNwchessRoster(text: string): RosterEntry[] {
     if (seen.has(key)) continue;
     seen.add(key);
     const byeRounds = parseByeRounds(byesRaw); // second-to-last column, e.g. "4,5"
-    out.push({ name, rating, section: section || undefined, ...(byeRounds.length ? { byeRounds } : {}) });
+    out.push({ name, rating, section: section || undefined, lastName: last, firstName: first, ...(byeRounds.length ? { byeRounds } : {}) });
   }
   return out;
 }
@@ -389,6 +408,8 @@ export function createTournament(
     players: roster.map((r, i) => ({
       id: i + 1,
       name: r.name,
+      lastName: r.lastName,
+      firstName: r.firstName,
       rating: r.rating,
       score: 0,
       opponents: [],
@@ -717,7 +738,19 @@ function assignColors(a: Player, b: Player): { whiteId: number; blackId: number 
  *   4. Still tied (including: neither has any preference, e.g. round 1) → the higher-ranked player
  *      (lower id — ids are assigned in roster/seed order) gets White.
  */
-function assignColorsFide(a: Player, b: Player): { whiteId: number; blackId: number } {
+/**
+ * `aGetsWhiteOnNoHistory` governs only the true "neither player has any colour history at all"
+ * case (both colorPreference()s null) — round 1's actual behaviour under FIDE C.04.3.3: a single
+ * lot is drawn for board 1, awarding it to whichever side of the pairing is "S1" (the better-
+ * ranked half in the fold/slide split), then alternates down the board list — board 1 (odd) gives
+ * the lot colour to S1, board 2 (even) gives it to S2, and so on. The caller (pairNextRound)
+ * computes that per board from its own index and passes it in; `a` is always the S1-side player of
+ * the pair here. This does NOT apply to the separate "both players have a preference, but every
+ * tiebreak came out exactly even" case a few lines below — that's a later-round coincidence with
+ * real (if perfectly balanced) colour history behind it, not round 1's "no information yet" case,
+ * and keeps its own pre-existing deterministic id-order fallback.
+ */
+function assignColorsFide(a: Player, b: Player, aGetsWhiteOnNoHistory = true): { whiteId: number; blackId: number } {
   const pa = colorPreference(a);
   const pb = colorPreference(b);
   const grant = (winner: Player, pref: NonNullable<ColorPreference>) =>
@@ -734,9 +767,14 @@ function assignColorsFide(a: Player, b: Player): { whiteId: number; blackId: num
     const balA = Math.abs(colorBalance(a));
     const balB = Math.abs(colorBalance(b));
     if (balA !== balB) return grant(balA > balB ? a : b, balA > balB ? pa : pb);
+    // Both have real (equally strong, equally balanced) history — not round 1's "no information"
+    // case, so this keeps the original deterministic id-order fallback rather than the board-
+    // alternation rule below.
+    return a.id < b.id ? { whiteId: a.id, blackId: b.id } : { whiteId: b.id, blackId: a.id };
   }
-  // rule 4: no preference at all, or every tiebreak above was exactly even
-  return a.id < b.id ? { whiteId: a.id, blackId: b.id } : { whiteId: b.id, blackId: a.id };
+  // rule 4 proper: no colour history for either player at all (round 1, or a player's very first
+  // game after joining mid-event) — draw-a-lot-then-alternate-by-board, not an id comparison.
+  return aGetsWhiteOnNoHistory ? { whiteId: a.id, blackId: b.id } : { whiteId: b.id, blackId: a.id };
 }
 
 /**
@@ -1211,6 +1249,19 @@ export function cancelByeRequest(t: Tournament, playerId: number, roundNo: numbe
   player.byeRequests = (player.byeRequests ?? []).filter((r) => r !== roundNo);
 }
 
+// FIDE's initial-ranking tiebreak after rating (and title, which this app doesn't track): alphabetical
+// by last name, then first name. Only meaningful for players parsed with separate name components
+// (currently just the NWChess format — see Player.lastName/firstName); anyone missing either falls
+// through to 0 (no opinion), leaving the caller's own id-order tiebreak as the final word, same as
+// before this existed.
+function byNameTiebreak(x: Player, y: Player): number {
+  if (!x.lastName || !y.lastName) return 0;
+  return (
+    x.lastName.localeCompare(y.lastName) ||
+    (x.firstName ?? '').localeCompare(y.firstName ?? '')
+  );
+}
+
 export function pairNextRound(t: Tournament): Round {
   if (tournamentFormat(t) === 'round-robin') return pairNextRoundRoundRobin(t);
   if (tournamentFormat(t) === 'knockout') {
@@ -1228,7 +1279,7 @@ export function pairNextRound(t: Tournament): Round {
   const eligible = active.filter((p) => !requestedOutIds.has(p.id));
 
   const bySeed = (x: Player, y: Player) =>
-    y.score - x.score || (y.rating ?? 0) - (x.rating ?? 0) || x.id - y.id;
+    y.score - x.score || (y.rating ?? 0) - (x.rating ?? 0) || byNameTiebreak(x, y) || x.id - y.id;
   const sorted = [...eligible].sort(bySeed);
 
   let byePlayer: Player | null = null;
@@ -1238,7 +1289,7 @@ export function pairNextRound(t: Tournament): Round {
     // (no second pairing-allocated bye while anyone with zero byes remains) since it's the primary
     // sort key, so this doesn't need a separate strict-mode path.
     const candidates = [...sorted].sort(
-      (x, y) => (x.byes ?? 0) - (y.byes ?? 0) || x.score - y.score || (x.rating ?? 0) - (y.rating ?? 0)
+      (x, y) => (x.byes ?? 0) - (y.byes ?? 0) || x.score - y.score || (x.rating ?? 0) - (y.rating ?? 0) || byNameTiebreak(y, x)
     );
     byePlayer = candidates[0];
     pool = sorted.filter((p) => p.id !== byePlayer!.id);
@@ -1330,7 +1381,11 @@ export function pairNextRound(t: Tournament): Round {
   }
 
   const pairings: Pairing[] = pairs.map(([a, b], i) => {
-    const { whiteId, blackId } = strict ? assignColorsFide(a, b) : assignColors(a, b);
+    // FIDE C.04.3.3's round-1 colour rule (see assignColorsFide's doc comment): the drawn lot
+    // (fixed here as White, since there's no literal coin to flip in a UI) goes to the S1-side
+    // player — `a` in every pair this engine produces — on odd boards, and alternates to the S2
+    // side on even boards. `i` is 0-based, so board `i+1` is odd exactly when `i` is even.
+    const { whiteId, blackId } = strict ? assignColorsFide(a, b, i % 2 === 0) : assignColors(a, b);
     return { board: i + 1, whiteId, blackId, byeId: null, result: null };
   });
   for (const p of requestedOut) {
