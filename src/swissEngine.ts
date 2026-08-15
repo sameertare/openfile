@@ -74,14 +74,19 @@ export type TournamentFormat = 'swiss' | 'round-robin' | 'knockout';
 // though not identically). Both modes have no notion of upfloating (pulling a player up from a
 // lower bracket rather than pairing them down), so C16/C17 (upfloat repetition) don't apply.
 // Round 1 specifically — no score/colour history for anyone, so the whole quality-criteria search
-// above collapses to a single slide-paired bracket — was implemented against a spec independently
-// verified (by the person who wrote it) against bbpPairings, the FIDE-endorsed reference
-// implementation, board-for-board across multiple real rosters with zero mismatches: ranking
-// (rating desc, then alphabetical by last/first name — see byNameTiebreak, only populated for
-// NWChess-format rosters), pairing-allocated-bye placement (lowest rank), the slide split (S1[i]
-// vs S2[i], not a fold), and colour allocation (a drawn lot — fixed here as White, since there's
-// no literal coin to flip in a UI — to the S1 side on odd boards, alternating to S2 on even
-// boards; see assignColorsFide's aGetsWhiteOnNoHistory param). This is a close practical approximation of the Dutch system for a club/scholastic TD, not a
+// above collapses to a single slide-paired bracket — was built against a spec independently
+// verified (by the person who wrote it) against bbpPairings across real rosters, and separately
+// re-verified in this codebase by building bbpPairings from source (GCC 16, its -Werror set
+// stripped for a handful of warnings the project's original toolchain didn't raise) and diffing
+// its TRF-format round-1 output against this engine's for hand-built test rosters exercising an
+// odd pool with a tied-unrated PAB and an even pool with a tied-top-rating pair — every board and
+// colour matched exactly. What matched: ranking (rating desc, then alphabetical by last/first
+// name — see byNameTiebreak, only populated for NWChess-format rosters), pairing-allocated-bye
+// placement (lowest rank), the slide split (S1[i] vs S2[i], not a fold), and colour allocation (a
+// drawn lot — fixed here as White, since there's no literal coin to flip in a UI — to the S1
+// side on odd boards, alternating to S2 on even boards; see assignColorsFide's
+// aGetsWhiteOnNoHistory param). This is a close practical approximation of the Dutch system for
+// a club/scholastic TD, not a
 // certified implementation — for FIDE-rated norm events, cross-check pairings with JaVaFo.
 export type PairingMethod = 'swiss' | 'fide';
 
