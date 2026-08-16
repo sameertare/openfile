@@ -84,8 +84,9 @@ const BOOK: [string, string][] = [
 // Longest prefixes first so the first match is the most specific.
 const SORTED_BOOK = [...BOOK].sort((a, b) => b[0].length - a[0].length);
 
-// Cache for opening lookups by move sequence to avoid redundant book searches.
-const openingCache = new Map<string, { eco: string; opening: string; family: string }>();
+// Cache for book-derived opening lookups by move sequence, to avoid redundant book searches.
+// Deliberately excludes `eco`, which comes from per-game PGN headers, not the move sequence.
+const openingCache = new Map<string, { opening: string; family: string }>();
 
 function fromEcoUrl(url: string): string | null {
   const m = url.match(/\/openings\/([^/?#]+)/);
@@ -105,11 +106,16 @@ export function identifyOpening(
   if (headers['Opening'] && headers['Opening'] !== '?') opening = headers['Opening'];
   else if (headers['ECOUrl']) opening = fromEcoUrl(headers['ECOUrl']) ?? '';
 
+  // Only the book-search branch below is safe to cache by move sequence alone — a header-derived
+  // name is specific to this one game's own PGN metadata, not a general fact about that move
+  // prefix. Caching it here would let one game's Opening header (or its absence, later) leak into
+  // every other game sharing the same first 12 plies for the rest of the session (the cache is
+  // module-level and never cleared) — e.g. a lichess export with an Opening header analyzed
+  // alongside a header-less hand-pasted PGN of the same line.
   if (!opening) {
     const line = sans.slice(0, 12).join(' ');
-    // Check cache before searching the book.
     const cached = openingCache.get(line);
-    if (cached) return cached;
+    if (cached) return { eco, ...cached };
 
     for (const [prefix, name] of SORTED_BOOK) {
       if (line.startsWith(prefix)) {
@@ -117,15 +123,12 @@ export function identifyOpening(
         break;
       }
     }
+    if (!opening) opening = 'Unknown Opening';
+    const family = opening.split(':')[0].split(',')[0].trim();
+    openingCache.set(line, { opening, family });
+    return { eco, opening, family };
   }
 
-  if (!opening) opening = 'Unknown Opening';
   const family = opening.split(':')[0].split(',')[0].trim();
-  const result = { eco, opening, family };
-
-  // Cache the result for this move sequence.
-  const line = sans.slice(0, 12).join(' ');
-  openingCache.set(line, result);
-
-  return result;
+  return { eco, opening, family };
 }
