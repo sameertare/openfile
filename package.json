@@ -7,10 +7,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "preview": "vite preview",
     "serve": "npm run build && node server/server.mjs",
     "start": "node server/server.mjs",
     "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run",
-    "test:watch": "NODE_OPTIONS=--no-experimental-webstorage vitest"
+    "test:watch": "NODE_OPTIONS=--no-experimental-webstorage vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "chess.js": "^1.4.0",

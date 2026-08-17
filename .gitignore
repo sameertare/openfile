@@ -4,3 +4,7 @@ reports/
 .DS_Store
 worker/node_modules/
 worker/.wrangler/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
