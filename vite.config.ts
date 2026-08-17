@@ -26,7 +26,6 @@ export default defineConfig({
         scoutingReport: page('./scouting-report.html'),
         openingDeviation: page('./opening-deviation.html'),
         compareReports: page('./compare-reports.html'),
-        roster: page('./roster.html'),
         rating: page('./rating.html'),
         fideRating: page('./fide-rating.html'),
         about: page('./about.html'),
