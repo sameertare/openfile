@@ -24,7 +24,6 @@ export default defineConfig({
         wallchartDisplay: page('./wallchart-display.html'),
         openingExplorer: page('./opening-explorer.html'),
         scoutingReport: page('./scouting-report.html'),
-        openingDeviation: page('./opening-deviation.html'),
         compareReports: page('./compare-reports.html'),
         rating: page('./rating.html'),
         fideRating: page('./fide-rating.html'),
