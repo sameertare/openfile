@@ -384,15 +384,87 @@ function parsePlainList(text: string): RosterEntry[] {
   return out;
 }
 
-export type RosterFormat = 'auto' | 'nwchess' | 'table' | 'plain';
+/**
+ * onlineregistration.cc's tab-delimited roster export — no header row at all, so it can't be
+ * matched by parseHeaderTable (which needs a labeled header to find the Name/Rating columns) and
+ * would otherwise fall through to parsePlainList, which mis-parses it badly: with no header to
+ * stop at, parsePlainList's "last 3-4 digit run in the line is the rating" heuristic grabs "2000"
+ * out of the section label ("U2000") on every line, since that's the last number-shaped token —
+ * silently assigning every single player the same wrong rating.
+ *
+ * Fixed 0-indexed columns (confirmed against a real export):
+ *   0 "Last, First Middle" (optionally suffixed " (Withdrawn)")
+ *   1 FIDE id + " [country]", or blank if the player has none
+ *   2 FIDE rating, or "Unr"
+ *   3 US Chess (USCF) id
+ *   4 USCF rating, or "Unr" — the roster's own sort key, and the effective seeding rating (a
+ *     USCF-sanctioned event pairs by USCF rating; FIDE id/rating are carried along for reference
+ *     only, not used for seeding — same "one authoritative rating column, rest ignored" approach
+ *     parseNwchessRoster takes with NWChess's own FIDE column)
+ *   5 state/affiliation (ignored)
+ *   6 section label (e.g. "U2000")
+ *   7 optional bye/notes column, e.g. "1/2:R2 R4" — round numbers appear after "R"; the leading
+ *     "1/2:" is a point-value label, not a round number, so only "R<n>" tokens are read (a bare
+ *     digit-run scan like parseByeRounds would wrongly also pick up the "1" and "2" from "1/2").
+ */
+function isOnlineRegistrationRoster(text: string): boolean {
+  const firstLine = text.replace(/\r/g, '').split('\n').find((l) => l.trim());
+  if (!firstLine) return false;
+  const f = firstLine.split('\t').map((s) => s.trim());
+  if (f.length < 7) return false;
+  return (
+    /,/.test(f[0]) &&
+    (f[1] === '' || /^\d+\s*\[[A-Za-z]+\]$/.test(f[1])) &&
+    /^(\d+|unr)$/i.test(f[2]) &&
+    /^\d+$/.test(f[3]) &&
+    /^(\d+|unr)$/i.test(f[4])
+  );
+}
+
+function parseOnlineRegistrationByeRounds(trailing: string | undefined): number[] {
+  if (!trailing) return [];
+  return [...trailing.matchAll(/R\s*(\d+)/gi)].map((m) => parseInt(m[1], 10)).filter((n) => n > 0 && n < 50);
+}
+
+function parseOnlineRegistrationRoster(text: string): RosterEntry[] {
+  const out: RosterEntry[] = [];
+  const seen = new Set<string>();
+  for (const raw of text.replace(/\r/g, '').split('\n')) {
+    if (!raw.trim()) continue;
+    const f = raw.split('\t').map((s) => s.trim());
+    if (f.length < 7) continue;
+    const withdrawn = /\(withdrawn\)/i.test(f[0]);
+    const nameField = f[0].replace(/\s*\(withdrawn\)\s*$/i, '').trim();
+    if (!nameField || withdrawn) continue;
+    const commaIdx = nameField.indexOf(',');
+    const last = (commaIdx === -1 ? nameField : nameField.slice(0, commaIdx)).trim();
+    const first = commaIdx === -1 ? '' : nameField.slice(commaIdx + 1).trim();
+    if (!last) continue;
+    const name = (first ? `${first} ${last}` : last).replace(/\s{2,}/g, ' ').trim();
+    const uscfRating = ratingOrNull(f[4]);
+    const fideRating = ratingOrNull(f[2]);
+    const rating = uscfRating ?? fideRating;
+    const section = f[6] || undefined;
+    const key = `${name.toLowerCase()} ${rating ?? ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const byeRounds = parseOnlineRegistrationByeRounds(f[7]);
+    out.push({ name, rating, section, lastName: last, firstName: first || undefined, ...(byeRounds.length ? { byeRounds } : {}) });
+  }
+  return out;
+}
+
+export type RosterFormat = 'auto' | 'nwchess' | 'onlineregistration' | 'table' | 'plain';
 
 export function parseRoster(text: string, format: RosterFormat = 'auto'): RosterEntry[] {
   switch (format) {
     case 'nwchess': return parseNwchessRoster(text);
+    case 'onlineregistration': return parseOnlineRegistrationRoster(text);
     case 'table': return parseHeaderTable(text) ?? [];
     case 'plain': return parsePlainList(text);
     default:
       if (isNwchessRoster(text)) return parseNwchessRoster(text);
+      if (isOnlineRegistrationRoster(text)) return parseOnlineRegistrationRoster(text);
       return parseHeaderTable(text) ?? parsePlainList(text);
   }
 }

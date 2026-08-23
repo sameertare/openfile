@@ -172,6 +172,85 @@ describe('parseRoster: NWChess format', () => {
   });
 });
 
+describe('parseRoster: onlineregistration.cc format', () => {
+  // A real export snippet (headerless, tab-separated): name, FIDE id+country, FIDE rating,
+  // US Chess id, US Chess rating, state, section, optional bye column.
+  const SAMPLE = [
+    'Battistella, Edwin\t30913950 [USA]\t1852\t12474865\t1930\tOR\tU2000\t',
+    'Smith, Micah (Withdrawn)\t2087340 [USA]\t1831\t12762225\t1921\tWA\tU2000\t',
+    'Howell, John C\t\tUnr\t11431739\t1909\tOR\tU2000\t',
+    'Ade, Christopher T\t39991229 [USA]\tUnr\t31380418\t1841\tOR\tU2000\t',
+    'Reifurth, Lawrence M\t2030527 [USA]\t1529\t12341360\t1700\tAZ\tU2000\t1/2:R2 R4',
+    'Kesavan, Vihaan\t39990656 [USA]\t1721\t31471845\t1622\tOR\tU2000\t',
+  ].join('\n');
+
+  it('is auto-detected without an explicit format argument', () => {
+    const roster = parseRoster(SAMPLE, 'auto');
+    expect(roster.map((r) => r.name)).toContain('Edwin Battistella');
+  });
+
+  it('seeds by US Chess rating, not the last number-shaped token in the line', () => {
+    // Regression case: parsePlainList's "last 3-4 digit run" heuristic would grab "2000" out of
+    // the "U2000" section label on every row instead of the real rating.
+    const roster = parseRoster(SAMPLE, 'onlineregistration');
+    const battistella = roster.find((r) => r.name === 'Edwin Battistella')!;
+    expect(battistella.rating).toBe(1930); // US Chess rating, not 2000
+    expect(roster.every((r) => r.rating !== 2000)).toBe(true);
+  });
+
+  it('uses the US Chess rating even when the FIDE rating is "Unr" (FIDE id present, FIDE rating not yet established)', () => {
+    const roster = parseRoster(SAMPLE, 'onlineregistration');
+    const ade = roster.find((r) => r.name === 'Christopher T Ade')!;
+    expect(ade.rating).toBe(1841); // US Chess rating, despite an unrated FIDE column
+  });
+
+  it('splits "Last, First Middle" into lastName/firstName for the FIDE tiebreak', () => {
+    const roster = parseRoster(SAMPLE, 'onlineregistration');
+    const howell = roster.find((r) => r.lastName === 'Howell')!;
+    expect(howell.firstName).toBe('John C');
+    expect(howell.name).toBe('John C Howell');
+  });
+
+  it('excludes players marked "(Withdrawn)"', () => {
+    const roster = parseRoster(SAMPLE, 'onlineregistration');
+    expect(roster.some((r) => r.name.includes('Smith'))).toBe(false);
+  });
+
+  it('uses the US Chess rating for a player with no FIDE id at all', () => {
+    const roster = parseRoster(SAMPLE, 'onlineregistration');
+    const howell = roster.find((r) => r.lastName === 'Howell')!;
+    expect(howell.rating).toBe(1909); // blank FIDE column, real US Chess rating
+  });
+
+  it('falls back to FIDE rating when US Chess rating is "Unr" (synthetic — not in the sample export)', () => {
+    const row = 'Test, Case\t123456 [USA]\t1600\t99999999\tUnr\tOR\tOpen\t';
+    const roster = parseRoster(row, 'onlineregistration');
+    expect(roster[0].rating).toBe(1600);
+  });
+
+  it('is unrated (null, not 0) when both FIDE and US Chess ratings are "Unr" (synthetic)', () => {
+    const row = 'Test, Case\t123456 [USA]\tUnr\t99999999\tUnr\tOR\tOpen\t';
+    const roster = parseRoster(row, 'onlineregistration');
+    expect(roster[0].rating).toBeNull();
+  });
+
+  it('parses "R<n>" round numbers out of the bye column, ignoring the leading point-value fraction', () => {
+    const roster = parseRoster(SAMPLE, 'onlineregistration');
+    const reifurth = roster.find((r) => r.lastName === 'Reifurth')!;
+    // "1/2:R2 R4" must yield [2, 4], not [1, 2, 2, 4] from also matching the "1/2" fraction.
+    expect(reifurth.byeRounds).toEqual([2, 4]);
+  });
+
+  it('carries the section label through', () => {
+    const roster = parseRoster(SAMPLE, 'onlineregistration');
+    expect(roster.every((r) => r.section === 'U2000')).toBe(true);
+  });
+
+  it('is not misidentified as onlineregistration format by a plain list or NWChess export', () => {
+    expect(parseRoster('Alice Smith 1500\nBob Jones 1400', 'auto')[0].section).toBeUndefined();
+  });
+});
+
 // ---------- rounds recommendation / schedules ----------
 
 describe('recommendedRounds', () => {

@@ -118,8 +118,9 @@ function isFixedFormat(t: Tournament): boolean {
 const FORMAT_HINT: Record<string, string> = {
   plain: 'One player per line: “Name”, “Name Rating”, or “Name, Rating” (optional leading “1.” numbering).',
   table: 'A delimited table whose header row labels the columns (tab- or comma-separated). The Name and Rating columns are used; #, ID and bye columns are ignored.',
+  onlineregistration: 'A pasted onlineregistration.cc roster export — no header row; "Last, First", FIDE id/rating, US Chess id/rating, state, section, and an optional bye column, tab-separated. Seeded by US Chess rating (falls back to FIDE rating if unrated); "(Withdrawn)" players are excluded automatically.',
 };
-const FORMAT_LABEL: Record<string, string> = { plain: 'Plain list', table: 'US Chess table' };
+const FORMAT_LABEL: Record<string, string> = { plain: 'Plain list', table: 'US Chess table', onlineregistration: 'onlineregistration.cc export' };
 
 /**
  * If parsing with the currently-selected format leaves numbers stuck in player names (a strong
@@ -160,6 +161,15 @@ const SAMPLES: Record<string, { text: string; tname: string }> = {
 4\tJeremy Campbell\t32332565\t1863\t
 5\tDavid Murray\t12678095\t1853\t
 6\tJason Richner\t12398033\t1802\t`,
+  },
+  onlineregistration: {
+    tname: 'Spring Open',
+    text: `Battistella, Edwin\t30913950 [USA]\t1852\t12474865\t1930\tOR\tU2000\t
+Smith, Micah (Withdrawn)\t2087340 [USA]\t1831\t12762225\t1921\tWA\tU2000\t
+Howell, John C\t\tUnr\t11431739\t1909\tOR\tU2000\t
+Murray, David Edward\t30913993 [USA]\t1785\t12678095\t1843\tOR\tU2000\t
+Reifurth, Lawrence M\t2030527 [USA]\t1529\t12341360\t1700\tAZ\tU2000\t1/2:R2 R4
+Kesavan, Vihaan\t39990656 [USA]\t1721\t31471845\t1622\tOR\tU2000\t`,
   },
 };
 

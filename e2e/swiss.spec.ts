@@ -32,6 +32,21 @@ test.describe('Swiss Pairings', () => {
     // Standings table should now show a non-zero score for someone.
     await expect(page.locator('body')).toContainText('1', { timeout: 5000 });
   });
+
+  test('parses an onlineregistration.cc export (no header, tab-separated, "(Withdrawn)" players excluded)', async ({ page }) => {
+    await page.selectOption('#format-select', 'onlineregistration');
+    await page.click('#sample-roster');
+
+    const preview = page.locator('#roster-preview');
+    await expect(preview).toContainText('Edwin Battistella');
+    await expect(preview).toContainText('1930'); // US Chess rating, not a section-label digit
+    await expect(preview).not.toContainText('Withdrawn');
+
+    await page.click('#parse-btn');
+    await expect(page.locator('#control-card')).toBeVisible();
+    await page.click('#pair-btn');
+    await expect(page.getByRole('heading', { name: /Round 1/ })).toBeVisible();
+  });
 });
 
 test.describe('NWChess Pairings', () => {
