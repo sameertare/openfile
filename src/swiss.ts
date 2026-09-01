@@ -1,12 +1,12 @@
 import './style.css';
 import {
   addExtraGameForBye, addFamilyGroup, cancelByeRequest, commitRound, createTournament, estimatedCurrentRating,
-  explainPairing, explainPairingDetail, explainRound, nextRoundNumber, pairNextRound,
+  explainPairing, explainPairingDetail, explainRound, nextRoundNumber, pairingMethod, pairNextRound,
   parseRoster, recommendedRounds, recommendedRoundsKnockout, recommendedRoundsRoundRobin, redoLatestRound,
   removeFamilyGroup, requestByeForRound, setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
   tournamentFormat,
 } from './swissEngine';
-import type { GameResult, Round, RosterEntry, RosterFormat, Tournament, TournamentFormat } from './swissEngine';
+import type { GameResult, PairingMethod, Round, RosterEntry, RosterFormat, Tournament, TournamentFormat } from './swissEngine';
 import { knockoutPlacementsTableHtml, standingsTableHtml, wallChartHtml } from './swissViews';
 import { downloadTrf } from './trfExport';
 import { registerServiceWorker } from './pwa';
@@ -108,11 +108,19 @@ function currentFormat(): RosterFormat {
 function currentTourneyFormat(): TournamentFormat {
   return (($('#tourney-format-select') as HTMLSelectElement).value as TournamentFormat) || 'swiss';
 }
+function currentPairingMethod(): PairingMethod {
+  return (($('#pairing-method-select') as HTMLSelectElement).value as PairingMethod) || 'swiss';
+}
 /** Round-robin and knockout both pair strictly by a fixed schedule/bracket, with no per-round
  *  score-group decision to explain, avoid a rematch in, or steer with a bye/family-group request. */
 function isFixedFormat(t: Tournament): boolean {
   const fmt = tournamentFormat(t);
   return fmt === 'round-robin' || fmt === 'knockout';
+}
+/** The pairing-method choice (Swiss vs. FIDE) only makes sense for a Swiss-format tournament —
+ *  round-robin/knockout pair by a fixed schedule regardless. */
+function pairingMethodApplies(tfmt: TournamentFormat): boolean {
+  return tfmt === 'swiss';
 }
 
 const FORMAT_HINT: Record<string, string> = {
@@ -188,6 +196,7 @@ $('#sample-roster').addEventListener('click', () => {
 });
 ($('#format-select') as HTMLSelectElement).addEventListener('change', () => { applyFormatHint(); previewRoster(); });
 ($('#tourney-format-select') as HTMLSelectElement).addEventListener('change', previewRoster);
+($('#pairing-method-select') as HTMLSelectElement).addEventListener('change', previewRoster);
 ($('#roster-text') as HTMLTextAreaElement).addEventListener('input', previewRoster);
 $('#roster-file').addEventListener('change', async () => {
   const f = ($('#roster-file') as HTMLInputElement).files?.[0];
@@ -231,6 +240,14 @@ function previewRoster() {
   const fmt = currentFormat();
   const all = parseRoster(text, fmt);
   const prev = $('#roster-preview');
+  const tfmt = currentTourneyFormat();
+  const showPairingMethod = pairingMethodApplies(tfmt);
+  ($('#pairing-method-row') as HTMLElement).hidden = !showPairingMethod;
+  $('#pairing-method-hint').textContent = showPairingMethod
+    ? (currentPairingMethod() === 'fide'
+        ? 'FIDE mode never produces a repeat pairing or an absolute-colour clash, even as a last resort — pairing a round fails loudly with an explanation instead, rather than silently bending a rule.'
+        : 'Swiss mode (default) guarantees every round gets paired, relaxing rematch-avoidance or colour balance only if the field genuinely leaves no other option.')
+    : '';
   if (!all.length) {
     ($('#section-row') as HTMLElement).hidden = true;
     $('#rounds-hint').textContent = '';
@@ -241,7 +258,6 @@ function previewRoster() {
   }
   const secs = syncSectionUI(all);
   const roster = previewSelection(all);
-  const tfmt = currentTourneyFormat();
   const rr =
     tfmt === 'round-robin' ? recommendedRoundsRoundRobin(roster.length)
     : tfmt === 'knockout' ? recommendedRoundsKnockout(roster.length)
@@ -318,7 +334,8 @@ $('#parse-btn').addEventListener('click', () => {
   const roundsRaw = ($('#rounds-input') as HTMLInputElement).value.trim();
   const roundsOverride = roundsRaw ? Math.max(1, Math.min(30, parseInt(roundsRaw, 10))) : undefined;
   const tfmt = currentTourneyFormat();
-  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride, tfmt)), active: 0 };
+  const pmethod = pairingMethodApplies(tfmt) ? currentPairingMethod() : 'swiss';
+  ev = { name: eventName, sections: usable.map((g) => createTournament(g.name, g.roster, roundsOverride, tfmt, pmethod)), active: 0 };
   save();
   renderAll();
   if (skipped.length) {
@@ -537,7 +554,8 @@ function renderAll() {
   const evLabel = ev.sections.length > 1
     ? `<b>${esc(ev.name)}</b> · ${ev.sections.length} sections · round ${pairedRounds} · viewing <b>${esc(t.name)}</b> (${t.players.length} players, ${completedRounds}/${rr} rounds)`
     : `<b>${esc(t.name)}</b> · ${t.players.length} players · ${completedRounds}/${rr} rounds played`;
-  $('#round-info').innerHTML = evLabel;
+  const fideBadge = pairingMethod(t) === 'fide' ? ` <span class="dev-status-chip dev-full" title="Strict FIDE rules: never a repeat pairing or an absolute colour clash, even as a last resort.">FIDE pairing</span>` : '';
+  $('#round-info').innerHTML = evLabel + fideBadge;
 
   renderRounds(t);
   renderByeRequestCard(t);

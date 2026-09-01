@@ -47,6 +47,25 @@ test.describe('Swiss Pairings', () => {
     await page.click('#pair-btn');
     await expect(page.getByRole('heading', { name: /Round 1/ })).toBeVisible();
   });
+
+  test('pairs an onlineregistration.cc roster in strict FIDE mode', async ({ page }) => {
+    await page.selectOption('#format-select', 'onlineregistration');
+    await expect(page.locator('#pairing-method-row')).toBeVisible();
+    await page.selectOption('#pairing-method-select', 'fide');
+    await page.click('#sample-roster');
+    await page.click('#parse-btn');
+    await expect(page.locator('body')).toContainText('FIDE pairing');
+
+    await page.click('#pair-btn');
+    await expect(page.getByRole('heading', { name: /Round 1/ })).toBeVisible();
+  });
+
+  test('hides the pairing-method row for round-robin and knockout formats', async ({ page }) => {
+    await page.selectOption('#tourney-format-select', 'round-robin');
+    await expect(page.locator('#pairing-method-row')).toBeHidden();
+    await page.selectOption('#tourney-format-select', 'swiss');
+    await expect(page.locator('#pairing-method-row')).toBeVisible();
+  });
 });
 
 test.describe('NWChess Pairings', () => {

@@ -64,6 +64,15 @@
           </label>
         </div>
         <p class="hint" id="format-hint"></p>
+        <div class="config-row" id="pairing-method-row">
+          <label class="stack">Pairing method
+            <select id="pairing-method-select">
+              <option value="swiss" selected>Swiss (best-effort — always pairs every round)</option>
+              <option value="fide">FIDE (strict — never repeats an opponent or an absolute colour clash)</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint" id="pairing-method-hint"></p>
         <p class="hint" id="tourney-format-hint"></p>
         <p class="hint" id="rounds-hint"></p>
         <label class="stack">Paste players (one per line — <code>Name</code>, <code>Name Rating</code>, or <code>Name, Rating</code>). Importing an NWChess RosterTable.csv? Use the <a href="nwchess-pairings.html">NWChess Pairings</a> page instead.
