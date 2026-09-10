@@ -185,11 +185,20 @@ describe('parseRoster: NWChess format', () => {
     expect(roster[0].rating).toBeNull(); // FIDE 1900 is not a substitute
   });
 
-  it('handles a section missing NWSRS entirely without absorbing FIDE into the slot', () => {
-    const localHeader = '" ","Name","USCF","FIDE","NWChess","Byes","Fees"';
+  it('uses USCF (col 7) when NWSRS (col 5) is blank', () => {
     const row = '"OpenU1800","Coates","John","13","Adult WA","","","1767","12939083","07/2028","0","0","","07/2027","","Paid"';
-    const roster = parseRoster(`${localHeader}\n${subheader}\n${row}`, 'nwchess');
-    expect(roster[0].rating).toBe(1767); // USCF only, FIDE=0 excluded anyway
+    const roster = parseRoster(`${header}\n${subheader}\n${row}`, 'nwchess');
+    expect(roster[0].rating).toBe(1767);
+  });
+
+  it('reads NWSRS/USCF by fixed column even when a spreadsheet paste dropped trailing empty cells', () => {
+    // A tab paste can trim the trailing empty bye + status cells (14 cols instead of 16). The
+    // leading columns don't shift, so NWSRS is still col 5 and USCF still col 7 — and FIDE at
+    // col 10 is still never consulted.
+    const tabHeader = ' \tName\tNWSRS\tUSCF\tFIDE\tNWChess\tByes\tFees';
+    const row = 'Open\tSmith\tAlice\t6\tSample ES\t1600\tSMP001A\t1550\t30000001\t01/2027\t1800\t39900000\t\t09/2027';
+    const roster = parseRoster(`${tabHeader}\n${row}`, 'nwchess');
+    expect(roster[0].rating).toBe(1600); // max(1600, 1550) — FIDE 1800 ignored
   });
 });
 

@@ -163,26 +163,20 @@ export function isNwchessRoster(text: string): boolean {
 
 /**
  * NWChess roster. The pairing rating is always **max(NWSRS, USCF)** — the FIDE rating column is
- * ignored entirely, even when a player has one and it's higher, and even when it's the only
- * rating they have.
+ * ignored entirely and unconditionally, whether or not the player has one, whether or not it's
+ * higher, and even when it's their only rating (in which case they're unrated for pairing).
  *
- * A real RosterTable.csv export is a fixed 16-column layout (confirmed across multiple real
- * exports — every data row is exactly 16 columns, and the NWSRS/USCF/FIDE group header appears
- * once at the top, not per section):
+ * A RosterTable.csv export is a fixed-position layout — the group header (" ,Name,NWSRS,USCF,
+ * FIDE,NWChess,Byes,Fees") is defined once for the whole file, and its leading columns never
+ * shift (a player always has section/name/grade/school and the NWSRS + USCF column groups, even
+ * when the values are blank):
  *   0 section · 1 last · 2 first · 3 grade · 4 school · 5 NWSRS rating · 6 NWSRS id ·
  *   7 USCF rating · 8 USCF id · 9 USCF expiry · 10 FIDE rating · 11 FIDE id · 12 FIDE title ·
  *   13 NWChess expiry · 14 requested-bye rounds · 15 fee status
- * so those rows read NWSRS from column 5 and USCF from column 7 directly and never look at
- * column 10.
- *
- * A row that *isn't* 16 columns (a hand-edited file, a partial paste, some unseen export variant)
- * falls back to a heuristic scan: anchor byes/status off the row's *end*, then take rating-range
- * numeric tokens between grade and byes in left-to-right order. The header lists the groups
- * NWSRS → USCF → FIDE in that fixed order, so the *first* one or two such tokens (however many of
- * NWSRS/USCF the header declares — see sectionHasNwsrs/sectionHasUscf) are the wanted ones and a
- * trailing FIDE token is dropped. This fallback can still be fooled if a wanted group is blank
- * for that player (shifting FIDE into a kept slot), which is exactly why the fixed-index path
- * above exists for the standard layout that covers every real export.
+ * So NWSRS is read from column 5 and USCF from column 7 by position, and nothing at or past
+ * column 10 (FIDE) is ever consulted for the rating. Byes/status are still anchored off the row's
+ * *end* (the one place a spreadsheet paste can drop trailing empty cells) rather than a fixed
+ * index.
  */
 const NWCHESS_HEADER_WORDS = /^(name|first|last|uscf|nwsrs|nwchess|fide|grade|school|byes|fees|id|rating|status|section|title)$/i;
 function parseNwchessRoster(text: string): RosterEntry[] {
@@ -195,24 +189,12 @@ function parseNwchessRoster(text: string): RosterEntry[] {
   // and silently parsing zero columns (and thus zero players) out of a tab-delimited file.
   const firstLine = lines.find((l) => l.trim()) ?? '';
   const delim: 'tab' | 'csv' = firstLine.includes('\t') ? 'tab' : 'csv';
-  // Updated whenever a header row names at least one rating group — see the doc comment above.
-  // Defaults to both-present so a file with no readable header keeps today's max(NWSRS, USCF)
-  // intent rather than silently capping every player to unrated.
-  let sectionHasNwsrs = true;
-  let sectionHasUscf = true;
   for (const raw of lines) {
     if (!raw.trim()) continue;
     // The group-label header row (e.g. "NWSRS","USCF","FIDE") is the one line that ever names any
-    // of these three — a real name/school value essentially never does — so this checks the raw
-    // line directly rather than after column-splitting: a header row that omits enough columns to
-    // describe a dropped rating group can itself end up shorter than the >=8-column floor a real
-    // data row needs, and column-splitting first would skip it via that floor before its content
-    // was ever inspected, leaving section state stuck on a stale (or default) value.
-    if (/\bnwsrs\b|\buscf\b|\bfide\b/i.test(raw)) {
-      sectionHasNwsrs = /\bnwsrs\b/i.test(raw);
-      sectionHasUscf = /\buscf\b/i.test(raw);
-      continue;
-    }
+    // of these three — a real name/school value essentially never does — so skip it directly off
+    // the raw line rather than after column-splitting (it can be shorter than the data-row floor).
+    if (/\bnwsrs\b|\buscf\b|\bfide\b/i.test(raw)) continue;
     const c = splitDelimited(raw, delim).map((f) => f.trim());
     if (c.length < 8) continue;
     // The second, sub-column header row ("ID","Title","Rounds", …) names none of the three group
@@ -228,24 +210,11 @@ function parseNwchessRoster(text: string): RosterEntry[] {
     const byesRaw = c[c.length - 2];
     if (/withdr|^wd$|inactive|dropped/i.test(status) || /withdr/i.test(section)) continue; // not playing
 
-    let rating: number | null;
-    if (c.length === 16) {
-      // Standard RosterTable.csv layout — NWSRS at col 5, USCF at col 7. Column 10 (FIDE) is
-      // never read, so a FIDE rating can't leak in no matter how high it is or whether it's the
-      // player's only rating.
-      const nwsrs = ratingOrNull(c[5]);
-      const uscf = ratingOrNull(c[7]);
-      rating = nwsrs != null || uscf != null ? Math.max(nwsrs ?? 0, uscf ?? 0) : null;
-    } else {
-      const middle = c.slice(3, c.length - 2);
-      const candidates = middle
-        .filter((f) => /^\d+$/.test(f))
-        .map((f) => ratingOrNull(f))
-        .filter((n): n is number => n != null);
-      const wantedCount = (sectionHasNwsrs ? 1 : 0) + (sectionHasUscf ? 1 : 0);
-      const ratings = wantedCount > 0 ? candidates.slice(0, wantedCount) : candidates;
-      rating = ratings.length ? Math.max(...ratings) : null;
-    }
+    // NWSRS is column 5, USCF is column 7 — fixed positions. FIDE (column 10) is never read.
+    const nwsrs = ratingOrNull(c[5]);
+    const uscf = ratingOrNull(c[7]);
+    const rating = nwsrs != null || uscf != null ? Math.max(nwsrs ?? 0, uscf ?? 0) : null;
+
     const name = `${first} ${last}`.replace(/\s{2,}/g, ' ').trim();
     if (!name) continue;
     // Only dedupe an exact name+rating repeat — see parsePlainList for why name alone isn't enough.
