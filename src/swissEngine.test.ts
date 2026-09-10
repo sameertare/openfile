@@ -164,6 +164,27 @@ describe('parseRoster: NWChess format', () => {
     expect(roster[0].rating).toBe(827); // max(827, 740), not 1553
   });
 
+  it('does not leak the FIDE rating in when NWSRS is 0 and FIDE outranks USCF (real regression)', () => {
+    // "Zhen Rampenthal, Quinn" from a real RosterTable.csv: NWSRS 0, USCF 1586, FIDE 1658.
+    // The old "take the first N rating-range tokens" scan grabbed 1586 *and* 1658 (NWSRS 0 fell
+    // out of the candidate list, shifting FIDE into a kept slot) and paired at max = 1658.
+    const row = '"Woodinville U1900","Zhen Rampenthal","Quinn","10","Home School","0","","1586","30111111","07/2028","1658","39900000","","09/2027","","Paid"';
+    const roster = parseRoster(`${header}\n${subheader}\n${row}`, 'nwchess');
+    expect(roster[0].rating).toBe(1586); // USCF only — FIDE 1658 ignored
+  });
+
+  it('uses NWSRS when USCF is blank and FIDE is present and higher', () => {
+    const row = '"OpenU1600","Kim","Eve","5","Sample ES","1450","EVEK01","","","","1700","39900001","","09/2027","","Paid"';
+    const roster = parseRoster(`${header}\n${subheader}\n${row}`, 'nwchess');
+    expect(roster[0].rating).toBe(1450); // NWSRS only — FIDE 1700 ignored
+  });
+
+  it('is unrated when both NWSRS and USCF are 0/blank, even with a FIDE rating', () => {
+    const row = '"OpenU1600","Park","Zoe","6","Sample ES","0","","","","","1900","39900002","","09/2027","","Paid"';
+    const roster = parseRoster(`${header}\n${subheader}\n${row}`, 'nwchess');
+    expect(roster[0].rating).toBeNull(); // FIDE 1900 is not a substitute
+  });
+
   it('handles a section missing NWSRS entirely without absorbing FIDE into the slot', () => {
     const localHeader = '" ","Name","USCF","FIDE","NWChess","Byes","Fees"';
     const row = '"OpenU1800","Coates","John","13","Adult WA","","","1767","12939083","07/2028","0","0","","07/2027","","Paid"';

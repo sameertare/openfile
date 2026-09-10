@@ -162,31 +162,27 @@ export function isNwchessRoster(text: string): boolean {
 }
 
 /**
- * NWChess roster: column 0 section · 1 last · 2 first · 3 grade are stable across every real
- * export variant seen, but everything else is not — a section with no NWSRS-rated players omits
- * the NWSRS (and often school) columns entirely rather than leaving them blank, shifting every
- * later fixed index left. So instead of trusting fixed positions for the rating/byes/status
- * columns, this anchors byes/status off the *end* of the row (consistently the last two columns
- * in every variant seen) and finds rating candidates by scanning the whole row between grade and
- * byes for any strictly-numeric token in a plausible rating range — an ID always runs 6+ digits
- * (well past the 3500 ceiling), a grade or the month of an MM/YYYY expiry date is always under
- * 100, so the range check alone reliably tells a rating-shaped token apart from either, regardless
- * of which column it's actually in.
+ * NWChess roster. The pairing rating is always **max(NWSRS, USCF)** — the FIDE rating column is
+ * ignored entirely, even when a player has one and it's higher, and even when it's the only
+ * rating they have.
  *
- * That range check alone can't tell a genuine NWSRS/USCF rating apart from a genuine (nonzero)
- * FIDE rating, though — all three are just plausible-range numbers, and FIDE sits in the same
- * scanned span. The export's own two-row header always lists the rating groups in a fixed
- * left-to-right order — NWSRS, then USCF, then FIDE — so candidates found scanning left-to-right
- * line up with that order too, whichever subset a given section's columns actually include. Rather
- * than trying to fully resolve the exact column each candidate came from (the header is a two-row
- * grouped layout that doesn't reliably reduce to fixed indices — the same shifting problem as
- * above, just for column identity instead of column position), this tracks how many of the two
- * *wanted* groups (NWSRS, USCF) a section's header actually declares, updated every time a new
- * header row is seen, and keeps only that many candidates (in their left-to-right order) — so a
- * trailing FIDE candidate is dropped precisely because it comes after both wanted groups, not
- * because of its value. The pairing rating is the max of whatever's left. If a header can't be
- * read at all (e.g. a hand-edited CSV with no header row), both groups default to present rather
- * than capping at zero and leaving everyone unrated.
+ * A real RosterTable.csv export is a fixed 16-column layout (confirmed across multiple real
+ * exports — every data row is exactly 16 columns, and the NWSRS/USCF/FIDE group header appears
+ * once at the top, not per section):
+ *   0 section · 1 last · 2 first · 3 grade · 4 school · 5 NWSRS rating · 6 NWSRS id ·
+ *   7 USCF rating · 8 USCF id · 9 USCF expiry · 10 FIDE rating · 11 FIDE id · 12 FIDE title ·
+ *   13 NWChess expiry · 14 requested-bye rounds · 15 fee status
+ * so those rows read NWSRS from column 5 and USCF from column 7 directly and never look at
+ * column 10.
+ *
+ * A row that *isn't* 16 columns (a hand-edited file, a partial paste, some unseen export variant)
+ * falls back to a heuristic scan: anchor byes/status off the row's *end*, then take rating-range
+ * numeric tokens between grade and byes in left-to-right order. The header lists the groups
+ * NWSRS → USCF → FIDE in that fixed order, so the *first* one or two such tokens (however many of
+ * NWSRS/USCF the header declares — see sectionHasNwsrs/sectionHasUscf) are the wanted ones and a
+ * trailing FIDE token is dropped. This fallback can still be fooled if a wanted group is blank
+ * for that player (shifting FIDE into a kept slot), which is exactly why the fixed-index path
+ * above exists for the standard layout that covers every real export.
  */
 const NWCHESS_HEADER_WORDS = /^(name|first|last|uscf|nwsrs|nwchess|fide|grade|school|byes|fees|id|rating|status|section|title)$/i;
 function parseNwchessRoster(text: string): RosterEntry[] {
@@ -231,14 +227,25 @@ function parseNwchessRoster(text: string): RosterEntry[] {
     const status = c[c.length - 1] ?? '';
     const byesRaw = c[c.length - 2];
     if (/withdr|^wd$|inactive|dropped/i.test(status) || /withdr/i.test(section)) continue; // not playing
-    const middle = c.slice(3, c.length - 2);
-    const candidates = middle
-      .filter((f) => /^\d+$/.test(f))
-      .map((f) => ratingOrNull(f))
-      .filter((n): n is number => n != null);
-    const wantedCount = (sectionHasNwsrs ? 1 : 0) + (sectionHasUscf ? 1 : 0);
-    const ratings = wantedCount > 0 ? candidates.slice(0, wantedCount) : candidates;
-    const rating = ratings.length ? Math.max(...ratings) : null;
+
+    let rating: number | null;
+    if (c.length === 16) {
+      // Standard RosterTable.csv layout — NWSRS at col 5, USCF at col 7. Column 10 (FIDE) is
+      // never read, so a FIDE rating can't leak in no matter how high it is or whether it's the
+      // player's only rating.
+      const nwsrs = ratingOrNull(c[5]);
+      const uscf = ratingOrNull(c[7]);
+      rating = nwsrs != null || uscf != null ? Math.max(nwsrs ?? 0, uscf ?? 0) : null;
+    } else {
+      const middle = c.slice(3, c.length - 2);
+      const candidates = middle
+        .filter((f) => /^\d+$/.test(f))
+        .map((f) => ratingOrNull(f))
+        .filter((n): n is number => n != null);
+      const wantedCount = (sectionHasNwsrs ? 1 : 0) + (sectionHasUscf ? 1 : 0);
+      const ratings = wantedCount > 0 ? candidates.slice(0, wantedCount) : candidates;
+      rating = ratings.length ? Math.max(...ratings) : null;
+    }
     const name = `${first} ${last}`.replace(/\s{2,}/g, ' ').trim();
     if (!name) continue;
     // Only dedupe an exact name+rating repeat — see parsePlainList for why name alone isn't enough.
