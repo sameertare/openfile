@@ -41,11 +41,12 @@ describe('repertoireBook', () => {
     }
   });
 
-  it('the Haxo Gambit line is present in the White Scotch repertoire', () => {
+  it('the Haxo Gambit line (8.fxg7 sac) is present in the White Scotch repertoire', () => {
     const def = REPERTOIRES.find((r) => r.id === 'scotch-white')!;
     const tree = buildRepertoireTree(def);
-    const node = nodeAtPath(tree, ['e4', 'e5', 'Nf3', 'Nc6', 'd4', 'exd4', 'Bc4', 'Bc5', 'O-O', 'Nf6', 'e5', 'd5', 'exf6', 'dxc4', 'fxg7', 'Rg8', 'Bh6']);
+    const node = nodeAtPath(tree, ['e4', 'e5', 'Nf3', 'Nc6', 'd4', 'exd4', 'Bc4', 'Bc5', 'O-O', 'Nf6', 'e5', 'd5', 'exf6', 'dxc4', 'fxg7', 'Rg8']);
     expect(node).not.toBeNull();
+    expect(node!.children.size).toBeGreaterThan(0);
   });
 
   it('nodeAtPath returns null for a path not in the tree', () => {

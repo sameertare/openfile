@@ -48,9 +48,13 @@ export const REPERTOIRES: RepertoireDef[] = [
     lines: [
       '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Nf6 5. Nc3 Bb4 6. Nxc6 bxc6 7. Bd3 d5 8. exd5 cxd5 9. O-O O-O 10. Bg5',
       '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Bc5 5. Be3 Qf6 6. c3 Nge7 7. Bc4 Ne5 8. Be2 Qg6',
-      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Nf6 5. e5 d5 6. Bb5 Ne4 7. Nxd4 Bc5 8. Be3 Bd7 9. Nxc6 bxc6 10. Bxc6 Rc8 11. Bxd5',
-      // Haxo Gambit: 4...Bc5 5.O-O Nf6 6.e5 d5 7.exf6 dxc4 8.fxg7 Rg8 9.Bh6
-      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Bc5 5. O-O Nf6 6. e5 d5 7. exf6 dxc4 8. fxg7 Rg8 9. Bh6',
+      // Stockfish 18 (depth 20): 9.Bxc6 first (not 9.Nxc6 bxc6 10.Bxc6??, which just drops the
+      // bishop to 10...Bxc6 — the d7-bishop already covers c6). Full line verified near-equal (+28cp).
+      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Nf6 5. e5 d5 6. Bb5 Ne4 7. Nxd4 Bc5 8. Be3 Bd7 9. Bxc6 bxc6 10. Nd2 Nxd2 11. Qxd2 Bb6',
+      // Haxo Gambit: 4...Bc5 5.O-O Nf6 6.e5 d5 7.exf6 dxc4 8.fxg7 Rg8 — the defining piece sac.
+      // Stockfish 18 (depth 20, MultiPV 3) has 9.Re1 as the top try here, not the historically named
+      // 9.Bh6 (Bh6 isn't in the top 3 at that depth); Re1 keeps the same sac, just a sounder follow-up.
+      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Bc5 5. O-O Nf6 6. e5 d5 7. exf6 dxc4 8. fxg7 Rg8 9. Re1',
     ],
   },
   {
@@ -60,9 +64,10 @@ export const REPERTOIRES: RepertoireDef[] = [
     description: 'Defending 1...e5 against the Scotch Game, Scotch Gambit, and the Haxo Gambit.',
     lines: [
       '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Nf6 5. Nc3 Bb4 6. Nxc6 bxc6 7. Bd3 d5 8. exd5 cxd5 9. O-O O-O 10. Bg5 c6',
-      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Nf6 5. e5 d5 6. Bb5 Ne4 7. Nxd4 Bc5 8. Be3 Bd7 9. Nxc6 bxc6 10. Bxc6 Rc8 11. Bxd5 Nxf2',
-      // Facing the Haxo Gambit: keep material, finish development, castle by hand with ...Kf8-g7 or hide the king via ...Be6/...Qd5.
-      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Bc5 5. O-O Nf6 6. e5 d5 7. exf6 dxc4 8. fxg7 Rg8 9. Bh6 Be6',
+      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Nf6 5. e5 d5 6. Bb5 Ne4 7. Nxd4 Bc5 8. Be3 Bd7 9. Bxc6 bxc6 10. Nd2 Nxd2 11. Qxd2 Bb6',
+      // Facing the Haxo Gambit: keep material, finish development. 9...Be6 is Stockfish 18's own
+      // top reply to 9.Re1 at depth 20.
+      '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Bc5 5. O-O Nf6 6. e5 d5 7. exf6 dxc4 8. fxg7 Rg8 9. Re1 Be6',
     ],
   },
   {
@@ -85,7 +90,8 @@ export const REPERTOIRES: RepertoireDef[] = [
       '1. e4 c5 2. c3 d5 3. exd5 Qxd5 4. d4 Nf6 5. Nf3 Bg4 6. Be2 e6 7. h3 Bh5 8. O-O Nc6 9. Be3 cxd4 10. cxd4',
       '1. e4 c5 2. c3 Nf6 3. e5 Nd5 4. Nf3 Nc6 5. Bc4 Nb6 6. Bb3 c4 7. Bc2 Qc7 8. Qe2 g6',
       '1. e4 c5 2. c3 e6 3. d4 d5 4. e5 Nc6 5. Nf3 Qb6 6. a3 Nh6 7. b4',
-      '1. e4 c5 2. c3 d6 3. d4 Nf6 4. Bd3 cxd4 5. cxd4 Nc6 6. Nc3 g6 7. Nge2',
+      // Stockfish 18 (depth 20) prefers 6.Nge2 before Nc3 (+68cp), not 6.Nc3 g6 7.Nge2.
+      '1. e4 c5 2. c3 d6 3. d4 Nf6 4. Bd3 cxd4 5. cxd4 Nc6 6. Nge2 Bd7 7. Nbc3 e5 8. Bc2 g6 9. d5 Nb4 10. Ba4',
     ],
   },
   {
