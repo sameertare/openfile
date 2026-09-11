@@ -569,6 +569,8 @@ html.walldisplay { font-size: 26px; }
 .cand-rank3 .cand-num { background: var(--blue); }
 .cand-move { font-family: ui-monospace, monospace; font-weight: 600; min-width: 46px; }
 .cand-cont { font-family: ui-monospace, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cand-clickable { cursor: pointer; }
+.cand-clickable:hover { border-color: var(--accent); }
 
 /* ---------- lichess-style vertical move list (Any Position, Live, Play vs Engine) ---------- */
 .live-pgn-label { margin-top: 12px; font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }

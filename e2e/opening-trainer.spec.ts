@@ -24,6 +24,24 @@ test.describe('Opening Trainer', () => {
     await expect(page.locator('#trainer-candidates')).toContainText('e5', { timeout: 15000 });
   });
 
+  test('clicking an off-book engine candidate plays it, and Back returns to the book', async ({ page }) => {
+    await page.locator('#your-moves .move-btn', { hasText: 'e4' }).click();
+    await expect(page.locator('#trainer-candidates .cand-clickable').first()).toBeVisible({ timeout: 15000 });
+
+    // Find a candidate that ISN'T flagged "in this repertoire" — an off-book try — regardless of
+    // which rank the engine happens to put it at.
+    const offBook = page.locator('#trainer-candidates .cand-clickable').filter({ hasNotText: 'in this repertoire' }).first();
+    await expect(offBook).toBeVisible();
+    const san = await offBook.getAttribute('data-san');
+    expect(san).toBeTruthy();
+    await offBook.click();
+    await expect(page.locator('#line-pgn-moves')).toContainText(san!);
+    await expect(page.locator('#your-moves')).toContainText("Off this repertoire's book lines");
+
+    await page.click('#up-btn');
+    await expect(page.locator('#your-moves')).toContainText('e5');
+  });
+
   test('switching repertoires resets the board and shows the new description', async ({ page }) => {
     await page.selectOption('#repertoire-select', 'panov-white');
     await expect(page.locator('#repertoire-description')).toContainText('Panov');

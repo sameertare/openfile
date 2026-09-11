@@ -64,26 +64,49 @@ function selectRepertoire(id: string) {
   updateDrillCard();
 }
 
-function currentNode() {
-  return nodeAtPath(tree, path) ?? tree.root;
+/** The book tree node at the current path, or null once you've stepped off it (played a move —
+ *  your own or one of the engine's off-book suggestions — that isn't a recommended continuation
+ *  here). null just means "no book moves from here," not an error. */
+function currentTreeNode() {
+  return nodeAtPath(tree, path);
+}
+
+/** The actual current position, replayed from the start position — independent of the tree, so it
+ *  stays correct even off-book (nodeAtPath can't resolve a position the tree never recorded). */
+function currentFen(): string {
+  const c = new Chess();
+  for (const san of path) {
+    try {
+      c.move(san);
+    } catch {
+      break; // shouldn't happen (every path entry came from a legality-checked move), but don't crash the view if it does
+    }
+  }
+  return c.fen();
+}
+
+function playMove(san: string) {
+  path = [...path, san];
+  render();
 }
 
 function render() {
-  const node = currentNode();
-  if (!node) return;
-  board.setFen(node.fen);
+  const fen = currentFen();
+  board.setFen(fen);
   renderLinePgnMoves();
 
-  const children = [...node.children.keys()];
-  yourMovesEl.innerHTML = children.length
-    ? `<div class="btn-row">${children.map((san) => `<button type="button" class="btn move-btn" data-san="${esc(san)}">${esc(san)}</button>`).join('')}</div>`
-    : `<p class="hint">End of this line.</p>`;
-  yourMovesEl.querySelectorAll<HTMLElement>('.move-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      path = [...path, btn.dataset.san!];
-      render();
+  const node = currentTreeNode();
+  const children = node ? [...node.children.keys()] : [];
+  if (children.length) {
+    yourMovesEl.innerHTML = `<div class="btn-row">${children.map((san) => `<button type="button" class="btn move-btn" data-san="${esc(san)}">${esc(san)}</button>`).join('')}</div>`;
+    yourMovesEl.querySelectorAll<HTMLElement>('.move-btn').forEach((btn) => {
+      btn.addEventListener('click', () => playMove(btn.dataset.san!));
     });
-  });
+  } else if (node) {
+    yourMovesEl.innerHTML = `<p class="hint">End of this line.</p>`;
+  } else {
+    yourMovesEl.innerHTML = `<p class="hint">Off this repertoire's book lines — the engine analysis below is still live. Use ⏮ Start / ◀ Back to return to a book position.</p>`;
+  }
 
   debouncedUpdateCandidates();
 }
@@ -119,29 +142,32 @@ function renderCandidates(fen: string, results: EngineEval[]) {
     .filter((a): a is { from: string; to: string; rank: 1 | 2 | 3 } => a !== null);
   board.setArrows(arrows);
 
-  const node = currentNode();
+  const node = currentTreeNode();
   const recommended = node ? new Set(node.children.keys()) : new Set<string>();
   const rows = results.slice(0, NUM_CANDIDATES).map((r, i) => {
-    const san = r.bestmove ? uciToSan(fen, r.bestmove) ?? r.bestmove : '—';
+    const san = r.bestmove ? uciToSan(fen, r.bestmove) ?? r.bestmove : null;
     const whiteEval = stmWhite ? r.cp : -r.cp;
     const evalStr = fmtEval(whiteEval, r.mateIn, stmWhite);
     const contPv = r.bestmove ? pvToSans(fen, r.pv, 4).slice(1).join(' ') : '';
-    const inBook = recommended.has(san) ? ' <span class="hint">(in this repertoire)</span>' : '';
-    return `<div class="cand-row cand-rank${i + 1}">
+    const inBook = san && recommended.has(san) ? ' <span class="hint">(in this repertoire)</span>' : '';
+    return `<div class="cand-row cand-rank${i + 1} ${san ? 'cand-clickable' : ''}" ${san ? `data-san="${esc(san)}"` : ''}>
       <span class="cand-num">${i + 1}</span>
-      <span class="cand-move">${esc(san)}</span>
+      <span class="cand-move">${esc(san ?? '—')}</span>
       <span class="eval-chip">${esc(evalStr)}</span>
       ${contPv ? `<span class="hint cand-cont">${esc(contPv)}</span>` : ''}${inBook}
     </div>`;
   });
   trainerCandidatesEl.innerHTML = rows.join('');
+  // Clicking a candidate plays it — including engine tries that aren't in the repertoire tree, so
+  // you can follow an off-book suggestion instead of only ever the book's own recommended moves.
+  trainerCandidatesEl.querySelectorAll<HTMLElement>('.cand-clickable').forEach((row) => {
+    row.addEventListener('click', () => playMove(row.dataset.san!));
+  });
 }
 
 async function updateCandidates() {
   const token = ++candidatesToken;
-  const node = currentNode();
-  if (!node) { trainerCandidatesEl.innerHTML = ''; board.setArrows([]); return; }
-  const fen = node.fen;
+  const fen = currentFen();
   const c = new Chess(fen);
   if (c.isGameOver()) { trainerCandidatesEl.innerHTML = '<p class="hint">Game over in this position.</p>'; board.setArrows([]); return; }
   trainerCandidatesEl.innerHTML = '<p class="hint">Analyzing…</p>';
@@ -149,7 +175,7 @@ async function updateCandidates() {
   const eng = await getEngine();
   const results = await eng.evaluateMultiPv(fen, depth, NUM_CANDIDATES);
   if (token !== candidatesToken) return; // superseded by a newer navigation
-  if (currentNode()?.fen !== fen) return; // view moved on while we were searching
+  if (currentFen() !== fen) return; // view moved on while we were searching
   renderCandidates(fen, results);
 }
 
@@ -184,22 +210,22 @@ function renderLinePgnMoves() {
 }
 
 board.onSquareClick = (sq) => {
-  const node = currentNode();
-  if (!node) return;
-  const c = new Chess(node.fen);
+  // Any legal move is playable here, not just the repertoire's recommended ones — free exploration
+  // (including following an engine suggestion that isn't in the book) shouldn't be blocked by the
+  // tree; currentTreeNode() being null just means the resulting position has no book moves of its
+  // own, handled by render()'s "off this repertoire's book lines" message.
+  const c = new Chess(currentFen());
   const piece = c.get(sq as any);
   const sel = board.getSelected();
   if (sel && sel !== sq) {
     const moves = c.moves({ square: sel as any, verbose: true }) as any[];
     const m = moves.find((x) => x.to === sq);
     board.setSelected(null);
-    if (m && node.children.has(m.san)) {
-      path = [...path, m.san];
-      render();
+    if (m) {
+      playMove(m.san);
       return;
     }
-    if (m) board.flashIllegal(sq); // a legal chess move, but not in this repertoire's tree
-    else if (!(piece && piece.color === c.turn())) board.flashIllegal(sq);
+    if (!(piece && piece.color === c.turn())) board.flashIllegal(sq);
   }
   if (piece && piece.color === c.turn()) board.setSelected(sq);
   else board.setSelected(null);
