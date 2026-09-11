@@ -15,6 +15,15 @@ test.describe('Opening Trainer', () => {
     await expect(page.locator('#your-moves')).toContainText('e5');
   });
 
+  test('shows a live Stockfish eval that updates after every move', async ({ page }) => {
+    await expect(page.locator('#trainer-candidates')).toContainText('e4', { timeout: 15000 });
+    await expect(page.locator('#trainer-candidates')).toContainText('in this repertoire');
+
+    await page.locator('#your-moves .move-btn', { hasText: 'e4' }).click();
+    await expect(page.locator('#trainer-candidates')).toContainText('Analyzing');
+    await expect(page.locator('#trainer-candidates')).toContainText('e5', { timeout: 15000 });
+  });
+
   test('switching repertoires resets the board and shows the new description', async ({ page }) => {
     await page.selectOption('#repertoire-select', 'panov-white');
     await expect(page.locator('#repertoire-description')).toContainText('Panov');

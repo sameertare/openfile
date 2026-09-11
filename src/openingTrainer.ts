@@ -7,6 +7,10 @@ import { newCard, isDue, review } from './srs';
 import type { SrsCard } from './srs';
 import { REPERTOIRES, buildRepertoireTree, collectQuizPoints, nodeAtPath } from './repertoireBook';
 import type { RepertoireDef, RepertoireTree, QuizPoint } from './repertoireBook';
+import { Engine } from './engine';
+import type { EngineEval } from './engine';
+import { fmtEval, uciToSan, pvToSans } from './engineFormat';
+import { debounce } from './debounce';
 
 registerServiceWorker();
 initTheme();
@@ -24,6 +28,8 @@ const board = new Board($('#board'));
 const linePgnLabel = $('#line-pgn-label');
 const linePgnMoves = $('#line-pgn-moves');
 const yourMovesEl = $('#your-moves');
+const trainerDepthSelect = $('#trainer-depth') as HTMLSelectElement;
+const trainerCandidatesEl = $('#trainer-candidates');
 
 const drillCard = $('#drill-card');
 const drillDueCount = $('#drill-due-count');
@@ -78,7 +84,77 @@ function render() {
       render();
     });
   });
+
+  debouncedUpdateCandidates();
 }
+
+// ---------- live Stockfish eval, after every move ----------
+let engine: Engine | null = null;
+let enginePromise: Promise<Engine> | null = null;
+async function getEngine(): Promise<Engine> {
+  if (engine) return engine;
+  if (!enginePromise) {
+    enginePromise = (async () => {
+      const e = new Engine();
+      await e.init();
+      engine = e;
+      return e;
+    })();
+  }
+  return enginePromise;
+}
+
+const NUM_CANDIDATES = 3;
+let candidatesToken = 0;
+
+function renderCandidates(fen: string, results: EngineEval[]) {
+  if (!results.length) { trainerCandidatesEl.innerHTML = ''; board.setArrows([]); return; }
+  const stmWhite = fen.split(' ')[1] === 'w';
+  const arrows = results
+    .slice(0, NUM_CANDIDATES)
+    .map((r, i) => {
+      const uci = r.bestmove;
+      return uci ? { from: uci.slice(0, 2), to: uci.slice(2, 4), rank: (i + 1) as 1 | 2 | 3 } : null;
+    })
+    .filter((a): a is { from: string; to: string; rank: 1 | 2 | 3 } => a !== null);
+  board.setArrows(arrows);
+
+  const node = currentNode();
+  const recommended = node ? new Set(node.children.keys()) : new Set<string>();
+  const rows = results.slice(0, NUM_CANDIDATES).map((r, i) => {
+    const san = r.bestmove ? uciToSan(fen, r.bestmove) ?? r.bestmove : '—';
+    const whiteEval = stmWhite ? r.cp : -r.cp;
+    const evalStr = fmtEval(whiteEval, r.mateIn, stmWhite);
+    const contPv = r.bestmove ? pvToSans(fen, r.pv, 4).slice(1).join(' ') : '';
+    const inBook = recommended.has(san) ? ' <span class="hint">(in this repertoire)</span>' : '';
+    return `<div class="cand-row cand-rank${i + 1}">
+      <span class="cand-num">${i + 1}</span>
+      <span class="cand-move">${esc(san)}</span>
+      <span class="eval-chip">${esc(evalStr)}</span>
+      ${contPv ? `<span class="hint cand-cont">${esc(contPv)}</span>` : ''}${inBook}
+    </div>`;
+  });
+  trainerCandidatesEl.innerHTML = rows.join('');
+}
+
+async function updateCandidates() {
+  const token = ++candidatesToken;
+  const node = currentNode();
+  if (!node) { trainerCandidatesEl.innerHTML = ''; board.setArrows([]); return; }
+  const fen = node.fen;
+  const c = new Chess(fen);
+  if (c.isGameOver()) { trainerCandidatesEl.innerHTML = '<p class="hint">Game over in this position.</p>'; board.setArrows([]); return; }
+  trainerCandidatesEl.innerHTML = '<p class="hint">Analyzing…</p>';
+  const depth = parseInt(trainerDepthSelect.value, 10);
+  const eng = await getEngine();
+  const results = await eng.evaluateMultiPv(fen, depth, NUM_CANDIDATES);
+  if (token !== candidatesToken) return; // superseded by a newer navigation
+  if (currentNode()?.fen !== fen) return; // view moved on while we were searching
+  renderCandidates(fen, results);
+}
+
+const debouncedUpdateCandidates = debounce(updateCandidates, 80);
+trainerDepthSelect.addEventListener('change', () => void updateCandidates());
 
 function renderLinePgnMoves() {
   if (!path.length) {

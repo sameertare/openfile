@@ -65,6 +65,20 @@
               <h2>Moves from here</h2>
               <div id="your-moves" class="games-table-wrap"></div>
             </section>
+
+            <section class="card card-compact" id="engine-card">
+              <h2>🔎 Engine analysis</h2>
+              <div class="config-row">
+                <label>Depth
+                  <select id="trainer-depth">
+                    <option value="12">Depth 12</option>
+                    <option value="15" selected>Depth 15</option>
+                    <option value="18">Depth 18 (slower)</option>
+                  </select>
+                </label>
+              </div>
+              <div id="trainer-candidates" class="candidates-panel"></div>
+            </section>
           </div>
         </div>
       </section>
