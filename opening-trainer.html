@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Opening Trainer — OpenFile</title>
+    <link rel="icon" href="/logo-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
+  </head>
+  <body>
+    <div class="app-shell">
+    <nav class="sidebar">
+      <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
+      <div class="sidebar-links">
+        <a href="index.html">🏠 Home</a>
+        <a href="analyze.html">Performance Analysis</a>
+        <a href="strength-report.html">Strength Report</a>
+        <a href="live.html">Game Analysis</a>
+        <a href="swiss.html">Swiss Pairings</a>
+        <a href="nwchess-pairings.html">NWChess Pairings</a>
+        <a href="opening-explorer.html">Opening Explorer</a>
+        <a href="opening-trainer.html" class="active">Opening Trainer</a>
+        <a href="compare-reports.html">Compare Reports</a>
+        <a href="rating.html">USCF Rating</a>
+        <a href="fide-rating.html">FIDE Rating</a>
+        <a href="getting-started.html">Getting Started</a>
+        <a href="about.html">About</a>
+      </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
+    </nav>
+    <div class="main-col">
+    <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
+    <div id="app" class="app-wide">
+      <header class="app-header">
+        <h1>📖 Opening Trainer</h1>
+        <p class="tagline">Drill hand-picked opening repertoires move by move — click through the theory, then quiz yourself with spaced repetition so the lines actually stick.</p>
+      </header>
+
+      <section class="card" id="select-card">
+        <h2><span class="step">1</span> Repertoire</h2>
+        <label class="stack">Choose a repertoire
+          <select id="repertoire-select"></select>
+        </label>
+        <p class="hint" id="repertoire-description"></p>
+      </section>
+
+      <section id="results">
+        <div class="explorer-layout">
+          <div class="explorer-board-col">
+            <div id="board"></div>
+            <div class="nav-row">
+              <button id="root-btn" class="btn nav-btn" title="Back to start position">⏮ Start</button>
+              <button id="up-btn" class="btn nav-btn" title="One move back">◀ Back</button>
+              <button id="flip-btn" class="btn nav-btn" title="Flip board">⇅</button>
+            </div>
+            <div class="live-pgn-label" id="line-pgn-label" hidden>Moves</div>
+            <div id="line-pgn-moves" class="live-pgn-moves" hidden></div>
+          </div>
+
+          <div class="explorer-side-col">
+            <section class="card">
+              <h2>Moves from here</h2>
+              <div id="your-moves" class="games-table-wrap"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="drill-card">
+        <h2>🎓 Drill this repertoire</h2>
+        <p class="hint">Quizzes you only on your own side's moves — the recommended move at every branch point in the line above. Uses spaced repetition: answer correctly and a position comes back less often; miss it and it comes back sooner. Progress is saved in this browser, per repertoire.</p>
+        <div id="drill-intro">
+          <p id="drill-due-count" class="hint"></p>
+          <button id="drill-start-btn" class="btn btn-primary">▶ Start drilling</button>
+        </div>
+        <div id="drill-session" class="explorer-layout" hidden>
+          <div class="explorer-board-col">
+            <div id="drill-board"></div>
+            <div id="drill-feedback" class="drill-feedback"></div>
+          </div>
+          <div class="explorer-side-col">
+            <div id="drill-progress" class="hint"></div>
+            <button id="drill-next-btn" class="btn btn-primary" hidden>Next →</button>
+            <button id="drill-stop-btn" class="btn btn-ghost">Stop drilling</button>
+          </div>
+        </div>
+        <div id="drill-summary" hidden></div>
+      </section>
+
+      <footer class="app-footer">
+        OpenFile · a curated starting set, not exhaustive theory — everything runs in your browser
+      </footer>
+    </div>
+    </div>
+    </div>
+    <script type="module" src="/src/openingTrainer.ts"></script>
+  </body>
+</html>

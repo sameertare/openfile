@@ -23,6 +23,7 @@ export default defineConfig({
         nwchessPairings: page('./nwchess-pairings.html'),
         wallchartDisplay: page('./wallchart-display.html'),
         openingExplorer: page('./opening-explorer.html'),
+        openingTrainer: page('./opening-trainer.html'),
         scoutingReport: page('./scouting-report.html'),
         compareReports: page('./compare-reports.html'),
         rating: page('./rating.html'),
