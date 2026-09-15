@@ -94,6 +94,32 @@ describe('estimateFideRating: outcome direction and clamping', () => {
   });
 });
 
+describe('estimateFideRating: win expectancy matches FIDE Table 8.1.2 exactly', () => {
+  // Spot-checked against handbook.fide.com/chapter/B022024, Table 8.1.2 ("conversion of
+  // difference in rating, D, into scoring probability PD") — not the closed-form logistic curve,
+  // which only approximates this table.
+  it.each([
+    [0, 0.5],
+    [3, 0.5],
+    [4, 0.51],
+    [200, 0.76], // 198-206 -> .76
+    [391, 0.91], // 375-391 -> .91
+    [392, 0.92], // 392-411 -> .92 (the closed-form curve would still read .91 here)
+    [735, 0.99],
+    [736, 1], // beyond the table's last row
+  ])('D=%d -> PD=%s for the higher-rated player', (diff, expectedPd) => {
+    const out = estimateFideRating({ currentRating: 2700, totalScore: 1, opponentRatings: [2700 - diff] });
+    expect(out.ok).toBe(true);
+    if (out.ok) expect(out.result.winExpectancy).toBeCloseTo(expectedPd, 5);
+  });
+
+  it('gives the lower-rated player 1 - PD(H) at the same |D|', () => {
+    const out = estimateFideRating({ currentRating: 2700, totalScore: 0, opponentRatings: [2700 + 200] });
+    expect(out.ok).toBe(true);
+    if (out.ok) expect(out.result.winExpectancy).toBeCloseTo(1 - 0.76, 5);
+  });
+});
+
 describe('estimateFideRating: performance rating', () => {
   it('is average opponent + 400 for a perfect score, - 400 for a shutout', () => {
     const perfect = estimateFideRating(baseInput({ opponentRatings: [1900, 2100], totalScore: 2 }));
