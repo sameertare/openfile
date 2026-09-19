@@ -44,6 +44,37 @@ test.describe('Game Analysis — Any position mode', () => {
   });
 });
 
+test.describe('Game Analysis — Play vs Engine mode', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/live.html');
+    await page.click('button[data-mode="play"]');
+    await page.selectOption('#depth-play', '4'); // Beginner — fast enough to keep the test quick
+  });
+
+  test('playing as White: making a move gets an engine reply, and Take back both reverts it', async ({ page }) => {
+    await page.click('#play-start-btn');
+    await expect(page.locator('#play-status')).toBeVisible();
+
+    await page.locator('#board [data-sq="e2"]').click();
+    await page.locator('#board [data-sq="e4"]').click();
+    await expect(page.locator('#ply-counter')).toContainText('2', { timeout: 15000 }); // engine's reply landed
+
+    await page.click('#play-undo-btn');
+    await expect(page.locator('#ply-counter')).toHaveText('', { timeout: 15000 }); // back to the start (ply-counter is blank at the root)
+  });
+
+  test('playing as Black: Take back both before your own first move rerolls the engine\'s opening move instead of doing nothing', async ({ page }) => {
+    await page.selectOption('#play-color', 'b');
+    await page.click('#play-start-btn');
+    await expect(page.locator('#ply-counter')).toContainText('1', { timeout: 15000 }); // engine (White) moved first
+
+    await page.click('#play-undo-btn');
+    // Previously a silent no-op (line.length < 3 guard) — should still land on exactly one engine
+    // move (a fresh one, from the start position), not get stuck or clear the board entirely.
+    await expect(page.locator('#ply-counter')).toContainText('1', { timeout: 15000 });
+  });
+});
+
 test.describe('Game Analysis — Endgame Drill mode', () => {
   test('switching to Drill mode and requesting a new position renders a board', async ({ page }) => {
     await page.goto('/live.html');

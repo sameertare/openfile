@@ -1189,13 +1189,19 @@ $('#play-start-btn').addEventListener('click', () => {
 });
 
 $('#play-undo-btn').addEventListener('click', () => {
-  if (line.length < 3) return; // need at least one full move pair
+  if (line.length < 2) return; // nothing played yet at all
   invalidatePlayEngineMove(); // cancel any in-flight engine search before mutating the line
-  truncateAfter(line.length - 3);
+  // Normally removes the last full pair (the engine's reply + the user's move before it), landing
+  // back on the user's own turn to retry. But when playing Black, the engine moves first — right
+  // after that one opening move (line.length === 2, no pair exists yet), the old `length < 3`
+  // guard made this a silent no-op with no way to reroll the engine's first move. Math.max floors
+  // that case at the start position instead, and playEngineMove() below re-triggers the engine so
+  // it immediately plays a (possibly different) opening move rather than leaving the board blank.
+  truncateAfter(Math.max(0, line.length - 3));
   view = line.length - 1;
   render();
   void pump();
-  void playEngineMove(); // no-op unless the take-back somehow landed on the engine's turn
+  void playEngineMove(); // no-op unless the take-back landed on the engine's turn
 });
 
 $('#play-reset-btn').addEventListener('click', () => {
