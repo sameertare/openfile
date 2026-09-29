@@ -130,6 +130,19 @@ $('#roster-file').addEventListener('change', async () => {
   previewRoster();
 });
 
+/** A quads event runs on one fixed round count shared by every group — the whole point of "quads"
+ *  is fitting in a set number of rounds (conventionally 3, matching a plain 4-player round-robin),
+ *  not each group computing its own "complete round-robin" length independently. A group grown
+ *  past 4 players (absorbing a remainder of 1-2) would need more rounds than 4 to meet everyone —
+ *  it just plays as many of its round-robin's rounds as fit the shared schedule instead, same as a
+ *  real quads event would timebox it, rather than running long while the rest of the event is done.
+ */
+function roundsPerGroup(): number {
+  const raw = parseInt(($('#rounds-input') as HTMLInputElement).value, 10);
+  return Number.isFinite(raw) && raw > 0 ? Math.min(9, raw) : recommendedRoundsRoundRobin(4);
+}
+($('#rounds-input') as HTMLInputElement).addEventListener('input', previewRoster);
+
 function previewRoster() {
   const text = ($('#roster-text') as HTMLTextAreaElement).value;
   const roster = parseRoster(text, 'nwchess');
@@ -145,11 +158,12 @@ function previewRoster() {
   const hasLeftover = groups.some((g) => g.isLeftover);
   const unrated = roster.filter((p) => p.rating == null).length;
 
-  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${numQuads} quad${numQuads === 1 ? '' : 's'} formed by rating, highest first${hasLeftover ? ' — a remainder of 3 plays its own round-robin group, or a remainder of 1-2 is absorbed into the last quad instead of standing alone' : ''}.</p>`;
+  const rounds = roundsPerGroup();
+  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${numQuads} quad${numQuads === 1 ? '' : 's'} formed by rating, highest first${hasLeftover ? ' — a remainder of 3 plays its own round-robin group, or a remainder of 1-2 is absorbed into the last quad instead of standing alone' : ''}. Every group plays ${rounds} round${rounds === 1 ? '' : 's'}.</p>`;
 
   const groupsHtml = groups
     .map((g, i) => {
-      const rounds = recommendedRoundsRoundRobin(g.players.length);
+      const complete = recommendedRoundsRoundRobin(g.players.length);
       const label = g.isLeftover ? 'Leftover group' : `Quad ${i + 1}`;
       const rows = g.players
         .map(
@@ -160,8 +174,11 @@ function previewRoster() {
           </tr>`
         )
         .join('');
+      const incomplete = complete > rounds
+        ? ` — <span class="hint">a full round-robin of ${g.players.length} needs ${complete}; not everyone will meet in ${rounds}</span>`
+        : '';
       return `<div class="plan-section">
-        <h3>${esc(label)} <span class="hint">(${g.players.length} player${g.players.length === 1 ? '' : 's'} · round-robin · ${rounds} round${rounds === 1 ? '' : 's'})</span></h3>
+        <h3>${esc(label)} <span class="hint">(${g.players.length} player${g.players.length === 1 ? '' : 's'} · round-robin · ${rounds} round${rounds === 1 ? '' : 's'})</span>${incomplete}</h3>
         <div class="roster-table-wrap"><table class="roster-table"><thead><tr>
             <th class="num">#</th><th>Name</th><th class="num">Rating</th>
           </tr></thead><tbody>${rows}</tbody></table></div>
@@ -183,11 +200,12 @@ $('#parse-btn').addEventListener('click', () => {
   const usable = groups.filter((g) => g.players.length >= 2);
   if (!usable.length) { $('#roster-preview').innerHTML = `<p class="neg">Each quad needs at least 2 players.</p>`; return; }
   let quadNo = 0;
+  const rounds = roundsPerGroup();
   ev = {
     name: eventName,
     sections: usable.map((g) => {
       const name = g.isLeftover ? 'Leftover group' : `Quad ${++quadNo}`;
-      return createTournament(name, g.players, undefined, 'round-robin', 'swiss');
+      return createTournament(name, g.players, rounds, 'round-robin', 'swiss');
     }),
     active: 0,
   };

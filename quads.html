@@ -44,8 +44,11 @@
           <label class="stack" style="flex:1; min-width:220px;">Event name
             <input type="text" id="tname" class="text-input" placeholder="Spring Quads" />
           </label>
+          <label class="stack">Rounds per group
+            <input type="number" id="rounds-input" class="text-input" min="1" max="9" value="3" style="width:90px;" />
+          </label>
         </div>
-        <p class="hint" id="format-hint">An NWChess RosterTable.csv export. FIDE ratings ignored; seeded by max(NWSRS, USCF); withdrawn players excluded. Every group plays round-robin. No bye requests or family-group avoidance.</p>
+        <p class="hint" id="format-hint">An NWChess RosterTable.csv export. FIDE ratings ignored; seeded by max(NWSRS, USCF); withdrawn players excluded. Every group plays round-robin for the <b>same</b> number of rounds — a quads event runs on a fixed schedule, so a group grown past 4 players plays as many rounds of its round-robin as fit, not the extra rounds a full round-robin of that size would otherwise need. No bye requests or family-group avoidance.</p>
         <label class="stack">Paste or upload an NWChess RosterTable.csv export
           <textarea id="roster-text" class="text-area" rows="8" placeholder="Paste the exported RosterTable.csv contents here, or use Upload below."></textarea>
         </label>

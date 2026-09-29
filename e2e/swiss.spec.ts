@@ -125,8 +125,10 @@ test.describe('Quads Pairings', () => {
     await expect(page.locator('#section-tabs')).toContainText('R1');
   });
 
-  test('a remainder of 1-2 is absorbed into the last quad, never a standalone group of 1-2', async ({ page }) => {
+  test('a remainder of 1-2 is absorbed into the last quad (never a standalone group of 1-2), and every group plays the SAME fixed round count', async ({ page }) => {
     // 10 players -> floor(10/4) = 2 quads, remainder 2 -> merged into the last quad, giving [4, 6].
+    // A quads event runs on one fixed schedule (default 3 rounds) shared by every group — the
+    // 6-player group does NOT get the 5 rounds a complete round-robin of 6 would otherwise need.
     const header = '" ","Name","NWSRS","USCF","FIDE","NWChess","Byes","Fees"';
     const subheader = '"","","First","","","","ID","","ID","","","ID","Title","","Rounds","Status"';
     const rows = Array.from({ length: 10 }, (_, i) => {
@@ -135,15 +137,16 @@ test.describe('Quads Pairings', () => {
     });
     await page.fill('#roster-text', [header, subheader, ...rows].join('\n'));
     await expect(page.locator('#roster-preview')).toContainText('4 players · round-robin · 3 rounds');
-    await expect(page.locator('#roster-preview')).toContainText('6 players · round-robin · 5 rounds');
+    await expect(page.locator('#roster-preview')).toContainText('6 players · round-robin · 3 rounds');
+    await expect(page.locator('#roster-preview')).toContainText('a full round-robin of 6 needs 5; not everyone will meet in 3');
     await expect(page.locator('#roster-preview')).not.toContainText('Leftover');
   });
 
-  test('a quad grown to absorb a remainder (5 rounds) doesn\'t get its extra rounds forced onto the shorter quads (the reported rematch bug)', async ({ page }) => {
+  test('every group is capped at the same "Rounds per group" setting, so a grown quad never outlives the shorter ones (the reported rematch bug)', async ({ page }) => {
     page.on('dialog', (d) => d.accept()); // "unfinished games, pair anyway?" — no results entered on purpose
 
-    // 14 players -> floor(14/4) = 3 quads, remainder 2 -> [4, 4, 6]. The two 4-quads need 3 rounds;
-    // the 6-quad needs 5. Pairing 5 times should NOT force the two 4-quads past their own round 3.
+    // 14 players -> floor(14/4) = 3 quads, remainder 2 -> [4, 4, 6]. All three now share the same
+    // fixed round count (default 3), so pairing repeatedly must never push ANY of them past R3.
     const header = '" ","Name","NWSRS","USCF","FIDE","NWChess","Byes","Fees"';
     const subheader = '"","","First","","","","ID","","ID","","","ID","Title","","Rounds","Status"';
     const rows = Array.from({ length: 14 }, (_, i) => {
@@ -158,8 +161,24 @@ test.describe('Quads Pairings', () => {
 
     await expect(page.locator('#section-tabs')).toContainText('Quad 1 4p · R3');
     await expect(page.locator('#section-tabs')).toContainText('Quad 2 4p · R3');
-    // The grown 6-player quad plays out its full 5 rounds — it's not held back by the shorter ones.
-    await expect(page.locator('#section-tabs')).toContainText('Quad 3 6p · R5');
+    // The grown 6-player quad is capped at the same 3 rounds as everyone else — not the 5 a
+    // complete round-robin of 6 would otherwise need.
+    await expect(page.locator('#section-tabs')).toContainText('Quad 3 6p · R3');
+  });
+
+  test('"Rounds per group" is adjustable and applies to every group uniformly', async ({ page }) => {
+    page.on('dialog', (d) => d.accept()); // "every group has already played its full schedule" alert, on the 3rd click
+    await page.click('#sample-roster');
+    await page.fill('#rounds-input', '2');
+    await expect(page.locator('#roster-preview')).toContainText('Every group plays 2 rounds');
+
+    await page.click('#parse-btn');
+    await page.click('#pair-btn');
+    await page.click('#pair-btn');
+    await expect(page.locator('#section-tabs')).toContainText('R2');
+    // A third click should have nothing left to pair — every group already played its 2 rounds.
+    await page.click('#pair-btn');
+    await expect(page.locator('#section-tabs')).not.toContainText('R3');
   });
 
   test('entering a result updates that quad\'s standings independently of the others', async ({ page }) => {
