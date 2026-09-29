@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quads Pairings — OpenFile</title>
+    <link rel="icon" href="/logo-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
+  </head>
+  <body>
+    <div class="app-shell">
+    <nav class="sidebar">
+      <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
+      <div class="sidebar-links">
+        <a href="index.html">🏠 Home</a>
+        <a href="analyze.html">Performance Analysis</a>
+        <a href="strength-report.html">Strength Report</a>
+        <a href="live.html">Game Analysis</a>
+        <a href="swiss.html">Swiss Pairings</a>
+        <a href="nwchess-pairings.html">NWChess Pairings</a>
+        <a href="quads.html" class="active">Quads Pairings</a>
+        <a href="opening-explorer.html">Opening Explorer</a>
+        <a href="rating.html">USCF Rating</a>
+        <a href="fide-rating.html">FIDE Rating</a>
+        <a href="about.html">About</a>
+      </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
+    </nav>
+    <div class="main-col">
+    <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
+    <div id="app">
+      <header class="app-header">
+        <h1>👥 Quads Pairings</h1>
+        <p class="tagline">Import an NWChess RosterTable.csv export, and this splits the field into round-robin groups of 4 (quads) by rating — then runs pairings, results, standings and a wall chart for every quad in parallel.</p>
+      </header>
+
+      <div class="card-grid">
+      <section class="card span-2" id="setup-card">
+        <h2><span class="step">1</span> Roster</h2>
+        <div class="config-row">
+          <label class="stack" style="flex:1; min-width:220px;">Event name
+            <input type="text" id="tname" class="text-input" placeholder="Spring Quads" />
+          </label>
+        </div>
+        <p class="hint" id="format-hint">An NWChess RosterTable.csv export. FIDE ratings ignored; seeded by max(NWSRS, USCF); withdrawn players excluded. Every quad plays a fixed round-robin schedule — no bye requests or family-group avoidance (there's no dynamic pairing to steer).</p>
+        <label class="stack">Paste or upload an NWChess RosterTable.csv export
+          <textarea id="roster-text" class="text-area" rows="8" placeholder="Paste the exported RosterTable.csv contents here, or use Upload below."></textarea>
+        </label>
+        <div class="btn-row">
+          <label class="btn" for="roster-file">📂 Upload roster file (.csv)</label>
+          <input type="file" id="roster-file" accept=".txt,.csv" hidden />
+          <button id="parse-btn" class="btn btn-primary">Create quads →</button>
+          <button id="sample-roster" class="btn btn-ghost">Load a sample roster</button>
+        </div>
+        <div id="roster-preview" class="roster-preview"></div>
+      </section>
+
+      <section class="card span-2" id="control-card" hidden>
+        <h2><span class="step">2</span> Rounds</h2>
+        <div class="config-row" style="align-items:center;">
+          <button id="pair-btn" class="btn btn-primary">➕ Pair next round</button>
+          <a href="wallchart-display.html" target="_blank" class="btn" title="Open a big-screen standings/pairings view for a projector or hall monitor">🖥 Wall display</a>
+          <span id="round-info" class="hint"></span>
+        </div>
+        <details class="more-menu">
+          <summary>⋯ More options</summary>
+          <div class="config-row" style="align-items:center;">
+            <button id="export-json" class="btn" title="Full event save file — reload it here later to continue">⬇ Export JSON</button>
+            <button id="export-trf" class="btn" title="FIDE TRF format — for submitting results to a federation or importing into other TD software">⬇ Export TRF (FIDE/USCF)</button>
+            <label class="btn" for="import-json">📂 Import</label>
+            <input type="file" id="import-json" accept=".json" hidden />
+            <button id="print-btn" class="btn">🖨 Print all standings</button>
+            <button id="edit-roster-btn" class="btn btn-ghost">← Back to roster</button>
+            <button id="reset-tourn" class="btn btn-ghost">🗑 Delete &amp; start over</button>
+          </div>
+        </details>
+        <div id="section-tabs" class="section-tabs" hidden></div>
+        <div id="round-tabs" class="round-tabs" hidden></div>
+        <div id="rounds"></div>
+      </section>
+
+      <section class="card" id="player-status-card" hidden>
+        <details id="player-status-details">
+          <summary><h2>Player status <span id="withdrawn-count" class="hint"></span></h2></summary>
+          <p class="hint">Mark a player withdrawn if they've dropped out of the event — they're skipped when pairing every future round. This doesn't change any round already paired; enter their current board as a normal result (or use "Fix a mistake in this round" for it).</p>
+          <div id="active-player-list" class="bye-player-list"></div>
+          <div class="config-row" style="align-items:center;">
+            <button id="mark-withdrawn-btn" class="btn btn-ghost">Mark checked player(s) withdrawn</button>
+          </div>
+          <div id="withdrawn-players-list"></div>
+        </details>
+      </section>
+
+      <section class="card span-2" id="standings-card" hidden>
+        <h2><span class="step">3</span> <span id="standings-title">Standings</span></h2>
+        <div id="standings"></div>
+        <p class="hint" id="standings-tiebreak-note">Tiebreaks: <b>Buchholz</b> (sum of opponents' scores) then <b>Sonneborn-Berger</b>. Byes score a full point.</p>
+      </section>
+
+      <section class="card span-2" id="wallchart-card" hidden>
+        <h2>🗺 Wall Chart</h2>
+        <div id="wallchart"></div>
+        <p class="hint">Each cell is the opponent's current standings number, color, and result — <b>w</b>/<b>b</b> for White/Black, <b>+</b>/<b>−</b>/<b>=</b> for win/loss/draw. Opponent numbers update as standings change.</p>
+      </section>
+      </div>
+
+      <div id="print-area"></div>
+
+      <footer class="app-footer">
+        OpenFile · Swiss engine runs locally · event state auto-saves in your browser
+      </footer>
+    </div>
+    </div>
+    </div>
+    <script type="module" src="/src/quadsPairings.ts"></script>
+  </body>
+</html>

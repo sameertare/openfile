@@ -96,3 +96,39 @@ test.describe('NWChess Pairings', () => {
     await expect(page.locator('#export-trf')).toBeVisible();
   });
 });
+
+test.describe('Quads Pairings', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/quads.html');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+  });
+
+  test('loads a sample roster, splits it into quads, creates the event, and pairs round 1 for every quad', async ({ page }) => {
+    await page.click('#sample-roster');
+    // Sample roster is 12 rows, one Withdrew -> 11 active players -> round(11/4) = 3 quads.
+    await expect(page.locator('#roster-preview')).toContainText('3 quads');
+    await expect(page.locator('#roster-preview')).toContainText('Quad 1');
+    await expect(page.locator('#roster-preview')).toContainText('Quad 3');
+
+    await page.click('#parse-btn');
+    await expect(page.locator('#control-card')).toBeVisible();
+    await expect(page.locator('#section-tabs')).toBeVisible();
+
+    await page.click('#pair-btn');
+    await expect(page.getByRole('heading', { name: /Round 1/ })).toBeVisible();
+    // Every quad reached round 1 in one click of "Pair next round".
+    await expect(page.locator('#section-tabs')).toContainText('Quad 1');
+    await expect(page.locator('#section-tabs')).toContainText('R1');
+  });
+
+  test('entering a result updates that quad\'s standings independently of the others', async ({ page }) => {
+    await page.click('#sample-roster');
+    await page.click('#parse-btn');
+    await page.click('#pair-btn');
+
+    const firstResultSelect = page.locator('select.result-sel').first();
+    await firstResultSelect.selectOption('1-0');
+    await expect(page.locator('#standings')).toContainText('1', { timeout: 5000 });
+  });
+});

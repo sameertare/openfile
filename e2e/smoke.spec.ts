@@ -7,6 +7,7 @@ const PAGES = [
   '/live.html',
   '/swiss.html',
   '/nwchess-pairings.html',
+  '/quads.html',
   '/opening-explorer.html',
   '/rating.html',
   '/fide-rating.html',
