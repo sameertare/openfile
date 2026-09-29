@@ -34,15 +34,17 @@ describe('splitIntoQuads', () => {
     }
   });
 
-  it('a leftover of 1-3 players becomes one trailing round-robin group, not folded into a quad', () => {
-    // n=7 -> one quad of 4, one leftover group of 3.
-    const groups = splitIntoQuads(roster(Array.from({ length: 7 }, (_, i) => 1500 - i * 10)));
-    expect(groups.map((g) => [g.players.length, g.isLeftover])).toEqual([[4, false], [3, true]]);
-  });
-
-  it('a single leftover player becomes its own (degenerate, unplayable) group rather than a quint', () => {
-    const groups = splitIntoQuads(roster(Array.from({ length: 9 }, (_, i) => 1800 - i * 10)));
-    expect(groups.map((g) => [g.players.length, g.isLeftover])).toEqual([[4, false], [4, false], [1, true]]);
+  it('any remainder (1-3 players) becomes exactly one trailing leftover group', () => {
+    for (let n = 4; n <= 40; n++) {
+      const groups = splitIntoQuads(roster(Array.from({ length: n }, (_, i) => 2000 - i)));
+      const leftovers = groups.filter((g) => g.isLeftover);
+      const remainder = n % 4;
+      if (remainder === 0) expect(leftovers).toHaveLength(0);
+      else {
+        expect(leftovers).toHaveLength(1);
+        expect(leftovers[0].players.length).toBe(remainder);
+      }
+    }
   });
 
   it('matches the reported real-world case: 22 players -> five quads of 4 + a 2-player leftover group', () => {
@@ -50,6 +52,12 @@ describe('splitIntoQuads', () => {
     expect(groups.map((g) => [g.players.length, g.isLeftover])).toEqual([
       [4, false], [4, false], [4, false], [4, false], [4, false], [2, true],
     ]);
+  });
+
+  it('a roster too small for even one quad is just one leftover group of everyone', () => {
+    const groups = splitIntoQuads(roster([1500, 1400, 1300]));
+    expect(groups).toEqual([{ players: expect.any(Array), isLeftover: true }]);
+    expect(groups[0].players).toHaveLength(3);
   });
 
   it('unrated players sort to the bottom, landing in the lowest-rated group', () => {

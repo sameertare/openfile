@@ -2,7 +2,7 @@ import './style.css';
 import {
   commitRound, createTournament, estimatedCurrentRating,
   nextRoundNumber, pairNextRound,
-  parseRoster, recommendedRoundsRoundRobin, redoLatestRound,
+  parseRoster, recommendedRounds, recommendedRoundsRoundRobin, redoLatestRound,
   setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
 } from './swissEngine';
 import type { GameResult, Round, Tournament } from './swissEngine';
@@ -130,6 +130,15 @@ $('#roster-file').addEventListener('change', async () => {
   previewRoster();
 });
 
+/** Rounds for the leftover group, which plays Swiss rather than round-robin (it isn't a quad
+ *  either). recommendedRounds() imposes a minimum of 3 — sensible for a real Swiss field, but with
+ *  only 2 players there's no one else to pair against, so 3 "rounds" would just force the same
+ *  two people to replay each other twice more. 1 round is all a 2-player field can meaningfully
+ *  play; 3+ players fall back to the normal Swiss round count. */
+function leftoverRounds(n: number): number {
+  return n === 2 ? 1 : recommendedRounds(n);
+}
+
 function previewRoster() {
   const text = ($('#roster-text') as HTMLTextAreaElement).value;
   const roster = parseRoster(text, 'nwchess');
@@ -145,12 +154,12 @@ function previewRoster() {
   const hasLeftover = groups.some((g) => g.isLeftover);
   const unrated = roster.filter((p) => p.rating == null).length;
 
-  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${numQuads} quad${numQuads === 1 ? '' : 's'} of 4 formed by rating, highest first${hasLeftover ? ', with the leftover players below 4 in their own round-robin group' : ''}.</p>`;
+  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${numQuads} quad${numQuads === 1 ? '' : 's'} of exactly 4 formed by rating, highest first${hasLeftover ? ', with the leftover players below 4 rolled into a separate Swiss section' : ''}.</p>`;
 
   const groupsHtml = groups
     .map((g, i) => {
-      const rounds = recommendedRoundsRoundRobin(g.players.length);
-      const label = g.isLeftover ? 'Leftover group' : `Quad ${i + 1}`;
+      const rounds = g.isLeftover ? leftoverRounds(g.players.length) : recommendedRoundsRoundRobin(g.players.length);
+      const label = g.isLeftover ? 'Leftover Swiss section' : `Quad ${i + 1}`;
       const rows = g.players
         .map(
           (p, j) => `<tr>
@@ -161,7 +170,7 @@ function previewRoster() {
         )
         .join('');
       return `<div class="plan-section">
-        <h3>${esc(label)} <span class="hint">(${g.players.length} player${g.players.length === 1 ? '' : 's'} · round-robin · ${rounds} round${rounds === 1 ? '' : 's'})</span></h3>
+        <h3>${esc(label)} <span class="hint">(${g.players.length} player${g.players.length === 1 ? '' : 's'} · ${g.isLeftover ? 'Swiss' : 'round-robin'} · ${rounds} round${rounds === 1 ? '' : 's'})</span></h3>
         <div class="roster-table-wrap"><table class="roster-table"><thead><tr>
             <th class="num">#</th><th>Name</th><th class="num">Rating</th>
           </tr></thead><tbody>${rows}</tbody></table></div>
@@ -186,8 +195,10 @@ $('#parse-btn').addEventListener('click', () => {
   ev = {
     name: eventName,
     sections: usable.map((g) => {
-      const name = g.isLeftover ? 'Leftover group' : `Quad ${++quadNo}`;
-      return createTournament(name, g.players, undefined, 'round-robin', 'swiss');
+      if (g.isLeftover) {
+        return createTournament('Leftover Swiss section', g.players, leftoverRounds(g.players.length), 'swiss', 'swiss');
+      }
+      return createTournament(`Quad ${++quadNo}`, g.players, undefined, 'round-robin', 'swiss');
     }),
     active: 0,
   };

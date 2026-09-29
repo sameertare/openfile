@@ -2,11 +2,10 @@
  *  localStorage I/O. src/quadsPairings.ts owns persistence and UI. */
 import type { RosterEntry } from './swissEngine';
 
-/** One resulting group from splitIntoQuads — always exactly 4 players, except possibly the very
- *  last group when the roster doesn't divide evenly by 4 (that one is 1-3). Both are round-robin:
- *  a leftover of 1-3 is too small for Swiss to make sense (with only 2 players, Swiss has no one
- *  else to pair against and would force the same rematch every round; round-robin just has them
- *  play once, or has 3 players play a natural 3-round no-repeat schedule with a bye each round). */
+/** One resulting group from splitIntoQuads. Every quad is always exactly 4 players — never grown
+ *  to a quint or shrunk to a triple to absorb a remainder. `isLeftover` marks the one trailing
+ *  group (0-3 players) that didn't fit into a full quad; it plays Swiss instead of round-robin
+ *  (src/quadsPairings.ts), since it isn't a quad either. */
 export interface QuadGroup {
   players: RosterEntry[];
   isLeftover: boolean;
@@ -14,11 +13,9 @@ export interface QuadGroup {
 
 /**
  * Splits a roster into groups of exactly 4, sorted by rating (unrated last) so "Quad 1" is always
- * the top group. A quad is a fixed, named format — exactly 4 players — so a group is never bumped
- * up to 5 or down to 3 to absorb a remainder: floor(n/4) groups of 4 are formed from the top of
- * the field, and whatever's left over (0-3 players) becomes one final round-robin group of its
- * own instead of being folded into an adjacent quad (which would make that quad not actually 4
- * players either).
+ * the top group. A quad is always exactly 4 players — floor(n/4) of them, taken from the top of
+ * the field — and whatever doesn't divide evenly (0-3 players) rolls over into one separate
+ * leftover group instead of stretching an existing quad to 5 or shrinking one to 3.
  */
 export function splitIntoQuads(roster: RosterEntry[]): QuadGroup[] {
   if (!roster.length) return [];
