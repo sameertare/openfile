@@ -74,14 +74,3 @@ test.describe('Game Analysis — Play vs Engine mode', () => {
     await expect(page.locator('#ply-counter')).toContainText('1', { timeout: 15000 });
   });
 });
-
-test.describe('Game Analysis — Endgame Drill mode', () => {
-  test('switching to Drill mode and requesting a new position renders a board', async ({ page }) => {
-    await page.goto('/live.html');
-    await page.click('button[data-mode="drill"]');
-    await expect(page.locator('#drill-layout')).toBeVisible();
-    await page.click('#drill-new-btn');
-    await expect(page.locator('#drill-board')).toBeVisible();
-    await expect(page.locator('#drill-position-label')).not.toBeEmpty();
-  });
-});

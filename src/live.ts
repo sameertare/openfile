@@ -13,7 +13,6 @@ import { buildPgnFromLine, downloadPgn } from './pgnExport';
 import { debounce } from './debounce';
 import { queryTablebase, tablebaseEligible, tbCategoryLabel, tbCategoryClass } from './tablebase';
 import type { TbResult, TbCategory } from './tablebase';
-import { ENDGAME_POSITIONS } from './endgamePositions';
 import { whiteCp, fmtEval, uciToSan, pvToSans } from './engineFormat';
 
 registerServiceWorker();
@@ -74,7 +73,7 @@ let evalsW: (number | null)[] = [null]; // white-perspective centipawns
 let bestU: (string | null)[] = [null];  // engine best move (UCI) at each position
 let mateN: (number | null)[] = [null];  // mate distance (side-to-move perspective)
 let view = 0;
-let mode: 'position' | 'live' | 'play' | 'drill' = 'position';
+let mode: 'position' | 'live' | 'play' = 'position';
 let liveFollow = true;
 let pumping = false;
 let playUserColor: 'w' | 'b' = 'w';
@@ -188,7 +187,7 @@ function render() {
   updateNav();
   renderEvalGraph();
   updatePgnOutput();
-  if (mode !== 'drill') void debouncedUpdateTablebase();
+  void debouncedUpdateTablebase();
 
   // Update play mode status. Compare side-to-move against the user's colour using the raw FEN
   // field ('w'/'b') — the `stm` above is the display string ("White"/"Black") and comparing that
@@ -225,8 +224,7 @@ function renderEvalGraph() {
 function updatePgnOutput() {
   const el = $('#live-pgn-moves');
   const label = $('#live-pgn-label');
-  // Shown on every tab that has a move line to display (Any Position, Live, Play vs Engine) —
-  // Endgame Drill hides the whole .live-layout instead, so it never reaches this function.
+  // Shown on every tab that has a move line to display (Any Position, Live, Play vs Engine).
   if (line.length < 2) {
     el.hidden = true;
     label.hidden = true;
@@ -493,120 +491,6 @@ async function updateTablebase() {
 
 // Debounce tablebase lookups the same way as candidates, for the same reason (arrow-key spam).
 const debouncedUpdateTablebase = debounce(updateTablebase, 80);
-
-// ======================================================================
-// ENDGAME DRILL — quiz mode over the same tablebase, on a separate board so it never touches the
-// shared line/view/render machinery the other three modes depend on.
-// ======================================================================
-function esc(s: string): string {
-  return s.replace(/[&<>"']/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
-  );
-}
-
-const drillBoard = new Board($('#drill-board'));
-const drillFeedback = $('#drill-tb-feedback');
-const drillPositionLabel = $('#drill-position-label');
-const drillProgressEl = $('#drill-progress');
-let drillCurrent: (typeof ENDGAME_POSITIONS)[number] | null = null;
-let drillFen = '';
-let drillTbResult: TbResult | null = null;
-let drillAwaitingAnswer = false;
-let drillStats = { correct: 0, incorrect: 0 };
-
-function drillStatsLine(): string {
-  return `${drillStats.correct} correct, ${drillStats.incorrect} missed so far`;
-}
-
-// The lichess tablebase API reports each candidate move's `category` from the perspective of
-// whoever is to move AFTER that move (the opponent) — e.g. white's best move in a won position
-// comes back "loss" (black, who moves next, is losing). Correct to compare moves against each
-// other, but backwards for a "your move keeps you winning" sentence, so invert before displaying.
-function fromMoverPerspective(cat: TbCategory): TbCategory {
-  switch (cat) {
-    case 'win': return 'loss';
-    case 'loss': return 'win';
-    case 'cursed-win': return 'blessed-loss';
-    case 'blessed-loss': return 'cursed-win';
-    case 'maybe-win': return 'maybe-loss';
-    case 'maybe-loss': return 'maybe-win';
-    default: return cat;
-  }
-}
-
-async function newDrillPosition() {
-  drillAwaitingAnswer = false;
-  drillFeedback.className = 'drill-feedback';
-  drillFeedback.innerHTML = '';
-  drillBoard.setSelected(null);
-  drillBoard.setArrow(null);
-  drillBoard.setLastMove(null);
-
-  const pos = ENDGAME_POSITIONS[Math.floor(Math.random() * ENDGAME_POSITIONS.length)];
-  drillCurrent = pos;
-  drillFen = pos.fen;
-  drillTbResult = null;
-  const stmWhite = pos.fen.split(' ')[1] === 'w';
-  drillBoard.setOrientation(stmWhite ? 'w' : 'b');
-  drillBoard.setFen(pos.fen);
-  drillPositionLabel.textContent = `${pos.label} — ${stmWhite ? 'White' : 'Black'} to move. Find the best move.`;
-  drillProgressEl.textContent = `${drillStatsLine()} · Checking tablebase…`;
-
-  const result = await queryTablebase(pos.fen);
-  if (drillFen !== pos.fen) return; // superseded by a newer "New position" click while this was in flight
-  if (!result || !result.moves.length) {
-    drillProgressEl.textContent = `${drillStatsLine()} · Tablebase unavailable for this position — try a new one.`;
-    return;
-  }
-  drillTbResult = result;
-  drillAwaitingAnswer = true;
-  drillProgressEl.textContent = drillStatsLine();
-}
-
-function answerDrillMove(playedUci: string, playedSan: string) {
-  if (!drillCurrent || !drillTbResult || !drillAwaitingAnswer) return;
-  drillAwaitingAnswer = false;
-  const bestCategory = drillTbResult.moves[0]?.category;
-  const bestSan = drillTbResult.moves[0]?.san;
-  const playedMove = drillTbResult.moves.find((m) => m.uci === playedUci);
-  const correct = !!playedMove && !!bestCategory && playedMove.category === bestCategory;
-
-  const bestLabel = bestCategory ? tbCategoryLabel(fromMoverPerspective(bestCategory)) : 'Best';
-  if (correct) {
-    drillStats.correct++;
-    drillFeedback.className = 'drill-feedback correct';
-    drillFeedback.innerHTML = `<b>✓ Correct</b> — ${esc(playedSan)}: <b>${esc(bestLabel)}</b>.`;
-  } else {
-    drillStats.incorrect++;
-    drillFeedback.className = 'drill-feedback incorrect';
-    const playedLabel = playedMove ? tbCategoryLabel(fromMoverPerspective(playedMove.category)) : 'an unclear result';
-    drillFeedback.innerHTML = `<b>✗ Not the best</b> — ${esc(playedSan)}: <b>${esc(playedLabel)}</b>. The tablebase's move was <b>${esc(bestSan ?? '—')}</b> — <b>${esc(bestLabel)}</b>.`;
-  }
-  drillProgressEl.textContent = drillStatsLine();
-}
-
-drillBoard.onSquareClick = (sq) => {
-  if (!drillCurrent || !drillAwaitingAnswer) return;
-  const c = new Chess(drillFen);
-  const piece = c.get(sq as any);
-  const sel = drillBoard.getSelected();
-  if (sel && sel !== sq) {
-    const moves = c.moves({ square: sel as any, verbose: true }) as any[];
-    const m = moves.find((x) => x.to === sq);
-    if (m) {
-      drillBoard.setSelected(null);
-      drillBoard.setLastMove([m.from, m.to]);
-      const uci = m.from + m.to + (m.promotion ? m.promotion : '');
-      answerDrillMove(uci, m.san);
-      return;
-    }
-    if (!(piece && piece.color === c.turn())) drillBoard.flashIllegal(sq);
-  }
-  if (piece && piece.color === c.turn()) drillBoard.setSelected(sq);
-  else drillBoard.setSelected(null);
-};
-
-$('#drill-new-btn').addEventListener('click', () => void newDrillPosition());
 
 // ======================================================================
 // PLAY VS ENGINE — auto-play engine moves
@@ -1293,7 +1177,7 @@ document.querySelectorAll<HTMLElement>('.tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
     tab.classList.add('active');
-    const newMode = (tab.dataset.mode as 'position' | 'live' | 'play' | 'drill') ?? 'position';
+    const newMode = (tab.dataset.mode as 'position' | 'live' | 'play') ?? 'position';
     // Leaving Live for ANY other mode (not just Position) must tear down the background stream —
     // otherwise it keeps running and can still append moves/call render() against whatever mode
     // (e.g. an in-progress Play vs Engine game) the user has since switched to.
@@ -1302,9 +1186,6 @@ document.querySelectorAll<HTMLElement>('.tab').forEach((tab) => {
     ($('#panel-position') as HTMLElement).hidden = mode !== 'position';
     ($('#panel-live') as HTMLElement).hidden = mode !== 'live';
     ($('#panel-play') as HTMLElement).hidden = mode !== 'play';
-    ($('.live-layout') as HTMLElement).hidden = mode === 'drill';
-    ($('#drill-layout') as HTMLElement).hidden = mode !== 'drill';
-    if (mode === 'drill' && !drillCurrent) void newDrillPosition();
     if (mode === 'play') {
       invalidatePlayEngineMove();
       playActive = false;
