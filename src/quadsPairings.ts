@@ -141,14 +141,17 @@ function previewRoster() {
     return;
   }
   const groups = splitIntoQuads(roster);
+  const numQuads = groups.filter((g) => !g.isLeftover).length;
+  const hasLeftover = groups.some((g) => g.isLeftover);
   const unrated = roster.filter((p) => p.rating == null).length;
 
-  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${groups.length} quad${groups.length === 1 ? '' : 's'} formed by rating, highest first.</p>`;
+  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${numQuads} quad${numQuads === 1 ? '' : 's'} of 4 formed by rating, highest first${hasLeftover ? ', with the leftover players below 4 in their own round-robin group' : ''}.</p>`;
 
   const groupsHtml = groups
     .map((g, i) => {
-      const rounds = recommendedRoundsRoundRobin(g.length);
-      const rows = g
+      const rounds = recommendedRoundsRoundRobin(g.players.length);
+      const label = g.isLeftover ? 'Leftover group' : `Quad ${i + 1}`;
+      const rows = g.players
         .map(
           (p, j) => `<tr>
             <td class="num">${j + 1}</td>
@@ -158,7 +161,7 @@ function previewRoster() {
         )
         .join('');
       return `<div class="plan-section">
-        <h3>Quad ${i + 1} <span class="hint">(${g.length} player${g.length === 1 ? '' : 's'} · ${rounds} round${rounds === 1 ? '' : 's'})</span></h3>
+        <h3>${esc(label)} <span class="hint">(${g.players.length} player${g.players.length === 1 ? '' : 's'} · round-robin · ${rounds} round${rounds === 1 ? '' : 's'})</span></h3>
         <div class="roster-table-wrap"><table class="roster-table"><thead><tr>
             <th class="num">#</th><th>Name</th><th class="num">Rating</th>
           </tr></thead><tbody>${rows}</tbody></table></div>
@@ -177,11 +180,15 @@ $('#parse-btn').addEventListener('click', () => {
   if (roster.length < 3) { $('#roster-preview').innerHTML = `<p class="neg">Need at least 3 players parsed as an NWChess roster.</p>`; return; }
   const eventName = ($('#tname') as HTMLInputElement).value.trim() || 'Quads';
   const groups = splitIntoQuads(roster);
-  const usable = groups.filter((g) => g.length >= 2);
+  const usable = groups.filter((g) => g.players.length >= 2);
   if (!usable.length) { $('#roster-preview').innerHTML = `<p class="neg">Each quad needs at least 2 players.</p>`; return; }
+  let quadNo = 0;
   ev = {
     name: eventName,
-    sections: usable.map((g, i) => createTournament(`Quad ${i + 1}`, g, undefined, 'round-robin', 'swiss')),
+    sections: usable.map((g) => {
+      const name = g.isLeftover ? 'Leftover group' : `Quad ${++quadNo}`;
+      return createTournament(name, g.players, undefined, 'round-robin', 'swiss');
+    }),
     active: 0,
   };
   save();

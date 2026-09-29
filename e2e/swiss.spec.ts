@@ -104,12 +104,14 @@ test.describe('Quads Pairings', () => {
     await page.reload();
   });
 
-  test('loads a sample roster, splits it into quads, creates the event, and pairs round 1 for every quad', async ({ page }) => {
+  test('loads a sample roster, splits it into quads plus a leftover round-robin group, creates the event, and pairs round 1 for every group', async ({ page }) => {
     await page.click('#sample-roster');
-    // Sample roster is 12 rows, one Withdrew -> 11 active players -> round(11/4) = 3 quads.
-    await expect(page.locator('#roster-preview')).toContainText('3 quads');
+    // Sample roster is 12 rows, one Withdrew -> 11 active players -> floor(11/4) = 2 quads of 4,
+    // with the remaining 3 players in their own leftover group (never a group smaller than 4).
+    await expect(page.locator('#roster-preview')).toContainText('2 quads');
     await expect(page.locator('#roster-preview')).toContainText('Quad 1');
-    await expect(page.locator('#roster-preview')).toContainText('Quad 3');
+    await expect(page.locator('#roster-preview')).toContainText('Quad 2');
+    await expect(page.locator('#roster-preview')).toContainText('Leftover group');
 
     await page.click('#parse-btn');
     await expect(page.locator('#control-card')).toBeVisible();
