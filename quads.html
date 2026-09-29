@@ -34,7 +34,7 @@
     <div id="app">
       <header class="app-header">
         <h1>👥 Quads Pairings</h1>
-        <p class="tagline">Import an NWChess RosterTable.csv export, and this splits the field into round-robin groups of exactly 4 (quads) by rating, with any leftover players rolled into a separate Swiss section — then runs pairings, results, standings and a wall chart for every group in parallel.</p>
+        <p class="tagline">Import an NWChess RosterTable.csv export, and this splits the field into round-robin quads of 4 by rating — a remainder of 3 plays its own round-robin group, and a remainder of 1-2 is absorbed into the last quad instead of standing alone — then runs pairings, results, standings and a wall chart for every group in parallel.</p>
       </header>
 
       <div class="card-grid">
@@ -45,7 +45,7 @@
             <input type="text" id="tname" class="text-input" placeholder="Spring Quads" />
           </label>
         </div>
-        <p class="hint" id="format-hint">An NWChess RosterTable.csv export. FIDE ratings ignored; seeded by max(NWSRS, USCF); withdrawn players excluded. Quads (always exactly 4 players) play round-robin; a leftover of 1-3 players plays a small Swiss section instead. No bye requests or family-group avoidance.</p>
+        <p class="hint" id="format-hint">An NWChess RosterTable.csv export. FIDE ratings ignored; seeded by max(NWSRS, USCF); withdrawn players excluded. Every group plays round-robin. No bye requests or family-group avoidance.</p>
         <label class="stack">Paste or upload an NWChess RosterTable.csv export
           <textarea id="roster-text" class="text-area" rows="8" placeholder="Paste the exported RosterTable.csv contents here, or use Upload below."></textarea>
         </label>

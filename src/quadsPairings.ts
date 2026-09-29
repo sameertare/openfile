@@ -2,7 +2,7 @@ import './style.css';
 import {
   commitRound, createTournament, estimatedCurrentRating,
   nextRoundNumber, pairNextRound,
-  parseRoster, recommendedRounds, recommendedRoundsRoundRobin, redoLatestRound,
+  parseRoster, recommendedRoundsRoundRobin, redoLatestRound,
   setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
 } from './swissEngine';
 import type { GameResult, Round, Tournament } from './swissEngine';
@@ -130,15 +130,6 @@ $('#roster-file').addEventListener('change', async () => {
   previewRoster();
 });
 
-/** Rounds for the leftover group, which plays Swiss rather than round-robin (it isn't a quad
- *  either). recommendedRounds() imposes a minimum of 3 — sensible for a real Swiss field, but with
- *  only 2 players there's no one else to pair against, so 3 "rounds" would just force the same
- *  two people to replay each other twice more. 1 round is all a 2-player field can meaningfully
- *  play; 3+ players fall back to the normal Swiss round count. */
-function leftoverRounds(n: number): number {
-  return n === 2 ? 1 : recommendedRounds(n);
-}
-
 function previewRoster() {
   const text = ($('#roster-text') as HTMLTextAreaElement).value;
   const roster = parseRoster(text, 'nwchess');
@@ -154,12 +145,12 @@ function previewRoster() {
   const hasLeftover = groups.some((g) => g.isLeftover);
   const unrated = roster.filter((p) => p.rating == null).length;
 
-  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${numQuads} quad${numQuads === 1 ? '' : 's'} of exactly 4 formed by rating, highest first${hasLeftover ? ', with the leftover players below 4 rolled into a separate Swiss section' : ''}.</p>`;
+  const note = `<p class="hint">📋 FIDE ratings ignored, seeding by <b>max(NWSRS, USCF)</b>; withdrawn players excluded. ${numQuads} quad${numQuads === 1 ? '' : 's'} formed by rating, highest first${hasLeftover ? ' — a remainder of 3 plays its own round-robin group, or a remainder of 1-2 is absorbed into the last quad instead of standing alone' : ''}.</p>`;
 
   const groupsHtml = groups
     .map((g, i) => {
-      const rounds = g.isLeftover ? leftoverRounds(g.players.length) : recommendedRoundsRoundRobin(g.players.length);
-      const label = g.isLeftover ? 'Leftover Swiss section' : `Quad ${i + 1}`;
+      const rounds = recommendedRoundsRoundRobin(g.players.length);
+      const label = g.isLeftover ? 'Leftover group' : `Quad ${i + 1}`;
       const rows = g.players
         .map(
           (p, j) => `<tr>
@@ -170,7 +161,7 @@ function previewRoster() {
         )
         .join('');
       return `<div class="plan-section">
-        <h3>${esc(label)} <span class="hint">(${g.players.length} player${g.players.length === 1 ? '' : 's'} · ${g.isLeftover ? 'Swiss' : 'round-robin'} · ${rounds} round${rounds === 1 ? '' : 's'})</span></h3>
+        <h3>${esc(label)} <span class="hint">(${g.players.length} player${g.players.length === 1 ? '' : 's'} · round-robin · ${rounds} round${rounds === 1 ? '' : 's'})</span></h3>
         <div class="roster-table-wrap"><table class="roster-table"><thead><tr>
             <th class="num">#</th><th>Name</th><th class="num">Rating</th>
           </tr></thead><tbody>${rows}</tbody></table></div>
@@ -195,10 +186,8 @@ $('#parse-btn').addEventListener('click', () => {
   ev = {
     name: eventName,
     sections: usable.map((g) => {
-      if (g.isLeftover) {
-        return createTournament('Leftover Swiss section', g.players, leftoverRounds(g.players.length), 'swiss', 'swiss');
-      }
-      return createTournament(`Quad ${++quadNo}`, g.players, undefined, 'round-robin', 'swiss');
+      const name = g.isLeftover ? 'Leftover group' : `Quad ${++quadNo}`;
+      return createTournament(name, g.players, undefined, 'round-robin', 'swiss');
     }),
     active: 0,
   };
@@ -209,7 +198,15 @@ $('#parse-btn').addEventListener('click', () => {
 // ---------- rounds ----------
 $('#pair-btn').addEventListener('click', () => {
   if (!ev) return;
-  const anyIncomplete = ev.sections.some((s) => {
+  // Quads and the leftover Swiss section can have different round counts (a quad always needs 3;
+  // a 2-player leftover needs exactly 1) — pairing every section unconditionally on every click
+  // used to force an already-finished section (like that 2-player leftover) to keep getting a new
+  // round anyway, with no one else to pair against, so it replayed the same rematch over and over.
+  // Only sections that still have scheduled rounds left get paired; a section that's already
+  // played out its totalRounds is left alone rather than extended.
+  const active = ev.sections.filter((s) => s.rounds.length < (s.totalRounds ?? Infinity));
+  if (!active.length) { alert('Every quad and section has already played its full schedule.'); return; }
+  const anyIncomplete = active.some((s) => {
     const last = s.rounds[s.rounds.length - 1];
     return last && !last.complete;
   });
@@ -217,17 +214,12 @@ $('#pair-btn').addEventListener('click', () => {
       !confirm('Some quads have unfinished games in the current round. Pair the next round for ALL quads anyway? Unentered games count as not yet played.')) {
     return;
   }
-  const anyAtLimit = ev.sections.some((s) => s.rounds.length >= (s.totalRounds ?? Infinity));
-  if (anyAtLimit &&
-      !confirm(`At least one quad has already reached its scheduled round count (quads can differ in size, so some finish sooner). Pair an extra round anyway?`)) {
-    return;
-  }
-  // Pair every quad before committing any of them — an error partway through the loop would
-  // otherwise leave an earlier quad's round mutated in memory but never saved, silently
+  // Pair every active quad before committing any of them — an error partway through the loop
+  // would otherwise leave an earlier quad's round mutated in memory but never saved, silently
   // double-pairing it on the next successful click.
   const paired: { section: Tournament; round: Round }[] = [];
   try {
-    for (const s of ev.sections) paired.push({ section: s, round: pairNextRound(s) });
+    for (const s of active) paired.push({ section: s, round: pairNextRound(s) });
   } catch (e) {
     alert(e instanceof Error ? e.message : String(e));
     return;
