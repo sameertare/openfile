@@ -1,7 +1,7 @@
 /**
  * A small, simplified spaced-repetition scheduler (SM-2-lite: binary correct/incorrect instead of
  * SM-2's 0–5 quality scale, everything else the same shape) for drilling opening-tree positions.
- * Pure logic, no DOM, no localStorage I/O — src/openingTrainer.ts owns persistence and UI.
+ * Pure logic, no DOM, no localStorage I/O — src/openingExplorer.ts owns persistence and UI.
  */
 
 export interface SrsCard {

@@ -8,7 +8,6 @@ const PAGES = [
   '/swiss.html',
   '/nwchess-pairings.html',
   '/opening-explorer.html',
-  '/compare-reports.html',
   '/rating.html',
   '/fide-rating.html',
   '/about.html',
@@ -28,13 +27,17 @@ for (const path of PAGES) {
   });
 }
 
-test('hub loads and no longer links to removed tools (Coach Roster, Openings Deviation)', async ({ page }) => {
+test('hub loads and no longer links to removed tools (Coach Roster, Openings Deviation, Compare Reports, Opening Trainer)', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'OpenFile' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Coach Roster/i })).toHaveCount(0);
   await expect(page.locator('a[href="roster.html"]')).toHaveCount(0);
   await expect(page.getByRole('link', { name: /Openings Deviation/i })).toHaveCount(0);
   await expect(page.locator('a[href="opening-deviation.html"]')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /Compare Reports/i })).toHaveCount(0);
+  await expect(page.locator('a[href="compare-reports.html"]')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /Opening Trainer/i })).toHaveCount(0);
+  await expect(page.locator('a[href="opening-trainer.html"]')).toHaveCount(0);
 });
 
 test('every sidebar nav link on the hub resolves to a real page', async ({ page, request }) => {

@@ -1,6 +1,6 @@
-/** Shared multi-series line chart — used for the report trend chart (Compare Reports) and the
- *  time-usage-by-move chart (Performance Analysis). Deliberately generic: callers pass already-
- *  computed numeric series, this only handles layout/scaling/rendering. */
+/** Multi-series line chart — used for the time-usage-by-move chart (Performance Analysis).
+ *  Deliberately generic: callers pass already-computed numeric series, this only handles
+ *  layout/scaling/rendering. */
 
 export interface ChartSeries {
   label: string;

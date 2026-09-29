@@ -86,7 +86,6 @@ const trainplanGenerateBtn = $('#trainplan-generate-btn') as HTMLButtonElement;
 const trainplanProgress = $('#trainplan-progress');
 const trainplanXlsxBtn = $('#trainplan-xlsx-btn') as HTMLButtonElement;
 const trainplanRegenerateBtn = $('#trainplan-regenerate-btn') as HTMLButtonElement;
-const trainplanCompareNote = $('#trainplan-compare-note');
 const trainplanDaysEl = $('#trainplan-days');
 
 function isPlayerNameMatch(name: string | undefined, matchKeys: Set<string>): boolean {
@@ -852,15 +851,9 @@ function renderTrainPlanActive(stored: StoredTrainingPlan, preserveOpenDays?: Se
   const today = new Date();
   const daysElapsed = Math.floor((today.getTime() - new Date(startDateISO).getTime()) / 86400000) + 1;
   const currentDay = Math.max(1, Math.min(plan.duration, daysElapsed));
-  const isPastEnd = today.getTime() > endDate.getTime();
   const openDays = preserveOpenDays ?? new Set([currentDay]);
 
   trainplanProgress.textContent = `${doneCount} / ${totalTasks} tasks done · Day ${currentDay} of ${plan.duration} · ends ${fmtPlanDate(endDate)}`;
-
-  trainplanCompareNote.className = `rec-card sev-${isPastEnd ? 'high' : 'medium'}`;
-  trainplanCompareNote.innerHTML = isPastEnd
-    ? `<h4>Plan complete — see how you did</h4><p class="section-note">This plan ended ${fmtPlanDate(endDate)}. Analyze your new games (load PGNs above and re-run analysis), then use <a href="compare-reports.html">Compare Reports</a> against the report.md you saved when you started this plan to see exactly what improved.</p>`
-    : `<h4>Tracking progress</h4><p class="section-note">Make sure you've downloaded a report.md (below) as your "before" snapshot. When this plan ends on ${fmtPlanDate(endDate)}, analyze new games and use <a href="compare-reports.html">Compare Reports</a> to see your improvement.</p>`;
 
   trainplanDaysEl.innerHTML = tasksByDay(plan)
     .map(({ day, tasks }) => {
