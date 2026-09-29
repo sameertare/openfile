@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   parseRoster,
   isNwchessRoster,
+  isQuadsRoster,
   createTournament,
   pairNextRound,
   commitRound,
@@ -199,6 +200,81 @@ describe('parseRoster: NWChess format', () => {
     const row = 'Open\tSmith\tAlice\t6\tSample ES\t1600\tSMP001A\t1550\t30000001\t01/2027\t1800\t39900000\t\t09/2027';
     const roster = parseRoster(`${tabHeader}\n${row}`, 'nwchess');
     expect(roster[0].rating).toBe(1600); // max(1600, 1550) — FIDE 1800 ignored
+  });
+});
+
+describe('parseRoster: NWChess Quads format (USCF-only export, no NWSRS/FIDE)', () => {
+  const header = '" ","Name","USCF","Fees"';
+  const subheader = '"","","First","","","ID","","Rounds","Status"';
+
+  it('detects the Quads header and distinguishes it from the full NWChess format', () => {
+    expect(isQuadsRoster(`${header}\n${subheader}\n`)).toBe(true);
+    expect(isQuadsRoster('" ","Name","NWSRS","USCF","FIDE","NWChess","Byes","Fees"')).toBe(false);
+    // "USCF" alone (no "Name"/"Fees" alongside it) shouldn't false-positive on an unrelated table.
+    expect(isQuadsRoster('Name,USCF ID,Rating,Bye Rds\nAlice,123,1500,')).toBe(false);
+  });
+
+  it('parses a real Quads row (USCF rating at column 4, not NWSRS/USCF at 5/7)', () => {
+    const row = '"Quads","Mohan","Vishnu","8","1922","30282371","02/2027","","$40.00"';
+    const roster = parseRoster(`${header}\n${subheader}\n${row}`, 'nwchess');
+    expect(roster).toHaveLength(1);
+    expect(roster[0]).toMatchObject({ name: 'Vishnu Mohan', rating: 1922, lastName: 'Mohan', firstName: 'Vishnu', section: 'Quads' });
+  });
+
+  it('does not misread the USCF id/expiry as the rating (the reported bug)', () => {
+    // Before this format was recognized, parseNwchessRoster's fixed NWSRS(5)/USCF(7) columns read
+    // the USCF id (way over 3500) and a blank cell here, leaving every player unrated.
+    const row = '"Quads","Han","Felix","3","1510","32144440","11/2026","","$40.00"';
+    const roster = parseRoster(`${header}\n${subheader}\n${row}`, 'nwchess');
+    expect(roster[0].rating).toBe(1510);
+    expect(roster[0].rating).not.toBeNull();
+  });
+
+  it('is unrated when the rating column is 0, and excludes a "Withdrew" section', () => {
+    const rows = [
+      '"Quads","Sharma","Reyansh","5","0","33075972","04/2027","","----"',
+      '"Withdrew","Palathingal","Rafael","7","2178","30810765","11/2027","","----"',
+    ];
+    const roster = parseRoster([header, subheader, ...rows].join('\n'), 'nwchess');
+    expect(roster).toHaveLength(1);
+    expect(roster[0].name).toBe('Reyansh Sharma');
+    expect(roster[0].rating).toBeNull();
+  });
+
+  it('parses the full real sample file correctly (22 active players, 4 withdrawn excluded)', () => {
+    const text = `${header}
+"","","First","","","ID","","Rounds","Status"
+"Quads","Mohan","Vishnu","8","1922","30282371","02/2027","","$40.00"
+"Quads","Han","Felix","3","1510","32144440","11/2026","","$40.00"
+"Quads","Sankar","Laya R","4","1190","31898898","07/2027","","$40.00"
+"Quads","Sankar","Deethya R","2","1070","31992260","09/2027","","$40.00"
+"Quads","Narkhede","Kshitij","5","1373","30614389","08/2027","","$40.00"
+"Quads","Meenakshi Sundaram","Pavithran","4","939","31393362","08/2027","","$40.00"
+"Quads","Meenakshi Sundaram","Adheesh","8","1277","31393378","08/2027","","$40.00"
+"Quads","Mccarthy","Eugene","6","1228","32401856","04/2027","","$40.00"
+"Quads","Chanda","Rishabh","2","1243","32216299","12/2028","","Paid"
+"Quads","Sembium","Aditi","6","1208","30460799","02/2027","","----"
+"Quads","Saripalli","Prahlada","5","1577","30709775","11/2027","","$40.00"
+"Quads","Nouveau","Pi","5","1137","32683512","11/2027","","$40.00"
+"Quads","Qin","Skyler","3","1329","31466883","10/2027","","----"
+"Quads","Ma","Caroline","4","1010","31442492","11/2027","","Paid"
+"Quads","Ma","Lewis","5","1583","31123278","03/2027","","$40.00"
+"Quads","Han","Kaiyi","4","1130","31731694","02/2028","","----"
+"Quads","Karnik","Rohan","11","1196","32319544","02/2028","","----"
+"Quads","Tare","Eevie","7","1447","31610593","12/2027","","----"
+"Quads","Mathew","Reuben","2","664","32012814","09/2026","","Paid"
+"Quads","Sharma","Reyansh","5","0","33075972","04/2027","","----"
+"Quads","Guo","Serena","3","1247","32561242","09/2027","","----"
+"Quads","Uppala","Rajesh","13","1693","30510301","06/2025","","----"
+"Withdrew","Palathingal","Rafael","7","2178","30810765","11/2027","","----"
+"Withdrew","Karthikeyan","Harishkumar","11","2065","16934805","01/2027","","----"
+"Withdrew","Yeh","George","4","1413","31977374","09/2028","","----"
+"Withdrew","Ge","Emma","4","1398","31624335","04/2028","","----"`;
+    const roster = parseRoster(text, 'nwchess');
+    expect(roster).toHaveLength(22);
+    expect(roster.find((r) => r.name === 'Vishnu Mohan')?.rating).toBe(1922);
+    expect(roster.find((r) => r.name === 'Reyansh Sharma')?.rating).toBeNull();
+    expect(roster.some((r) => r.name.includes('Palathingal'))).toBe(false);
   });
 });
 

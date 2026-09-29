@@ -162,6 +162,26 @@ export function isNwchessRoster(text: string): boolean {
 }
 
 /**
+ * NWChess also exports a leaner roster for Quads events — a real example (RosterTable.csv from a
+ * Quads section) has a group header of just `" ","Name","USCF","Fees"` (no NWSRS or FIDE column
+ * group at all, and no "school" column either), confirmed 9 columns wide on every data row:
+ *   0 section · 1 last · 2 first · 3 grade · 4 USCF rating · 5 USCF id · 6 USCF expiry ·
+ *   7 requested-bye rounds · 8 fee status
+ * Distinguished from the full RosterTable.csv (isNwchessRoster) by its group header having "Name",
+ * "USCF" AND "Fees" together but no NWSRS or FIDE group — "USCF" alone isn't a safe enough signal
+ * on its own (a generic USCF-rated wallchart, meant for parseHeaderTable, would also say "USCF"
+ * with no NWSRS/FIDE), but this exact combination is specific to NWChess's own export. Parsing a
+ * Quads export with the full-format's fixed column positions (NWSRS at 5, USCF at 7) instead reads
+ * the USCF id and expiry date as ratings, which are always out of the 100-3500 range and so parse
+ * as unrated for every single player.
+ */
+export function isQuadsRoster(text: string): boolean {
+  const head = text.replace(/\r/g, '').split('\n').slice(0, 3).join(' ');
+  return /\bName\b/i.test(head) && /\bUSCF\b/i.test(head) && /\bFees\b/i.test(head) &&
+    !/\bNWSRS\b/i.test(head) && !/\bFIDE\b/i.test(head);
+}
+
+/**
  * NWChess roster. The pairing rating is always **max(NWSRS, USCF)** — the FIDE rating column is
  * ignored entirely and unconditionally, whether or not the player has one, whether or not it's
  * higher, and even when it's their only rating (in which case they're unrated for pairing).
@@ -222,6 +242,44 @@ function parseNwchessRoster(text: string): RosterEntry[] {
     if (seen.has(key)) continue;
     seen.add(key);
     const byeRounds = parseByeRounds(byesRaw); // second-to-last column, e.g. "4,5"
+    out.push({ name, rating, section: section || undefined, lastName: last, firstName: first, ...(byeRounds.length ? { byeRounds } : {}) });
+  }
+  return out;
+}
+
+/** The leaner Quads-event RosterTable.csv variant (see isQuadsRoster) — same fixed-position
+ *  approach as parseNwchessRoster, but a single USCF rating column at position 4 instead of
+ *  NWSRS/USCF at 5/7, and no "school" column. Byes/status are still anchored off the row's end. */
+function parseQuadsRoster(text: string): RosterEntry[] {
+  const out: RosterEntry[] = [];
+  const seen = new Set<string>();
+  const lines = text.replace(/\r/g, '').split('\n');
+  const firstLine = lines.find((l) => l.trim()) ?? '';
+  const delim: 'tab' | 'csv' = firstLine.includes('\t') ? 'tab' : 'csv';
+  for (const raw of lines) {
+    if (!raw.trim()) continue;
+    if (/\buscf\b/i.test(raw)) continue; // group-label header row
+    const c = splitDelimited(raw, delim).map((f) => f.trim());
+    // 7 is the minimum width where the end-anchored byes/status columns (length-2, length-1) can't
+    // collide with the fixed-from-start section/last/first/grade/rating columns (indices 0-4).
+    if (c.length < 7) continue;
+    if (c.slice(0, 5).some((f) => NWCHESS_HEADER_WORDS.test(f))) continue; // sub-column header row
+    const section = c[0];
+    const last = c[1];
+    const first = c[2];
+    if (!last || !first) continue;
+    const status = c[c.length - 1] ?? '';
+    const byesRaw = c[c.length - 2];
+    if (/withdr|^wd$|inactive|dropped/i.test(status) || /withdr/i.test(section)) continue; // not playing
+
+    const rating = ratingOrNull(c[4]); // USCF rating — the only rating column in this format
+
+    const name = `${first} ${last}`.replace(/\s{2,}/g, ' ').trim();
+    if (!name) continue;
+    const key = `${name.toLowerCase()} ${rating ?? ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const byeRounds = parseByeRounds(byesRaw);
     out.push({ name, rating, section: section || undefined, lastName: last, firstName: first, ...(byeRounds.length ? { byeRounds } : {}) });
   }
   return out;
@@ -434,12 +492,16 @@ export type RosterFormat = 'auto' | 'nwchess' | 'onlineregistration' | 'table' |
 
 export function parseRoster(text: string, format: RosterFormat = 'auto'): RosterEntry[] {
   switch (format) {
-    case 'nwchess': return parseNwchessRoster(text);
+    // 'nwchess' covers both RosterTable.csv variants NWChess exports — the full one (NWSRS/USCF/
+    // FIDE) and the leaner one used for Quads events (USCF only) — since a caller picking this
+    // format is asking for "parse this as an NWChess export," not asserting which variant it is.
+    case 'nwchess': return isQuadsRoster(text) ? parseQuadsRoster(text) : parseNwchessRoster(text);
     case 'onlineregistration': return parseOnlineRegistrationRoster(text);
     case 'table': return parseHeaderTable(text) ?? [];
     case 'plain': return parsePlainList(text);
     default:
       if (isNwchessRoster(text)) return parseNwchessRoster(text);
+      if (isQuadsRoster(text)) return parseQuadsRoster(text);
       if (isOnlineRegistrationRoster(text)) return parseOnlineRegistrationRoster(text);
       return parseHeaderTable(text) ?? parsePlainList(text);
   }
