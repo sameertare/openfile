@@ -11,7 +11,6 @@ const PAGES = [
   '/compare-reports.html',
   '/rating.html',
   '/fide-rating.html',
-  '/getting-started.html',
   '/about.html',
 ];
 

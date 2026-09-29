@@ -29,7 +29,6 @@ export default defineConfig({
         rating: page('./rating.html'),
         fideRating: page('./fide-rating.html'),
         about: page('./about.html'),
-        gettingStarted: page('./getting-started.html'),
       },
     },
   },
