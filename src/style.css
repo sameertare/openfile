@@ -915,3 +915,45 @@ textarea {
   .export-row { flex-direction: column; }
   .btn, .btn-primary, .btn-secondary { width: 100%; }
 }
+
+/* ---------- opening trainer ---------- */
+.ot-name { font-weight: 700; font-size: 1.05rem; min-height: 1.6em; }
+.ot-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-dim); justify-content: flex-end; }
+.ot-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.ot-dot.q-good { background: #5fae4f; } .ot-dot.q-inaccurate { background: #d6ac3f; }
+.ot-dot.q-mistake { background: #e08a3c; } .ot-dot.q-blunder { background: #d8483b; }
+.sq.q-good { box-shadow: inset 0 0 0 100px rgba(95, 174, 79, 0.55); }
+.sq.q-inaccurate { box-shadow: inset 0 0 0 100px rgba(214, 172, 63, 0.6); }
+.sq.q-mistake { box-shadow: inset 0 0 0 100px rgba(224, 138, 60, 0.6); }
+.sq.q-blunder { box-shadow: inset 0 0 0 100px rgba(216, 72, 59, 0.62); }
+.ot-card-label { font-family: var(--font-label); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+.ot-score-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.ot-big { font-family: var(--font-label); font-size: 2rem; font-weight: 700; color: var(--gold); }
+.ot-score-side { font-size: 0.82rem; color: var(--text-dim); text-align: right; line-height: 1.5; }
+.ot-score-side b { color: var(--text); font-variant-numeric: tabular-nums; }
+.ot-check { display: inline-flex; align-items: center; gap: 7px; font-size: 0.9rem; cursor: pointer; }
+.ot-check input { accent-color: var(--accent); }
+#ot-priority.active { border-color: var(--gold); color: var(--gold); }
+.ot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ot-value { font-size: 1.35rem; font-weight: 700; margin: 2px 0; }
+.ot-line-title { font-weight: 700; margin-top: 2px; }
+.ot-feedback { margin: 8px 0; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.92rem; }
+.ot-fb-ok { border-color: var(--positive); color: var(--positive); }
+.ot-fb-bad { border-color: var(--red); color: var(--red); }
+.ot-done { margin: 10px 0; padding: 12px; border: 1px solid var(--positive); border-radius: 10px; background: var(--bg-inset); }
+.ot-done .btn-row { margin-top: 10px; }
+.ot-settings { display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
+.ot-settings input[type="range"] { width: 100%; accent-color: var(--accent); }
+.ot-sheet { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--red); border-radius: 8px; background: var(--bg-inset); }
+.ot-about { padding-top: 8px; font-size: 0.9rem; }
+.ot-about-lines { margin: 6px 0 0; padding-left: 18px; }
+.ot-about-lines li { margin: 3px 0; }
+.ot-cont-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.ot-cont { text-align: left; }
+.ot-cont .hint { margin-left: 4px; }
+@media (max-width: 520px) { .ot-grid { grid-template-columns: 1fr; } }
+#ot-config .stack, .ot-settings .stack { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 0.88rem; color: var(--text-dim); }
+#ot-config select { width: 100%; }
+#ot-config .config-row { margin-bottom: 12px; align-items: center; }
+#ot-config details { margin-top: 6px; border-top: 1px solid var(--border); padding: 8px 0 2px; }
+#ot-config summary { cursor: pointer; font-weight: 600; }

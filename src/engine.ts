@@ -207,6 +207,26 @@ export class Engine {
     this.stop();
   }
 
+  /**
+   * Limits playing strength to roughly `elo` (null = full strength). Stockfish's UCI_Elo only
+   * goes down to 1320, so weaker settings fall back to Skill Level (0-6), which is approximate.
+   * Call while no search is running — it applies to the next one.
+   */
+  setStrength(elo: number | null) {
+    const set = (name: string, value: string | number) => this.worker.postMessage(`setoption name ${name} value ${value}`);
+    if (elo == null) {
+      set('UCI_LimitStrength', 'false');
+      set('Skill Level', 20);
+    } else if (elo >= 1320) {
+      set('UCI_LimitStrength', 'true');
+      set('UCI_Elo', Math.min(3190, Math.round(elo)));
+      set('Skill Level', 20);
+    } else {
+      set('UCI_LimitStrength', 'false');
+      set('Skill Level', Math.max(0, Math.min(6, Math.round(((elo - 800) / 520) * 6))));
+    }
+  }
+
   destroy() {
     try {
       this.worker.postMessage('quit');

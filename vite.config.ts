@@ -24,6 +24,7 @@ export default defineConfig({
         quadsPairings: page('./quads.html'),
         wallchartDisplay: page('./wallchart-display.html'),
         openingExplorer: page('./opening-explorer.html'),
+        openingTrainer: page('./opening-trainer.html'),
         scoutingReport: page('./scouting-report.html'),
         rating: page('./rating.html'),
         fideRating: page('./fide-rating.html'),

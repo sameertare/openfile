@@ -9,13 +9,14 @@ export type Square = string; // 'e4'
 export interface RankedArrow {
   from: Square;
   to: Square;
-  rank: 1 | 2 | 3; // 1 = best move (thickest/brightest), higher ranks progressively thinner/dimmer
+  rank: 1 | 2 | 3 | 4; // 1 = best move (thickest/brightest), higher ranks progressively thinner/dimmer; 4 = opening-book move (blue, thick)
 }
 
-const ARROW_STYLE: Record<1 | 2 | 3, { color: string; width: number; opacity: number }> = {
+const ARROW_STYLE: Record<1 | 2 | 3 | 4, { color: string; width: number; opacity: number }> = {
   1: { color: 'var(--accent)', width: 0.16, opacity: 0.9 },
   2: { color: 'var(--gold)', width: 0.11, opacity: 0.75 },
   3: { color: 'var(--blue)', width: 0.08, opacity: 0.65 },
+  4: { color: 'var(--blue)', width: 0.15, opacity: 0.85 },
 };
 
 export class Board {
@@ -26,6 +27,7 @@ export class Board {
   private highlights = new Set<Square>();
   private lastMove: [Square, Square] | null = null;
   private arrows: RankedArrow[] = [];
+  private marks: Record<Square, string> = {};
   onSquareClick?: (sq: Square) => void;
 
   constructor(root: HTMLElement) {
@@ -53,6 +55,8 @@ export class Board {
     setTimeout(() => el.classList.remove('illegal'), 400);
   }
   setHighlights(sqs: Square[]) { this.highlights = new Set(sqs); this.render(); }
+  /** Extra CSS class per square (e.g. a move-quality tint) — replaces any previous set. */
+  setMarks(marks: Record<Square, string>) { this.marks = marks; this.render(); }
   setLastMove(m: [Square, Square] | null) { this.lastMove = m; this.render(); }
   /** Single best-move arrow (rank 1). Convenience wrapper over setArrows. */
   setArrow(m: [Square, Square] | null) { this.arrows = m ? [{ from: m[0], to: m[1], rank: 1 }] : []; this.render(); }
@@ -104,6 +108,7 @@ export class Board {
         if (this.selected === sq) cls.push('sel');
         if (this.highlights.has(sq)) cls.push('hl');
         if (this.lastMove && (this.lastMove[0] === sq || this.lastMove[1] === sq)) cls.push('last');
+        if (this.marks[sq]) cls.push(this.marks[sq]);
         const piece = map[sq];
         const coord =
           (fi === 0 ? `<span class="coord rank">${ranks[ri]}</span>` : '') +
@@ -117,7 +122,7 @@ export class Board {
     html += '</div>';
 
     if (this.arrows.length) {
-      const defs = ([1, 2, 3] as const)
+      const defs = ([1, 2, 3, 4] as const)
         .map((r) => `<marker id="ah${r}" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
           <path d="M0,0 L4,2 L0,4 z" fill="${ARROW_STYLE[r].color}"/></marker>`)
         .join('');

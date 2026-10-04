@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Opening Trainer — OpenFile</title>
+    <link rel="icon" href="/logo-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="theme-color" content="#14181f" />
+      <script>try{if(localStorage.getItem("openfile-theme")==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}</script>
+  </head>
+  <body>
+    <div class="app-shell">
+    <nav class="sidebar">
+      <a class="brand" href="index.html"><img src="/logo-icon.png" alt="" class="brand-logo" width="24" height="24">OpenFile</a>
+      <div class="sidebar-links">
+        <a href="index.html">🏠 Home</a>
+        <a href="analyze.html">Performance Analysis</a>
+        <a href="strength-report.html">Strength Report</a>
+        <a href="live.html">Game Analysis</a>
+        <a href="swiss.html">Swiss Pairings</a>
+        <a href="nwchess-pairings.html">NWChess Pairings</a>
+        <a href="quads.html">Quads Pairings</a>
+        <a href="opening-explorer.html">Opening Explorer</a>
+        <a href="opening-trainer.html" class="active">Opening Trainer</a>
+        <a href="rating.html">USCF Rating</a>
+        <a href="fide-rating.html">FIDE Rating</a>
+        <a href="about.html">About</a>
+      </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light/dark theme">☀️</button>
+    </nav>
+    <div class="main-col">
+    <div class="privacy-banner">🔒 <strong>Private by design</strong> — everything runs locally in your browser. Nothing is uploaded unless you explicitly choose to.</div>
+    <div id="app" class="app-wide">
+      <header class="app-header">
+        <h1>📖 Opening Trainer</h1>
+        <p class="tagline">Learn an opening by playing it: the engine plays the book moves for the other side, arrows guide you at first and fade as the line sinks in, and Stockfish grades every move. No account — progress lives in this browser.</p>
+      </header>
+
+      <div class="explorer-layout">
+        <div class="explorer-board-col">
+          <div id="ot-name" class="ot-name">Starting position</div>
+          <div id="ot-board"></div>
+          <div class="nav-row">
+            <button id="ot-back" class="btn nav-btn" title="Step back">◀ Back</button>
+            <button id="ot-fwd" class="btn nav-btn" title="Step forward">▶</button>
+            <button id="ot-flip" class="btn nav-btn" title="Flip board">Flip</button>
+            <button id="ot-restart" class="btn nav-btn" title="Start this line again">↻ Restart</button>
+          </div>
+          <div class="ot-legend" aria-label="Move quality colors">
+            <span><i class="ot-dot q-good"></i>good</span>
+            <span><i class="ot-dot q-inaccurate"></i>inaccurate</span>
+            <span><i class="ot-dot q-mistake"></i>mistake</span>
+            <span><i class="ot-dot q-blunder"></i>blunder</span>
+          </div>
+          <div class="card ot-score">
+            <div class="ot-card-label">Score today</div>
+            <div class="ot-score-row">
+              <span id="ot-score-today" class="ot-big">0</span>
+              <span class="ot-score-side">Best day: <b id="ot-score-best">0</b><br />All time: <b id="ot-score-all">0</b><br />Days practiced: <b id="ot-score-days">0</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="explorer-side-col">
+          <section class="card" id="ot-config">
+            <div class="config-row">
+              <span class="field-label">Mode</span>
+              <div class="segmented" id="ot-mode">
+                <button type="button" class="seg-btn active" data-mode="practice">Practice</button>
+                <button type="button" class="seg-btn" data-mode="play">Play engine</button>
+                <button type="button" class="seg-btn" data-mode="explore">Explore</button>
+              </div>
+            </div>
+            <label class="stack">Opening
+              <select id="ot-opening"></select>
+            </label>
+            <label class="stack" id="ot-line-row">Line
+              <select id="ot-line"></select>
+            </label>
+            <label class="stack">You play
+              <select id="ot-side">
+                <option value="auto">Opening's side</option>
+                <option value="w">White</option>
+                <option value="b">Black</option>
+              </select>
+            </label>
+            <div class="config-row">
+              <label class="ot-check" id="ot-arrows-row"><input type="checkbox" id="ot-arrows" checked /> Show book moves as blue arrows</label>
+              <label class="ot-check"><input type="checkbox" id="ot-least" /> Least-studied first</label>
+              <button type="button" id="ot-priority" class="btn btn-ghost btn-sm" title="Flagged openings come up more often">⚑ Priority</button>
+            </div>
+
+            <details id="ot-about">
+              <summary>About this opening</summary>
+              <div id="ot-about-body" class="ot-about"></div>
+            </details>
+
+            <details id="ot-settings">
+              <summary>⚙ Settings</summary>
+              <div class="ot-settings">
+                <div>
+                  <span class="field-label">Move colors</span>
+                  <div class="segmented" id="ot-colors">
+                    <button type="button" class="seg-btn active" data-colors="always">Always</button>
+                    <button type="button" class="seg-btn" data-colors="after">After my move</button>
+                    <button type="button" class="seg-btn" data-colors="off">Off</button>
+                  </div>
+                </div>
+                <label class="stack">Line length: <b id="ot-len-label">5</b> moves
+                  <input type="range" id="ot-len" min="3" max="12" value="5" />
+                  <span class="hint">Lines stop here, or just after they split from similar lines.</span>
+                </label>
+                <label class="stack">Full viewings before arrows start to fade
+                  <select id="ot-fade">
+                    <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+                    <option value="4">4</option><option value="5">5</option>
+                  </select>
+                </label>
+                <label class="stack">Stockfish rating: <b id="ot-rating-label">1500</b>
+                  <input type="range" id="ot-rating" min="800" max="2800" step="50" value="1500" />
+                  <span class="hint">Below 1320 the strength is approximate.</span>
+                </label>
+                <div>
+                  <span class="field-label">Progress</span>
+                  <div class="btn-row">
+                    <button type="button" id="ot-export" class="btn btn-sm">⬇ Export</button>
+                    <label class="btn btn-sm" for="ot-import-file">⬆ Import</label>
+                    <input type="file" id="ot-import-file" accept=".json" hidden />
+                    <button type="button" id="ot-reset" class="btn btn-ghost btn-sm">Start over…</button>
+                  </div>
+                  <p class="hint" id="ot-progress-msg"></p>
+                  <div id="ot-reset-sheet" class="ot-sheet" hidden>
+                    <p><b>What should be reset?</b></p>
+                    <div class="btn-row">
+                      <button type="button" id="ot-reset-line" class="btn btn-sm">This line</button>
+                      <button type="button" id="ot-reset-opening" class="btn btn-sm">This opening</button>
+                      <button type="button" id="ot-reset-all" class="btn btn-sm">Everything</button>
+                      <button type="button" id="ot-reset-cancel" class="btn btn-ghost btn-sm">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <section class="card ot-info" id="ot-info">
+            <div class="ot-grid">
+              <div id="ot-book-card">
+                <div class="ot-card-label">Book move</div>
+                <div id="ot-book-move" class="ot-value">—</div>
+                <div id="ot-book-name" class="hint"></div>
+                <button type="button" id="ot-hint" class="btn btn-ghost btn-sm" hidden>💡 Show book move</button>
+              </div>
+              <div>
+                <div class="ot-card-label">Evaluation</div>
+                <div id="ot-eval" class="ot-value">—</div>
+                <div id="ot-turn" class="hint"></div>
+              </div>
+            </div>
+
+            <div class="ot-card-label" style="margin-top:14px;">Line</div>
+            <div id="ot-line-title" class="ot-line-title">—</div>
+            <p id="ot-line-info" class="hint"></p>
+            <p id="ot-progress" class="hint"></p>
+            <div id="ot-feedback" class="ot-feedback" hidden></div>
+            <div id="ot-done" class="ot-done" hidden>
+              <div id="ot-done-msg"></div>
+              <div class="btn-row">
+                <button type="button" id="ot-next-line" class="btn btn-primary btn-sm">↻ Same opening</button>
+                <button type="button" id="ot-next-opening" class="btn btn-sm">🎲 Other opening</button>
+              </div>
+            </div>
+
+            <div class="ot-card-label" style="margin-top:14px;" id="ot-moves-label">Moves</div>
+            <div id="ot-moves" class="live-pgn-moves"></div>
+            <div id="ot-continuations" class="ot-continuations" hidden></div>
+          </section>
+        </div>
+      </div>
+
+      <footer class="app-footer">
+        OpenFile · opening names from lichess-org/chess-openings (CC0) · Stockfish 19 (lite) · progress saved in this browser only
+      </footer>
+    </div>
+    </div>
+    </div>
+    <script type="module" src="/src/openingTrainer.ts"></script>
+  </body>
+</html>
