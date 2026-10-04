@@ -1,0 +1,6412 @@
+[
+ {
+  "id": "italian|Italian Game: Giuoco Pianissimo",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 6,
+  "cut": "4.O-O (-62cp)",
+  "worstTrainedLossCp": 62,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 2
+ },
+ {
+  "id": "italian|Italian Game: Hungarian Defense",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 24,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 62
+ },
+ {
+  "id": "italian|Italian Game: Evans Gambit Declined",
+  "side": "w",
+  "bookPlies": 23,
+  "keptBookPlies": 8,
+  "cut": "5.b5 (-68cp)",
+  "worstTrainedLossCp": 68,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 15
+ },
+ {
+  "id": "italian|Italian Game: Classical Variation",
+  "side": "w",
+  "bookPlies": 23,
+  "keptBookPlies": 23,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -29
+ },
+ {
+  "id": "italian|Italian Game: Scotch Gambit",
+  "side": "w",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "italian|Four Knights Game: Italian Variation",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 8,
+  "cut": "5.Bxf7+ (-171cp)",
+  "worstTrainedLossCp": 171,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -10
+ },
+ {
+  "id": "italian|Italian Game: Giuoco Piano",
+  "side": "w",
+  "bookPlies": 27,
+  "keptBookPlies": 27,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 4
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit Declined",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 2,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 15
+ },
+ {
+  "id": "italian|Italian Game: Bird's Attack",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 2
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, McDonnell Defense",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 28
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit Declined, Pavlov Variation",
+  "side": "w",
+  "bookPlies": 23,
+  "keptBookPlies": 8,
+  "cut": "5.b5 (-68cp)",
+  "worstTrainedLossCp": 68,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 15
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Fraser-Mortimer Attack",
+  "side": "w",
+  "bookPlies": 25,
+  "keptBookPlies": 25,
+  "cut": null,
+  "worstTrainedLossCp": 56,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -65
+ },
+ {
+  "id": "italian|Scotch Game: Scotch Gambit",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -6
+ },
+ {
+  "id": "italian|Italian Game: Deutz Gambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 34,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -35
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Anderssen Variation",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 19
+ },
+ {
+  "id": "italian|Italian Game: Evans Gambit",
+  "side": "w",
+  "bookPlies": 26,
+  "keptBookPlies": 26,
+  "cut": null,
+  "worstTrainedLossCp": 56,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -71
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Mortimer-Evans Gambit",
+  "side": "w",
+  "bookPlies": 26,
+  "keptBookPlies": 26,
+  "cut": null,
+  "worstTrainedLossCp": 56,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -71
+ },
+ {
+  "id": "two-knights|Italian Game: Scotch Gambit",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Levenfish Variation",
+  "side": "w",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -5
+ },
+ {
+  "id": "two-knights|Scotch Game: Scotch Gambit",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 39,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": 6
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Fraser Attack",
+  "side": "w",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 11
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Paulsen Variation",
+  "side": "w",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 1
+ },
+ {
+  "id": "italian|Italian Game: Two Knights Defense",
+  "side": "w",
+  "bookPlies": 26,
+  "keptBookPlies": 20,
+  "cut": "11.g4 (-112cp)",
+  "worstTrainedLossCp": 112,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 38
+ },
+ {
+  "id": "two-knights|Italian Game: Giuoco Piano",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 15,
+  "cut": "8...Qe7 (-67cp)",
+  "worstTrainedLossCp": 67,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Steinitz Variation",
+  "side": "w",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 45,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -47
+ },
+ {
+  "id": "two-knights|Italian Game: Two Knights Defense",
+  "side": "b",
+  "bookPlies": 26,
+  "keptBookPlies": 25,
+  "cut": "13...O-O-O (-65cp)",
+  "worstTrainedLossCp": 65,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": 71
+ },
+ {
+  "id": "two-knights|Italian Game: Giuoco Pianissimo",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 44,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "two-knights|Italian Game: Scotch Invitation Declined",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -39
+ },
+ {
+  "id": "evans|Italian Game: Evans Gambit, Compromised Defense",
+  "side": "w",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 34,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "two-knights|Four Knights Game: Italian Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": 162
+ },
+ {
+  "id": "traxler|Italian Game: Two Knights Defense, Traxler Variation, Trencianske-Teplice Gambit",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 2,
+  "rootLossCp": 107,
+  "evalForTrainedSideAtEnd": -19
+ },
+ {
+  "id": "traxler|Italian Game: Two Knights Defense, Traxler Counterattack, King March Line",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 107,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "traxler|Italian Game: Two Knights Defense, Traxler Counterattack, Bishop Sacrifice Line",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 107,
+  "evalForTrainedSideAtEnd": -91
+ },
+ {
+  "id": "traxler|Italian Game: Two Knights Defense, Traxler Counterattack",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 107,
+  "evalForTrainedSideAtEnd": -91
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Closed",
+  "side": "w",
+  "bookPlies": 28,
+  "keptBookPlies": 28,
+  "cut": null,
+  "worstTrainedLossCp": 35,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 77
+ },
+ {
+  "id": "traxler|Italian Game: Two Knights Defense, Traxler Counterattack, Knight Sacrifice Line",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 107,
+  "evalForTrainedSideAtEnd": -118
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Morphy Defense",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 31
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Exchange Variation",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": -1
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Berlin Defense",
+  "side": "w",
+  "bookPlies": 26,
+  "keptBookPlies": 26,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 23
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Open",
+  "side": "w",
+  "bookPlies": 25,
+  "keptBookPlies": 25,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 502
+ },
+ {
+  "id": "fried-liver|Italian Game: Two Knights Defense, Fried Liver Attack",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 34,
+  "evalForTrainedSideAtEnd": 80
+ },
+ {
+  "id": "fried-liver|Italian Game: Two Knights Defense, Fegatello Attack",
+  "side": "w",
+  "bookPlies": 22,
+  "keptBookPlies": 16,
+  "cut": "9.Qe4 (-139cp)",
+  "worstTrainedLossCp": 139,
+  "rootLossCp": 34,
+  "evalForTrainedSideAtEnd": 80
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Classical Defense",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 20
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Classical Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 55
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Cozio Defense",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 59
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Schliemann Defense",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 67
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Steinitz Defense",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 41,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 79
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Marshall Attack",
+  "side": "w",
+  "bookPlies": 36,
+  "keptBookPlies": 36,
+  "cut": null,
+  "worstTrainedLossCp": 35,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 14
+ },
+ {
+  "id": "scotch|Scotch Game: Classical Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 33,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "scotch|Scotch Game: Gottschall Variation",
+  "side": "w",
+  "bookPlies": 24,
+  "keptBookPlies": 20,
+  "cut": "11.Nxd5 (-182cp)",
+  "worstTrainedLossCp": 182,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "ruy-lopez|Ruy Lopez: Spanish Countergambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 8,
+  "cut": "5.O-O (-154cp)",
+  "worstTrainedLossCp": 154,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 210
+ },
+ {
+  "id": "scotch|Scotch Game: Meitner Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "scotch|Scotch Game: Steinitz Variation",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 11,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": 16
+ },
+ {
+  "id": "scotch|Scotch Game: Paulsen Attack",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": 18
+ },
+ {
+  "id": "scotch|Scotch Game: Blumenfeld Attack",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 10,
+  "cut": "6.Nb5 (-81cp)",
+  "worstTrainedLossCp": 81,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": 18
+ },
+ {
+  "id": "scotch|Scotch Game: Horwitz Attack",
+  "side": "w",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 51,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": -31
+ },
+ {
+  "id": "scotch|Scotch Game",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 40,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": 37
+ },
+ {
+  "id": "scotch|Scotch Game: Rosenthal Variation",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 40,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": 37
+ },
+ {
+  "id": "scotch|Scotch Game: Paulsen",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": 73
+ },
+ {
+  "id": "scotch-gambit|Italian Game: Scotch Gambit",
+  "side": "w",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 29,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 38
+ },
+ {
+  "id": "scotch-gambit|Scotch Game: Haxo Gambit",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "scotch-gambit|Scotch Game: Cochrane-Shumov Defense",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "scotch-gambit|Scotch Game: Vitzthum Attack",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 10,
+  "cut": "6.Qh5 (-134cp)",
+  "worstTrainedLossCp": 134,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "scotch|Scotch Game: Mieses Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "scotch-gambit|Italian Game: Two Knights Defense",
+  "side": "w",
+  "bookPlies": 25,
+  "keptBookPlies": 18,
+  "cut": "10.Bg5 (-95cp)",
+  "worstTrainedLossCp": 95,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 21
+ },
+ {
+  "id": "scotch-gambit|Scotch Game: Cochrane Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 12,
+  "cut": "7.e5 (-112cp)",
+  "worstTrainedLossCp": 112,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "scotch-gambit|Scotch Game: Scotch Gambit",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 35,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -25
+ },
+ {
+  "id": "four-knights|Four Knights Game: Halloween Gambit",
+  "side": "w",
+  "bookPlies": 22,
+  "keptBookPlies": 6,
+  "cut": "4.Nxe5 (-189cp)",
+  "worstTrainedLossCp": 189,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "four-knights|Four Knights Game: Scotch Variation Accepted",
+  "side": "w",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "four-knights|Four Knights Game",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "four-knights|Four Knights Game: Scotch Variation",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 37,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -26
+ },
+ {
+  "id": "four-knights|Four Knights Game: Spanish Variation",
+  "side": "w",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 39
+ },
+ {
+  "id": "scotch|Scotch Game: Ghulam-Kassim Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 10,
+  "cut": "6.Bd3 (-70cp)",
+  "worstTrainedLossCp": 70,
+  "rootLossCp": 16,
+  "evalForTrainedSideAtEnd": 117
+ },
+ {
+  "id": "four-knights|Four Knights Game: Glek System",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 4
+ },
+ {
+  "id": "four-knights|Four Knights Game: Gunsberg Variation",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 29,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 12
+ },
+ {
+  "id": "scotch-gambit|Scotch Game: Hanneken Variation",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "four-knights|Four Knights Game: Naroditsky Variation",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Jaenisch Counterattack",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Spanish Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Caro Gambit",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Neumann Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 6,
+  "cut": "4.Bc4 (-76cp)",
+  "worstTrainedLossCp": 76,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": 1
+ },
+ {
+  "id": "ponziani|Ponziani Opening",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": 1
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Steinitz Variation",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": -13
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Ponziani Countergambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 55,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": 51
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Romanishin Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": 64
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Leonhardt Variation",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": 37
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Vukovic Gambit",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 53,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": -66
+ },
+ {
+  "id": "petrov|Petrov's Defense",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "petrov|Petrov's Defense: Stafford Gambit Accepted",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 5,
+  "cut": "3...Nc6 (-137cp)",
+  "worstTrainedLossCp": 137,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "petrov|Petrov's Defense: Modern Attack",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -34
+ },
+ {
+  "id": "petrov|Four Knights Game: Spanish Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "ponziani|Ponziani Opening: Réti Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 56,
+  "evalForTrainedSideAtEnd": 27
+ },
+ {
+  "id": "petrov|Petrov's Defense: Classical Attack",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 55,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 42
+ },
+ {
+  "id": "petrov|Petrov's Defense: Millennium Attack",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -10
+ },
+ {
+  "id": "petrov|Petrov's Defense: Cozio Attack",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "petrov|Petrov's Defense: Damiano Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -57
+ },
+ {
+  "id": "petrov|Petrov's Defense: French Attack",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -15
+ },
+ {
+  "id": "petrov|Petrov's Defense: Cochrane Gambit",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 156
+ },
+ {
+  "id": "petrov|Petrov's Defense: Kaufmann Attack",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -8
+ },
+ {
+  "id": "stafford|Petrov's Defense: Stafford Gambit",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 137,
+  "evalForTrainedSideAtEnd": -227
+ },
+ {
+  "id": "philidor|Philidor Defense: Nimzowitsch Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -103
+ },
+ {
+  "id": "philidor|Philidor Defense",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -22
+ },
+ {
+  "id": "philidor|Philidor Defense: Philidor Countergambit",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 5,
+  "cut": "3...f5 (-153cp)",
+  "worstTrainedLossCp": 153,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -7
+ },
+ {
+  "id": "philidor|Philidor Defense: Lopez Countergambit",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 5,
+  "cut": "3...f5 (-153cp)",
+  "worstTrainedLossCp": 153,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -7
+ },
+ {
+  "id": "philidor|Philidor Defense: Hanham Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 9,
+  "cut": "5...Be7 (-87cp)",
+  "worstTrainedLossCp": 87,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -97
+ },
+ {
+  "id": "philidor|Philidor Defense: Lion Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -23
+ },
+ {
+  "id": "philidor|Philidor Defense: Nimzowitsch",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -23
+ },
+ {
+  "id": "philidor|Philidor Defense: Exchange Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -51
+ },
+ {
+  "id": "stafford|Petrov's Defense: Stafford Gambit Accepted",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 137,
+  "evalForTrainedSideAtEnd": -213
+ },
+ {
+  "id": "philidor|Philidor Defense: Berger Variation",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": 7
+ },
+ {
+  "id": "petrov|Bishop's Opening: Boden-Kieseritzky Gambit",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 7,
+  "cut": "4...d5 (-83cp)",
+  "worstTrainedLossCp": 83,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 88
+ },
+ {
+  "id": "philidor|Philidor Defense: Hanham",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 22,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -80
+ },
+ {
+  "id": "philidor|Philidor Defense: Paulsen Attack",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 7,
+  "cut": "4...d5 (-63cp)",
+  "worstTrainedLossCp": 63,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -90
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Bronstein Attack",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -72
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Nimzowitsch Attack",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -119
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Bronstein Gambit",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": 22
+ },
+ {
+  "id": "philidor|Philidor Defense: Albin-Blackburne Gambit",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 41,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -69
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Foltys Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -54
+ },
+ {
+  "id": "latvian|Latvian Gambit: Behting Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": 110
+ },
+ {
+  "id": "latvian|Latvian Gambit: Corkscrew Gambit",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 7,
+  "cut": "4...fxe4 (-192cp)",
+  "worstTrainedLossCp": 192,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -222
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Bilguer Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -87
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Main Line",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -87
+ },
+ {
+  "id": "bishops|Bishop's Opening: Lewis Countergambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "bishops|Bishop's Opening: Urusov Gambit",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 13
+ },
+ {
+  "id": "bishops|Bishop's Opening: Berlin Defense",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 4,
+  "cut": "3.f4 (-72cp)",
+  "worstTrainedLossCp": 72,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "bishops|Bishop's Opening: McDonnell Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -11
+ },
+ {
+  "id": "bishops|Bishop's Opening: Four Pawns Gambit",
+  "side": "w",
+  "bookPlies": 17,
+  "keptBookPlies": 6,
+  "cut": "4.f4 (-153cp)",
+  "worstTrainedLossCp": 153,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -11
+ },
+ {
+  "id": "latvian|Latvian Gambit: Mayet Attack",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -81
+ },
+ {
+  "id": "latvian|Latvian Gambit: Corkscrew Countergambit",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 7,
+  "cut": "4...Nf6 (-217cp)",
+  "worstTrainedLossCp": 217,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -81
+ },
+ {
+  "id": "bishops|Bishop's Opening: Krejcik Gambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 4,
+  "cut": "3.f3 (-107cp)",
+  "worstTrainedLossCp": 107,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "bishops|Bishop's Opening: Calabrese Countergambit",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 76
+ },
+ {
+  "id": "bishops|Bishop's Opening: Lopez Variation",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 6,
+  "cut": "4.f4 (-108cp)",
+  "worstTrainedLossCp": 108,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": -29
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Leonhardt Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -206
+ },
+ {
+  "id": "latvian|Latvian Gambit Accepted: Foltys-Leonhardt Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 118,
+  "evalForTrainedSideAtEnd": -188
+ },
+ {
+  "id": "bishops|Bishop's Opening: Pratt Variation",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 10,
+  "cut": "6.exf6 (-174cp)",
+  "worstTrainedLossCp": 174,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 10
+ },
+ {
+  "id": "bishops|Bishop's Opening: Lisitsyn Variation",
+  "side": "w",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "vienna|Vienna Game: Stanley Variation",
+  "side": "w",
+  "bookPlies": 20,
+  "keptBookPlies": 8,
+  "cut": "5.Bb3 (-86cp)",
+  "worstTrainedLossCp": 86,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 17
+ },
+ {
+  "id": "bishops|Bishop's Opening: Lopez Gambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 8,
+  "cut": "5.f4 (-255cp)",
+  "worstTrainedLossCp": 255,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "vienna|Vienna Game: Paulsen Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 12,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 65
+ },
+ {
+  "id": "vienna|Vienna Game: Adams' Gambit",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 8,
+  "cut": "5.Bb3 (-86cp)",
+  "worstTrainedLossCp": 86,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 17
+ },
+ {
+  "id": "bishops|King's Gambit Declined: Classical",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 12,
+  "cut": "7.h3 (-92cp)",
+  "worstTrainedLossCp": 92,
+  "rootLossCp": 23,
+  "evalForTrainedSideAtEnd": 36
+ },
+ {
+  "id": "vienna|Bishop's Opening: Vienna Hybrid",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 13
+ },
+ {
+  "id": "vienna|Vienna Game: Vienna Gambit",
+  "side": "w",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 29,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "vienna|Vienna Game: Mieses Variation",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 12,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "vienna|Vienna Game: Heyde Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 29,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "vienna|King's Gambit Declined: Falkbeer Countergambit",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 41,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": 24
+ },
+ {
+  "id": "vienna|Vienna Gambit",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 42,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": -99
+ },
+ {
+  "id": "vienna|Vienna Game: Hamppe-Muzio",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 8,
+  "cut": "5.Bc4 (-69cp)",
+  "worstTrainedLossCp": 69,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": -61
+ },
+ {
+  "id": "vienna|Vienna Game: Hamppe-Muzio Gambit",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 8,
+  "cut": "5.Bc4 (-69cp)",
+  "worstTrainedLossCp": 69,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": -61
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Bishop's Gambit",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 29,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": -2
+ },
+ {
+  "id": "kings-gambit|King's Gambit Declined: Falkbeer Countergambit",
+  "side": "w",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": 436
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Kieseritzky Gambit",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 16,
+  "cut": "9.Bxf4 (-165cp)",
+  "worstTrainedLossCp": 165,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": -97
+ },
+ {
+  "id": "vienna|Vienna Game: Pierce Gambit",
+  "side": "w",
+  "bookPlies": 17,
+  "keptBookPlies": 12,
+  "cut": "7.O-O (-97cp)",
+  "worstTrainedLossCp": 97,
+  "rootLossCp": 14,
+  "evalForTrainedSideAtEnd": -71
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Salvio Gambit",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 51,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "kings-gambit|King's Gambit Declined: Classical Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": 4
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Rosentreter Gambit",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": -63
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Double Muzio Gambit",
+  "side": "w",
+  "bookPlies": 21,
+  "keptBookPlies": 12,
+  "cut": "7.e5 (-77cp)",
+  "worstTrainedLossCp": 77,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": -101
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Muzio Gambit",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 51,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": 32
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Cunningham Defense",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 8,
+  "cut": "5.g3 (-77cp)",
+  "worstTrainedLossCp": 77,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": -10
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Allgaier",
+  "side": "w",
+  "bookPlies": 19,
+  "keptBookPlies": 18,
+  "cut": "10.Be5+ (-137cp)",
+  "worstTrainedLossCp": 137,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": -89
+ },
+ {
+  "id": "kings-gambit|King's Gambit Accepted: Kieseritzky",
+  "side": "w",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": 77
+ },
+ {
+  "id": "center-game|Center Game: Berger Variation",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": -8
+ },
+ {
+  "id": "center-game|Center Game: Paulsen Attack Variation",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": -8
+ },
+ {
+  "id": "center-game|Center Game: Hall Variation",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": -24
+ },
+ {
+  "id": "center-game|Center Game: Normal Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "center-game|Center Game",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "center-game|Center Game: Charousek Variation",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": -11
+ },
+ {
+  "id": "center-game|Center Game: l'Hermet Variation",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": 92
+ },
+ {
+  "id": "danish|Danish Gambit Declined: Sörensen Defense",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "danish|Danish Gambit Accepted: Svenonius Defense",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": -1
+ },
+ {
+  "id": "danish|Danish Gambit Accepted",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "center-game|Center Game: Kupreichik Variation",
+  "side": "w",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 37,
+  "evalForTrainedSideAtEnd": -95
+ },
+ {
+  "id": "kings-gambit|King's Gambit Declined: Panteldakis Countergambit",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 10,
+  "cut": "6.Kd1 (-92cp)",
+  "worstTrainedLossCp": 92,
+  "rootLossCp": 92,
+  "evalForTrainedSideAtEnd": 358
+ },
+ {
+  "id": "danish|Danish Gambit Accepted: Schlechter Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 45,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": -5
+ },
+ {
+  "id": "danish|Danish Gambit Accepted: Classical Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 45,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": -27
+ },
+ {
+  "id": "danish|Danish Gambit Accepted: Copenhagen Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 45,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": 1
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, English Attack",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -33
+ },
+ {
+  "id": "danish|Danish Gambit",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": -50
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, Opocensky Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "danish|Danish Gambit Accepted: Chigorin Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 45,
+  "rootLossCp": 41,
+  "evalForTrainedSideAtEnd": 99
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Scheveningen Variation, Classical Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -48
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Scheveningen Variation, Delayed Keres Attack",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -2
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Scheveningen Variation, English Attack",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -74
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, Main Line",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -11
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, Goteborg Variation",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -68
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, Polugaevsky Variation",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -38
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, Poisoned Pawn Accepted",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -75
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, Ivkov Variation",
+  "side": "b",
+  "bookPlies": 23,
+  "keptBookPlies": 23,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": 25
+ },
+ {
+  "id": "najdorf|Sicilian Defense: Najdorf Variation, Browne Variation",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 9,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "dragon|Sicilian Defense: Dragon Variation, Classical Variation",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -7
+ },
+ {
+  "id": "dragon|Sicilian Defense: Dragon Variation, Fianchetto Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "dragon|Sicilian Defense: Dragon Variation, Yugoslav Attack",
+  "side": "b",
+  "bookPlies": 24,
+  "keptBookPlies": 24,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -85
+ },
+ {
+  "id": "dragon|Sicilian Defense: Dragon Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -71
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Accelerated Dragon, Maróczy Bind",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -22
+ },
+ {
+  "id": "dragon|Sicilian Defense: Dragon Variation, Levenfish Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 49,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -33
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Accelerated Dragon",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -51
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Dragon Variation, Classical Variation",
+  "side": "b",
+  "bookPlies": 23,
+  "keptBookPlies": 23,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -33
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Accelerated Dragon, Exchange Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 60
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Accelerated Dragon, Modern Bc4 Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -26
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Accelerated Dragon, Modern Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 3
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Dragon Variation, Modern Bc4 Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -31
+ },
+ {
+  "id": "acc-dragon|Sicilian Defense: Accelerated Dragon, Simagin Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 4
+ },
+ {
+  "id": "sveshnikov|Sicilian Defense: Lasker-Pelikan Variation, Schlechter Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 9
+ },
+ {
+  "id": "sveshnikov|Sicilian Defense: Lasker-Pelikan Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -36
+ },
+ {
+  "id": "sveshnikov|Sicilian Defense: Lasker-Pelikan Variation, Retreat Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 20
+ },
+ {
+  "id": "sveshnikov|Sicilian Defense: Lasker-Pelikan Variation, Bird Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 51,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -70
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Taimanov Variation, Gary Gambit",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 38,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -43
+ },
+ {
+  "id": "sveshnikov|Sicilian Defense: Lasker-Pelikan Variation, Sveshnikov Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Taimanov Variation, Modern Line",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "sveshnikov|Sicilian Defense: Lasker-Pelikan Variation, Exchange Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 19,
+  "evalForTrainedSideAtEnd": 40
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Taimanov Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -35
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Four Knights Variation, Cobra Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 44,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -69
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Scheveningen Variation, Classical Main Line",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 11,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -36
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Four Knights Variation, Sveshnikov Transfer",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -13
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Four Knights Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -13
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Scheveningen Variation, Classical Variation",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -21
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Four Knights Variation, American Attack",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": 1
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Taimanov Variation, Bastrikov Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 11,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": 67
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Scheveningen Variation, Modern Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 22,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -31
+ },
+ {
+  "id": "rossolimo|Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Gurgenidze Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 31
+ },
+ {
+  "id": "taimanov|Sicilian Defense: Four Knights Variation, Exchange Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 13,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "rossolimo|Sicilian Defense: Nyezhmetdinov-Rossolimo Attack",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 31
+ },
+ {
+  "id": "rossolimo|Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Brooklyn Retreat Defense",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 109
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Botvinnik Defense",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -15
+ },
+ {
+  "id": "rossolimo|Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Fianchetto Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 8
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Korchnoi Defense",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 29,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Carlsen Variation",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 37,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Smyslov Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 31
+ },
+ {
+  "id": "rossolimo|Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, San Francisco Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 6,
+  "cut": "4.b4 (-82cp)",
+  "worstTrainedLossCp": 82,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 94
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Dragon Variation, Classical Variation",
+  "side": "w",
+  "bookPlies": 27,
+  "keptBookPlies": 27,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Chameleon Variation",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 23
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Portland Attack",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 43,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -48
+ },
+ {
+  "id": "alapin|Sicilian Defense: Heidenfeld Variation",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Grand Prix Attack, Schofman Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 38,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -94
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Grob Attack",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 4,
+  "cut": "3.g4 (-83cp)",
+  "worstTrainedLossCp": 83,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 20
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Closed, Fianchetto Variation",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "alapin|Sicilian Defense: Alapin Variation, Barmen Defense",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 40
+ },
+ {
+  "id": "closed-sicilian|Sicilian Defense: Grand Prix Attack",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 38,
+  "rootLossCp": 6,
+  "evalForTrainedSideAtEnd": 12
+ },
+ {
+  "id": "alapin|Sicilian Defense: Alapin Variation, Stoltz Attack",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 34,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 52
+ },
+ {
+  "id": "alapin|Sicilian Defense: Alapin Variation, Smith-Morra Declined",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 25
+ },
+ {
+  "id": "alapin|Sicilian Defense: Alapin Variation",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 35
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Fianchetto Defense",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": 26
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Finegold Defense",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": 2
+ },
+ {
+  "id": "alapin|Sicilian Defense: Alapin Variation, Anti-Alapin Gambit",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 43
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Sozin Formation",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": 27
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Morphy Defense Deferred",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": -34
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Classical Formation",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Morphy Defense",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": -2
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Chicago Defense",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": 145
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Siberian Variation",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 12,
+  "cut": "7.Qe2 (-63cp)",
+  "worstTrainedLossCp": 63,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": 30
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Larsen Defense",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 12,
+  "cut": "7.Qe2 (-63cp)",
+  "worstTrainedLossCp": 63,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": 30
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Pin Defense",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Paulsen Formation",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": -40
+ },
+ {
+  "id": "smith-morra|Sicilian Defense: Smith-Morra Gambit Accepted, Scheveningen Formation",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 52,
+  "evalForTrainedSideAtEnd": 2
+ },
+ {
+  "id": "french|French Defense: Exchange Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -11
+ },
+ {
+  "id": "french|French Defense: McCutcheon Variation",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "french|French Defense: Tarrasch Variation",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 12,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -21
+ },
+ {
+  "id": "french|French Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 42,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -13
+ },
+ {
+  "id": "french|French Defense: Rubinstein Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -29
+ },
+ {
+  "id": "french|French Defense: Steinitz Variation",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 17,
+  "cut": "9...f6 (-68cp)",
+  "worstTrainedLossCp": 68,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": 40
+ },
+ {
+  "id": "french|French Defense: Winawer Variation",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 39,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -54
+ },
+ {
+  "id": "french|French Defense: Advance Variation",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": 58
+ },
+ {
+  "id": "french|French Defense: St. George Defense",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 37,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -65
+ },
+ {
+  "id": "french|French Defense",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -22
+ },
+ {
+  "id": "french|French Defense: Alekhine-Chatard Attack",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 42,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 24,
+  "keptBookPlies": 24,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -30
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -29
+ },
+ {
+  "id": "french|French Defense: La Bourdonnais Variation",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": 108
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Tartakower Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 12,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -29
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Accelerated Panov Attack",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Karpov Variation",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -62
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Exchange Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Panov Attack",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": 8
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Two Knights Attack",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Breyer Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Anderssen Counterattack",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 35,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -103
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Valencian Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -77
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Main Line",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -49
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Portuguese Gambit",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -57
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Modern Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -59
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Advance Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -175
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Labahn Attack",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 48,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": 182
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Portuguese Gambit",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -57
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Modern Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -59
+ },
+ {
+  "id": "caro-kann|Caro-Kann Defense: Maróczy Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 3,
+  "evalForTrainedSideAtEnd": -93
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Richter Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -113
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Richter Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -113
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Schiller-Pytel Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -32
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense",
+  "side": "b",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": 131
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Panov Transfer",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Lasker Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 52,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -121
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Bronstein Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 24,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -120
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Kádas Gambit",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 7,
+  "cut": "4...e5 (-157cp)",
+  "worstTrainedLossCp": 157,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -79
+ },
+ {
+  "id": "scandinavian|Scandinavian Defense: Grünfeld Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "scandinavian|Zukertort Opening: Tennison Gambit",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 5,
+  "cut": "3...Nf6 (-69cp)",
+  "worstTrainedLossCp": 69,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": 125
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Marshall Variation",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -72
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Kiel Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 7,
+  "cut": "4...Nb4 (-88cp)",
+  "worstTrainedLossCp": 88,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -72
+ },
+ {
+  "id": "modern-scandi|Scandinavian Defense: Icelandic-Palme Gambit",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 26,
+  "evalForTrainedSideAtEnd": -65
+ },
+ {
+  "id": "pirc|Pirc Defense: Chinese Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "pirc|Pirc Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": -78
+ },
+ {
+  "id": "pirc|Pirc Defense: Austrian Attack",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 39,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": -91
+ },
+ {
+  "id": "pirc|Pirc Defense: Sveshnikov System",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": -25
+ },
+ {
+  "id": "pirc|Pirc Defense: Bayonet Attack",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "pirc|Pirc Defense: 150 Attack",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 9,
+  "cut": "5...Bg4 (-100cp)",
+  "worstTrainedLossCp": 100,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": -51
+ },
+ {
+  "id": "pirc|Pirc Defense",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": -59
+ },
+ {
+  "id": "modern-defense|Pterodactyl Defense: Sicilian",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 7,
+  "cut": "4...Qa5 (-81cp)",
+  "worstTrainedLossCp": 81,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -23
+ },
+ {
+  "id": "pirc|Pirc Defense: Kholmov System",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": 15
+ },
+ {
+  "id": "modern-defense|Pterodactyl Defense: Eastern",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 7,
+  "cut": "4...Bxc3+ (-82cp)",
+  "worstTrainedLossCp": 82,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -59
+ },
+ {
+  "id": "pirc|Pirc Defense: Byrne Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 15,
+  "evalForTrainedSideAtEnd": 13
+ },
+ {
+  "id": "modern-defense|Pterodactyl Defense: Western",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 24,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "modern-defense|Pterodactyl Defense: Fianchetto",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -15
+ },
+ {
+  "id": "modern-defense|Pterodactyl Defense: Central",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 7,
+  "cut": "4...d6 (-147cp)",
+  "worstTrainedLossCp": 147,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": 91
+ },
+ {
+  "id": "modern-defense|Pterodactyl Defense: Austrian",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 7,
+  "cut": "4...Qa5+ (-129cp)",
+  "worstTrainedLossCp": 129,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": 16
+ },
+ {
+  "id": "modern-defense|Modern Defense: Norwegian Defense",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 40,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -81
+ },
+ {
+  "id": "modern-defense|Modern Defense: Two Knights Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 11,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -72
+ },
+ {
+  "id": "modern-defense|Modern Defense",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -35
+ },
+ {
+  "id": "modern-defense|Modern Defense: Mongredien Defense",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 48,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -114
+ },
+ {
+  "id": "modern-defense|Modern Defense: Dunworthy Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 5,
+  "cut": "3...d5 (-66cp)",
+  "worstTrainedLossCp": 66,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -54
+ },
+ {
+  "id": "modern-defense|Modern Defense: Bishop Attack",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 22,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": 135
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Hunt Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Two Pawns Attack",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "alekhine|Alekhine Defense",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -51
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Mokele Mbembe",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 3,
+  "cut": "2...Ne4 (-65cp)",
+  "worstTrainedLossCp": 65,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -51
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Exchange Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -43
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Modern Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -61
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Four Pawns Attack",
+  "side": "b",
+  "bookPlies": 22,
+  "keptBookPlies": 22,
+  "cut": null,
+  "worstTrainedLossCp": 45,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -174
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: El Columpio Defense",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 3,
+  "cut": "2...Nf6 (-74cp)",
+  "worstTrainedLossCp": 74,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": 9
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Kmoch Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 12,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -7
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Balogh Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -35
+ },
+ {
+  "id": "nimzowitsch|Van Geet Opening: Berlin Gambit",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense",
+  "side": "b",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Colorado Countergambit Accepted",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 3,
+  "cut": "2...f5 (-85cp)",
+  "worstTrainedLossCp": 85,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": 9
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Colorado Countergambit",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 3,
+  "cut": "2...f5 (-85cp)",
+  "worstTrainedLossCp": 85,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": 9
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Scandinavian Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": 20
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Krejcik Variation",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": 87
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Scandinavian Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": 8
+ },
+ {
+  "id": "alekhine|Alekhine Defense: Brooklyn Variation",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 5,
+  "cut": "3...f5 (-96cp)",
+  "worstTrainedLossCp": 96,
+  "rootLossCp": 65,
+  "evalForTrainedSideAtEnd": -94
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Kennedy Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 39,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": -49
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Breyer Variation",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 5,
+  "cut": "3...e5 (-67cp)",
+  "worstTrainedLossCp": 67,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": -61
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Mikenas Variation",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 53,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": -64
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Hornung Gambit",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": 56
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -24
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: French Connection",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 50,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": -77
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined: Semi-Tarrasch Defense",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -19
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined: Orthodox Defense",
+  "side": "b",
+  "bookPlies": 28,
+  "keptBookPlies": 28,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -10
+ },
+ {
+  "id": "nimzowitsch|Nimzowitsch Defense: Franco-Nimzowitsch Variation",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 59,
+  "rootLossCp": 1,
+  "evalForTrainedSideAtEnd": -54
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined: Lasker Defense",
+  "side": "b",
+  "bookPlies": 26,
+  "keptBookPlies": 26,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -13
+ },
+ {
+  "id": "qgd|Tarrasch Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 24,
+  "keptBookPlies": 24,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -62
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 24,
+  "keptBookPlies": 24,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -62
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined: Modern Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -22
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined: Tarrasch Defense",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 44,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Prague Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -42
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined: Tartakower Defense",
+  "side": "b",
+  "bookPlies": 22,
+  "keptBookPlies": 22,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "qgd|Semi-Slav Defense: Noteboom Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 11,
+  "cut": "6...Bxc3+ (-70cp)",
+  "worstTrainedLossCp": 70,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -38
+ },
+ {
+  "id": "qgd|Semi-Slav Defense: Meran Variation",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 12
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Dubov Tarrasch",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -34
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Rubinstein System",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -34
+ },
+ {
+  "id": "tarrasch|Queen's Gambit Declined: Tarrasch Defense",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": 8
+ },
+ {
+  "id": "qgd|Queen's Gambit Declined: Exchange Variation",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -24
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Swedish Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Wagner Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 51,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -59
+ },
+ {
+  "id": "qgd|Semi-Slav Defense: Marshall Gambit",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 15,
+  "cut": "8...c5 (-74cp)",
+  "worstTrainedLossCp": 74,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Symmetrical Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -6
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: von Hennig Gambit",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 33,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -60
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Normal Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -25
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Marshall Gambit",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Grünfeld Gambit",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 13,
+  "cut": "7...b5 (-69cp)",
+  "worstTrainedLossCp": 69,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -31
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Classical Defense",
+  "side": "b",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Old Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 6
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Alekhine Defense",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 24,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -22
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -14
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Classical",
+  "side": "b",
+  "bookPlies": 26,
+  "keptBookPlies": 26,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 24
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Central Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 7,
+  "cut": "4...b5 (-117cp)",
+  "worstTrainedLossCp": 117,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -67
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Furman Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Mannheim Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "tarrasch|Tarrasch Defense: Tarrasch Gambit",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": 14
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Gunsberg Defense",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -44
+ },
+ {
+  "id": "slav|Semi-Slav Defense: Stoltz Variation",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 16
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Bogoljubow Defense",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "slav|Semi-Slav Defense: Meran Variation",
+  "side": "b",
+  "bookPlies": 29,
+  "keptBookPlies": 29,
+  "cut": null,
+  "worstTrainedLossCp": 39,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -2
+ },
+ {
+  "id": "slav|Slav Defense: Czech Variation",
+  "side": "b",
+  "bookPlies": 22,
+  "keptBookPlies": 22,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -33
+ },
+ {
+  "id": "slav|Semi-Slav Defense: Chigorin Defense",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "slav|Queen's Gambit Declined: Cambridge Springs Defense",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -32
+ },
+ {
+  "id": "semi-slav|Queen's Gambit Declined: Cambridge Springs Defense",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -32
+ },
+ {
+  "id": "slav|Slav Defense: Exchange Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -1
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense: Meran Variation",
+  "side": "b",
+  "bookPlies": 22,
+  "keptBookPlies": 22,
+  "cut": null,
+  "worstTrainedLossCp": 39,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -60
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense: Stoltz Variation",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 16
+ },
+ {
+  "id": "slav|Slav Defense: Quiet Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": 21
+ },
+ {
+  "id": "slav|Semi-Slav Defense: Main Line",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 32,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -31
+ },
+ {
+  "id": "qga|Queen's Gambit Accepted: Linares Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 37,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -121
+ },
+ {
+  "id": "slav|Semi-Slav Defense: Botvinnik Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -74
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense: Botvinnik Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -74
+ },
+ {
+  "id": "slav|Slav Defense",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -38
+ },
+ {
+  "id": "slav|Slav Defense: Modern Line",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -12
+ },
+ {
+  "id": "slav|Slav Defense: Chebanenko Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense: Moscow Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -14
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -14
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense: Hastings Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -10
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense: Anti-Moscow Gambit",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -74
+ },
+ {
+  "id": "semi-slav|Queen's Gambit Declined",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -23
+ },
+ {
+  "id": "chigorin|Queen's Gambit Declined: Chigorin Defense",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -32
+ },
+ {
+  "id": "chigorin|Queen's Gambit Declined: Chigorin Defense, Main Line",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 44,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -49
+ },
+ {
+  "id": "semi-slav|Semi-Slav Defense Accepted",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 8,
+  "evalForTrainedSideAtEnd": -190
+ },
+ {
+  "id": "chigorin|Queen's Gambit Declined: Chigorin Defense, Janowski Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 33,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -45
+ },
+ {
+  "id": "chigorin|Queen's Gambit Declined: Chigorin Defense, Modern Gambit",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 33,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -45
+ },
+ {
+  "id": "chigorin|Queen's Gambit Declined: Chigorin Defense, Tartakower Gambit",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -71
+ },
+ {
+  "id": "chigorin|Queen's Gambit Declined: Chigorin Defense, Exchange Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -40
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Lasker Trap",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": 37
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Modern Line",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -67
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Tartakower Defense",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 7,
+  "cut": "4...c5 (-74cp)",
+  "worstTrainedLossCp": 74,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -67
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Normal Line",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -67
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Balogh Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 49,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -133
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Krenosz Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -79
+ },
+ {
+  "id": "chigorin|Queen's Gambit Declined: Chigorin Defense, Lazard Gambit",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -52
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Janowski Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 22,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -115
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Fianchetto Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 43,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -141
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit: Lemberger Countergambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -25
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit, Spassky Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": 15
+ },
+ {
+  "id": "albin|Queen's Gambit Declined: Albin Countergambit",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 39,
+  "evalForTrainedSideAtEnd": -133
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Accepted: Gunderam Defense",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 48,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -13
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Accepted: Bogoljubow Defense",
+  "side": "w",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -125
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Accepted: Teichmann Defense",
+  "side": "w",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 55,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -21
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Declined: Weinsbach Defense",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": 64
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Accepted: Euwe Defense",
+  "side": "w",
+  "bookPlies": 17,
+  "keptBookPlies": 14,
+  "cut": "8.O-O (-88cp)",
+  "worstTrainedLossCp": 88,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -52
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit: Zeller Defense",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 8,
+  "cut": "5.Bc4 (-74cp)",
+  "worstTrainedLossCp": 74,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -68
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit: von Popiel Gambit",
+  "side": "w",
+  "bookPlies": 15,
+  "keptBookPlies": 10,
+  "cut": "6.g4 (-89cp)",
+  "worstTrainedLossCp": 89,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -69
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -55
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Accepted: Holwell Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -1
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Accepted: Kaulich Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -46
+ },
+ {
+  "id": "bdg|Blackmar-Diemer Gambit Accepted: Pietrowsky Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 74,
+  "evalForTrainedSideAtEnd": -56
+ },
+ {
+  "id": "englund|Englund Gambit Declined: Diemer Counterattack",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": 11
+ },
+ {
+  "id": "englund|Englund Gambit: Main Line",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -195
+ },
+ {
+  "id": "englund|Englund Gambit Declined: Reversed Mokele Mbembe",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": 50
+ },
+ {
+  "id": "englund|Englund Gambit: Zilbermints Gambit",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -208
+ },
+ {
+  "id": "englund|Englund Gambit: Stockholm Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -80
+ },
+ {
+  "id": "englund|Englund Gambit: Felbecker Gambit",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -188
+ },
+ {
+  "id": "englund|Englund Gambit Declined: Reversed Brooklyn",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": 70
+ },
+ {
+  "id": "englund|Englund Gambit: Hartlaub-Charlick Gambit",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 20,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -151
+ },
+ {
+  "id": "englund|Englund Gambit Declined: Reversed Krebs",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": 42
+ },
+ {
+  "id": "englund|Englund Gambit: Soller Gambit Deferred",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 11,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -43
+ },
+ {
+  "id": "london|Queen's Pawn Game: Accelerated London System, Steinitz Countergambit, Morris Countergambit Accepted",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "london|Queen's Pawn Game: Accelerated London System, Steinitz Countergambit, Morris Countergambit",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -16
+ },
+ {
+  "id": "london|Queen's Pawn Game: Accelerated London System, Steinitz Countergambit Accepted",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 6
+ },
+ {
+  "id": "london|Queen's Pawn Game: Accelerated London System, Steinitz Countergambit",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -7
+ },
+ {
+  "id": "colle|Queen's Pawn Game: Colle System",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 18
+ },
+ {
+  "id": "englund|Englund Gambit: Mosquito Gambit",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 3,
+  "cut": "2...Qh4 (-181cp)",
+  "worstTrainedLossCp": 181,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -167
+ },
+ {
+  "id": "london|Queen's Pawn Game: Accelerated London System",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "colle|Queen's Pawn Game: Colle System, Grünfeld Formation",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 41,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 3
+ },
+ {
+  "id": "colle|Rubinstein Opening: Semi-Slav Defense",
+  "side": "w",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 11,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 43
+ },
+ {
+  "id": "englund|Englund Gambit: Soller Gambit",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 97,
+  "evalForTrainedSideAtEnd": -157
+ },
+ {
+  "id": "kid|King's Indian Defense: Four Pawns Attack",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": 54
+ },
+ {
+  "id": "colle|Queen's Pawn Game: Colle System, Anti-Colle",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 22
+ },
+ {
+  "id": "kid|King's Indian Defense: Averbakh Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 33,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": -36
+ },
+ {
+  "id": "kid|King's Indian Defense: Sämisch Variation",
+  "side": "b",
+  "bookPlies": 24,
+  "keptBookPlies": 24,
+  "cut": null,
+  "worstTrainedLossCp": 53,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": -67
+ },
+ {
+  "id": "kid|King's Indian Defense: Orthodox Variation",
+  "side": "b",
+  "bookPlies": 27,
+  "keptBookPlies": 27,
+  "cut": null,
+  "worstTrainedLossCp": 11,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "kid|King's Indian Defense: Normal Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": 21
+ },
+ {
+  "id": "kid|King's Indian Defense: Steiner Attack",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": -23
+ },
+ {
+  "id": "kid|King's Indian Defense: Petrosian Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": 39
+ },
+ {
+  "id": "kid|King's Indian Defense: Fianchetto Variation",
+  "side": "b",
+  "bookPlies": 22,
+  "keptBookPlies": 22,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": -55
+ },
+ {
+  "id": "kid|Benoni Defense: King's Pawn Line",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": 60
+ },
+ {
+  "id": "kid|Neo-Grünfeld Defense: Delayed Exchange Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": -15
+ },
+ {
+  "id": "kid|King's Indian Defense: Semi-Classical Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Romanishin Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Spielmann Variation",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 41,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -51
+ },
+ {
+  "id": "kid|King's Indian Defense: Six Pawns Attack",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 24,
+  "evalForTrainedSideAtEnd": 136
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Normal Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -20
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: St. Petersburg Variation",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 22,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -13
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 49,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -124
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Rubinstein System",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -25
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Leningrad Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 45,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -29
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Sämisch Variation",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -14
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Three Knights Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 51,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -55
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Ragozin Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": 10
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense: Ragozin Defense",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -50
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Kasparov-Petrosian Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -5
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Spassky System",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 2,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -18
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Capablanca Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -31
+ },
+ {
+  "id": "nimzo|Nimzo-Indian Defense",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 0,
+  "evalForTrainedSideAtEnd": -27
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -42
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Fianchetto Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -69
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Riumin Variation",
+  "side": "b",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -37
+ },
+ {
+  "id": "qid|Bogo-Indian Defense: Monticelli Trap",
+  "side": "b",
+  "bookPlies": 19,
+  "keptBookPlies": 19,
+  "cut": null,
+  "worstTrainedLossCp": 30,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -45
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Kasparov Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -29
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Averbakh Variation",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -10
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Spassky System3",
+  "side": "b",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -40
+ },
+ {
+  "id": "qid|Queen's Indian Defense: Petrosian Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 22,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "bogo|Queen's Indian Defense",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 12,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -38
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: Exchange Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 12,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -47
+ },
+ {
+  "id": "bogo|Queen's Indian Defense: Yates Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -80
+ },
+ {
+  "id": "bogo|Nimzo-Indian Defense: Three Knights Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 9,
+  "cut": "5...b5 (-66cp)",
+  "worstTrainedLossCp": 66,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -7
+ },
+ {
+  "id": "qid|Queen's Gambit Declined: Pillsbury Attack",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 49,
+  "rootLossCp": 18,
+  "evalForTrainedSideAtEnd": -17
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: Nimzowitsch Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -22
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: Haiti Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -49
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: Vitolins Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -67
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: Wade-Smyslov Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -38
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: Retreat Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -2
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: Grünfeld Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -40
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": -40
+ },
+ {
+  "id": "bogo|Bogo-Indian Defense: New England Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 22,
+  "evalForTrainedSideAtEnd": 3
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Botvinnik Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Brinckmann Attack",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -23
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Lundin Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 2,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 20
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Exchange Variation",
+  "side": "b",
+  "bookPlies": 27,
+  "keptBookPlies": 27,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -25
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Lutikov Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 77
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Makogonov Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 23
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Three Knights Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 7
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Russian Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -15
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Opocensky Variation",
+  "side": "b",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -10
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Pachman Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 53,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -26
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Gibbon Gambit",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 70
+ },
+ {
+  "id": "grunfeld|Grünfeld Defense: Flohr Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 12
+ },
+ {
+  "id": "benoni|Benoni Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 19,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -64
+ },
+ {
+  "id": "benoni|Benoni Defense: King's Pawn Line",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -21
+ },
+ {
+  "id": "benoni|Benoni Defense: Modern Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -100
+ },
+ {
+  "id": "benko|Benko Gambit Accepted: Yugoslav",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -55
+ },
+ {
+  "id": "benko|Benko Gambit",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -99
+ },
+ {
+  "id": "benoni|Benoni Defense: Mikenas Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 24,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -1
+ },
+ {
+  "id": "benoni|Benoni Defense: Four Pawns Attack",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -9
+ },
+ {
+  "id": "benoni|Benoni Defense: Taimanov Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 24,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -105
+ },
+ {
+  "id": "benoni|Benoni Defense: Pawn Storm Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -105
+ },
+ {
+  "id": "benko|Benko Gambit Accepted: King Walk Variation",
+  "side": "b",
+  "bookPlies": 21,
+  "keptBookPlies": 21,
+  "cut": null,
+  "worstTrainedLossCp": 36,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -88
+ },
+ {
+  "id": "benko|Benko Gambit Accepted: Fianchetto Variation",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -50
+ },
+ {
+  "id": "benko|Benko Gambit: Nd2 Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -44
+ },
+ {
+  "id": "benko|Benko Gambit: Fianchetto Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -79
+ },
+ {
+  "id": "benko|Benko Gambit Accepted: Central Storming Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -15
+ },
+ {
+  "id": "benko|Benko Gambit: Nescafe Frappe Attack",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": 28
+ },
+ {
+  "id": "benko|Benko Gambit Accepted: Dlugy Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -25
+ },
+ {
+  "id": "benko|Benko Gambit: Zaitsev Variation",
+  "side": "b",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": 32
+ },
+ {
+  "id": "benko|Benko Gambit Accepted: Modern Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -70
+ },
+ {
+  "id": "benko|Benko Gambit Accepted: Fully Accepted Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 44,
+  "evalForTrainedSideAtEnd": -41
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Janowski Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 22,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -52
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Czech Variation",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 28,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -52
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Two Knights Variation",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -65
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Ukrainian Variation",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -65
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Duz-Khotimirsky Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 5,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -22
+ },
+ {
+  "id": "old-indian|King's Indian Defense: Orthodox Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -73
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Normal Variation",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -73
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Tartakower-Indian",
+  "side": "b",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -79
+ },
+ {
+  "id": "old-indian|Old Indian Defense: Aged Gibbon Gambit",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": 96
+ },
+ {
+  "id": "old-indian|Old Indian Defense",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 25,
+  "evalForTrainedSideAtEnd": -45
+ },
+ {
+  "id": "catalan|Bogo-Indian Defense: Retreat Variation",
+  "side": "w",
+  "bookPlies": 18,
+  "keptBookPlies": 18,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 25
+ },
+ {
+  "id": "budapest|Indian Defense: Budapest Gambit Accepted",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 50,
+  "evalForTrainedSideAtEnd": -53
+ },
+ {
+  "id": "budapest|Indian Defense: Budapest Gambit",
+  "side": "b",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 50,
+  "evalForTrainedSideAtEnd": -53
+ },
+ {
+  "id": "budapest|Indian Defense: Budapest Gambit Accepted, Main Line",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 50,
+  "evalForTrainedSideAtEnd": -53
+ },
+ {
+  "id": "catalan|Catalan Opening: Closed",
+  "side": "w",
+  "bookPlies": 20,
+  "keptBookPlies": 20,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 62
+ },
+ {
+  "id": "catalan|Catalan Opening",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 41
+ },
+ {
+  "id": "catalan|Catalan Opening: Open Defense",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 25
+ },
+ {
+  "id": "catalan|Catalan Opening: Tarrasch Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 42
+ },
+ {
+  "id": "catalan|Benoni Defense: Fianchetto Variation",
+  "side": "w",
+  "bookPlies": 22,
+  "keptBookPlies": 22,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 9
+ },
+ {
+  "id": "budapest|Indian Defense: Budapest Gambit Accepted, Fajarowicz Defense",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 56,
+  "rootLossCp": 50,
+  "evalForTrainedSideAtEnd": -171
+ },
+ {
+  "id": "torre|Torre Attack: Wagner Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 27,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -21
+ },
+ {
+  "id": "torre|Queen's Pawn Game: Torre Attack, Breyer Variation",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 16,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -14
+ },
+ {
+  "id": "catalan|Catalan Opening: Hungarian Gambit",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 117
+ },
+ {
+  "id": "torre|Torre Attack: Classical Defense",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 10
+ },
+ {
+  "id": "trompowsky|Trompowsky Attack: Raptor Variation",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 9,
+  "rootLossCp": 12,
+  "evalForTrainedSideAtEnd": 89
+ },
+ {
+  "id": "trompowsky|Trompowsky Attack: Classical Defense",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 12,
+  "evalForTrainedSideAtEnd": 34
+ },
+ {
+  "id": "trompowsky|Trompowsky Attack",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 12,
+  "evalForTrainedSideAtEnd": -5
+ },
+ {
+  "id": "torre|Torre Attack: Classical Defense, Petrosian Gambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 2,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": 159
+ },
+ {
+  "id": "trompowsky|Trompowsky Attack: Poisoned Pawn Variation",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 12,
+  "evalForTrainedSideAtEnd": 54
+ },
+ {
+  "id": "torre|Torre Attack: Classical Defense, Nimzowitsch Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 11,
+  "evalForTrainedSideAtEnd": -39
+ },
+ {
+  "id": "trompowsky|Trompowsky Attack: Edge Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 24,
+  "rootLossCp": 12,
+  "evalForTrainedSideAtEnd": 20
+ },
+ {
+  "id": "dutch|Dutch Defense: Staunton Gambit",
+  "side": "b",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 6,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": 4
+ },
+ {
+  "id": "dutch|Dutch Defense: Classical Variation",
+  "side": "b",
+  "bookPlies": 15,
+  "keptBookPlies": 15,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -68
+ },
+ {
+  "id": "dutch|Dutch Defense: Leningrad Variation",
+  "side": "b",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -43
+ },
+ {
+  "id": "dutch|Dutch Defense: Manhattan Gambit",
+  "side": "b",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -26
+ },
+ {
+  "id": "dutch|Dutch Defense: Nimzo-Dutch Variation",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 4,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -30
+ },
+ {
+  "id": "trompowsky|Trompowsky Attack: Borg Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 12,
+  "evalForTrainedSideAtEnd": 105
+ },
+ {
+  "id": "dutch|Dutch Defense: Stonewall Variation",
+  "side": "b",
+  "bookPlies": 17,
+  "keptBookPlies": 17,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -50
+ },
+ {
+  "id": "dutch|Dutch Defense: Alekhine Variation",
+  "side": "b",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -85
+ },
+ {
+  "id": "dutch|Dutch Defense",
+  "side": "b",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -43
+ },
+ {
+  "id": "dutch|Dutch Defense: Krejcik Gambit",
+  "side": "b",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": 45
+ },
+ {
+  "id": "dutch|Dutch Defense: Hort-Antoshin System",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 37,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -76
+ },
+ {
+  "id": "dutch|Dutch Defense: Leningrad",
+  "side": "b",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 26,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -93
+ },
+ {
+  "id": "stonewall|Stonewall Dutch",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -35
+ },
+ {
+  "id": "english-reversed-sicilian|English Opening: Closed",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 54
+ },
+ {
+  "id": "english-reversed-sicilian|English Opening: Four Knights System",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "english-four-knights|English Opening: Four Knights System",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "english-reversed-sicilian|English Opening: King's English Variation",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "english-four-knights|English Opening: King's English Variation",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 23,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "dutch|Dutch Defense: Krause Variation",
+  "side": "b",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 29,
+  "evalForTrainedSideAtEnd": -117
+ },
+ {
+  "id": "english-symmetrical|Queen's Gambit Declined: Semi-Tarrasch Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 7,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 34
+ },
+ {
+  "id": "english-reversed-sicilian|English Opening: Carls-Bremen System",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 30
+ },
+ {
+  "id": "english-symmetrical|English Opening: Wing Gambit",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 2,
+  "cut": "2.b4 (-103cp)",
+  "worstTrainedLossCp": 103,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 10
+ },
+ {
+  "id": "english-reversed-sicilian|English Opening: King's English",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 290
+ },
+ {
+  "id": "english-symmetrical|Tarrasch Defense: Symmetrical Variation",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 25,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "english-hedgehog|English: Hedgehog",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 21
+ },
+ {
+  "id": "english-symmetrical|English Opening: Symmetrical Variation",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 8,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 16
+ },
+ {
+  "id": "english-vs-nf6|English Opening: Achilles-Omega Gambit",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 2,
+  "cut": "2.e4 (-114cp)",
+  "worstTrainedLossCp": 114,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 27
+ },
+ {
+  "id": "english-reversed-sicilian|English Opening: Drill Variation",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 29
+ },
+ {
+  "id": "english-vs-nf6|Réti Opening: Anglo-Slav Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": -7
+ },
+ {
+  "id": "english-vs-nf6|English Opening: Symmetrical Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 33,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 5
+ },
+ {
+  "id": "english-vs-nf6|Neo-Grünfeld Defense: Exchange Variation",
+  "side": "w",
+  "bookPlies": 11,
+  "keptBookPlies": 11,
+  "cut": null,
+  "worstTrainedLossCp": 14,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 22
+ },
+ {
+  "id": "english-vs-nf6|English Opening: Anglo-Indian Defense",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 13,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 69
+ },
+ {
+  "id": "english-vs-nf6|English Opening: Romanishin Gambit",
+  "side": "w",
+  "bookPlies": 8,
+  "keptBookPlies": 8,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 38
+ },
+ {
+  "id": "english-vs-nf6|English Opening: Anglo-Grünfeld Defense",
+  "side": "w",
+  "bookPlies": 12,
+  "keptBookPlies": 12,
+  "cut": null,
+  "worstTrainedLossCp": 42,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 23
+ },
+ {
+  "id": "english-vs-nf6|English Orangutan",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 44,
+  "rootLossCp": 20,
+  "evalForTrainedSideAtEnd": 30
+ },
+ {
+  "id": "reti|Réti Opening: Advance Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 2,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -12
+ },
+ {
+  "id": "reti|Réti Opening: Reversed Blumenfeld Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -12
+ },
+ {
+  "id": "reti|Réti Opening",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -12
+ },
+ {
+  "id": "reti|Réti Opening: Penguin Variation",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 4,
+  "cut": "3.Rg1 (-145cp)",
+  "worstTrainedLossCp": 145,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": -12
+ },
+ {
+  "id": "reti|Réti Opening: Anglo-Slav Variation",
+  "side": "w",
+  "bookPlies": 13,
+  "keptBookPlies": 13,
+  "cut": null,
+  "worstTrainedLossCp": 21,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 20
+ },
+ {
+  "id": "reti|Réti Opening: Réti Gambit",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 36
+ },
+ {
+  "id": "kia|King's Indian Attack: Keres Variation",
+  "side": "w",
+  "bookPlies": 16,
+  "keptBookPlies": 16,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 12
+ },
+ {
+  "id": "kia|King's Indian Attack: Pachman System",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": -12
+ },
+ {
+  "id": "kia|King's Indian Attack: Sicilian Variation",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 18,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": -4
+ },
+ {
+  "id": "kia|Zukertort Opening: Reversed Grünfeld",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 3,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 12
+ },
+ {
+  "id": "kia|English Opening: Agincourt Defense",
+  "side": "w",
+  "bookPlies": 14,
+  "keptBookPlies": 14,
+  "cut": null,
+  "worstTrainedLossCp": 31,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 0
+ },
+ {
+  "id": "reti|Réti Opening: Réti Accepted",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 44
+ },
+ {
+  "id": "reti|Réti Opening: Zilbermints Gambit",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 32,
+  "evalForTrainedSideAtEnd": 134
+ },
+ {
+  "id": "kia|Queen's Pawn Game: Symmetrical Variation",
+  "side": "w",
+  "bookPlies": 10,
+  "keptBookPlies": 10,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 14
+ },
+ {
+  "id": "kia|King's Indian Attack: French Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 1,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 38
+ },
+ {
+  "id": "bird|Bird Opening: Williams Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 2,
+  "cut": "2.e4 (-145cp)",
+  "worstTrainedLossCp": 145,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "bird|Bird Opening: Dutch Variation",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 2,
+  "cut": "2.g4 (-349cp)",
+  "worstTrainedLossCp": 349,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "bird|Bird Opening: Williams-Zilbermints Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 2,
+  "cut": "2.e4 (-145cp)",
+  "worstTrainedLossCp": 145,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": -28
+ },
+ {
+  "id": "kia|King's Indian Attack: Double Fianchetto",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 17
+ },
+ {
+  "id": "kia|King's Indian Attack",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 17
+ },
+ {
+  "id": "bird|Bird Opening: From's Gambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 47,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": 21
+ },
+ {
+  "id": "bird|Bird Opening: Siegener Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 2,
+  "cut": "2.d4 (-142cp)",
+  "worstTrainedLossCp": 142,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": 41
+ },
+ {
+  "id": "kia|King's Indian Attack: Omega-Delta Gambit",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 7,
+  "evalForTrainedSideAtEnd": 178
+ },
+ {
+  "id": "bird|Bird Opening: Thomas Gambit",
+  "side": "w",
+  "bookPlies": 9,
+  "keptBookPlies": 9,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": 45
+ },
+ {
+  "id": "bird|Bird Opening: Double Duck Formation",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": 39
+ },
+ {
+  "id": "bird|Bird Opening: Batavo-Polish Attack",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": -55
+ },
+ {
+  "id": "bird|Bird Opening: Lasker Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": -24
+ },
+ {
+  "id": "bird|Bird Opening: Hobbs-Zilbermints Gambit",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 17,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": 49
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Modern Variation",
+  "side": "w",
+  "bookPlies": 6,
+  "keptBookPlies": 6,
+  "cut": null,
+  "worstTrainedLossCp": 15,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": -6
+ },
+ {
+  "id": "bird|Bird Opening: Swiss Gambit",
+  "side": "w",
+  "bookPlies": 7,
+  "keptBookPlies": 7,
+  "cut": null,
+  "worstTrainedLossCp": 40,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": -62
+ },
+ {
+  "id": "bird|Bird Opening: Lasker Gambit",
+  "side": "w",
+  "bookPlies": 4,
+  "keptBookPlies": 4,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 54,
+  "evalForTrainedSideAtEnd": 110
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Ringelbach Gambit",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 10,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 80
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Classical Variation",
+  "side": "w",
+  "bookPlies": 2,
+  "keptBookPlies": 2,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 29
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Pachman Gambit",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 4,
+  "cut": "3.f4 (-247cp)",
+  "worstTrainedLossCp": 247,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 11
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack",
+  "side": "w",
+  "bookPlies": 1,
+  "keptBookPlies": 1,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 11
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Graz Attack",
+  "side": "w",
+  "bookPlies": 3,
+  "keptBookPlies": 3,
+  "cut": null,
+  "worstTrainedLossCp": 41,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": -14
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Indian Variation",
+  "side": "w",
+  "bookPlies": 2,
+  "keptBookPlies": 2,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 31
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Dutch Variation",
+  "side": "w",
+  "bookPlies": 2,
+  "keptBookPlies": 2,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 62
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Spike Variation",
+  "side": "w",
+  "bookPlies": 5,
+  "keptBookPlies": 5,
+  "cut": null,
+  "worstTrainedLossCp": 47,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": -59
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Polish Variation",
+  "side": "w",
+  "bookPlies": 2,
+  "keptBookPlies": 2,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 25
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: English Variation",
+  "side": "w",
+  "bookPlies": 2,
+  "keptBookPlies": 2,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": -33
+ },
+ {
+  "id": "larsen|Nimzo-Larsen Attack: Symmetrical Variation",
+  "side": "w",
+  "bookPlies": 2,
+  "keptBookPlies": 2,
+  "cut": null,
+  "worstTrainedLossCp": 0,
+  "rootLossCp": 49,
+  "evalForTrainedSideAtEnd": 38
+ }
+]

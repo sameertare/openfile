@@ -58,7 +58,7 @@ describe('practiceSans', () => {
     const op = { id: 'x', name: 'X', side: 'w' as const, root: 'e4 e5' };
     const b = loadBook([['C20', 'King\'s Pawn Game', 'e4 e5']]);
     const ext = ['Nf3', 'Nc6', 'Bb5', 'a6', 'Ba4', 'Nf6', 'O-O', 'Be7', 'Re1', 'b5', 'Bb3', 'd6', 'c3', 'O-O', 'h3', 'Nb8', 'd4', 'Nbd7', 'Nbd2', 'Bb7', 'Bc2', 'Re8'];
-    const [l] = buildLines(b, op, 12, { 'x|King\'s Pawn Game': ext });
+    const [l] = buildLines(b, op, 12, { 'x|King\'s Pawn Game': { keep: 2, ext } });
     expect(l.sans).toHaveLength(24);
     expect(l.sans.slice(0, 3)).toEqual(['e4', 'e5', 'Nf3']);
   });

@@ -8,7 +8,7 @@ import { registerServiceWorker } from './pwa';
 import { initTheme } from './theme';
 import { CATALOG, catalogById } from './openingCatalog';
 import type { CatalogOpening } from './openingCatalog';
-import { loadBook, buildLines, practiceSans, nameAt } from './openingBook';
+import { loadBook, buildLines, practiceSans, nameAt, type LineExtension } from './openingBook';
 import extensionsJson from './data/lineExtensions.json';
 import type { Book, TrainerLine, RawEntry } from './openingBook';
 import {
@@ -85,7 +85,7 @@ let book: Book;
 const linesCache = new Map<string, TrainerLine[]>();
 function linesOf(op: CatalogOpening): TrainerLine[] {
   let l = linesCache.get(op.id);
-  if (!l) { l = buildLines(book, op, undefined, extensionsJson as Record<string, string[]>); linesCache.set(op.id, l); }
+  if (!l) { l = buildLines(book, op, undefined, extensionsJson as Record<string, LineExtension>); linesCache.set(op.id, l); }
   return l;
 }
 

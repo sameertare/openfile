@@ -15,6 +15,9 @@ export interface Book {
   byKey: Map<string, { eco: string; name: string }>;
 }
 
+/** Stockfish's verified completion of a line: keep the first `keep` book plies, then play `ext`. */
+export interface LineExtension { keep: number; ext: string[] }
+
 export interface TrainerLine {
   /** Stable across sessions (progress is keyed on it): `${openingId}|${label}`. */
   id: string;
@@ -71,7 +74,7 @@ export const LINE_PLIES = 24;
 /** Lines for one catalog opening: every named variation under its root, one line per distinct
  *  "Family: Variation" label (the label is the name up to the first comma, so sub-sub-variations fold
  *  into their parent), represented by its deepest sequence. Most-developed variations first. */
-export function buildLines(book: Book, opening: CatalogOpening, maxLines = MAX_LINES, extensions: Record<string, string[]> = {}): TrainerLine[] {
+export function buildLines(book: Book, opening: CatalogOpening, maxLines = MAX_LINES, extensions: Record<string, LineExtension> = {}): TrainerLine[] {
   const root = opening.root.split(' ');
   const under = book.entries.filter((e) => startsWith(e.sans, root));
   // Group by name up to the first comma; if that leaves an opening with only a couple of lines
@@ -109,10 +112,10 @@ export function buildLines(book: Book, opening: CatalogOpening, maxLines = MAX_L
   }));
   lines.sort((a, b) => b.theory - a.theory || b.sans.length - a.sans.length || a.label.localeCompare(b.label));
   const top = lines.slice(0, maxLines);
-  // Book lines shorter than 12 moves are padded with engine moves (scripts/extend-lines.ts).
+  // Lines are completed to 12 moves (and any unsound book move on the trained side replaced) with engine moves (scripts/extend-lines.ts).
   for (const l of top) {
     const ext = extensions[l.id];
-    if (ext && l.sans.length < LINE_PLIES) l.sans = [...l.sans, ...ext].slice(0, LINE_PLIES);
+    if (ext) l.sans = [...l.sans.slice(0, ext.keep), ...ext.ext].slice(0, LINE_PLIES);
   }
   // An opening whose root isn't a named position in the data still needs one trainable line.
   if (!top.length) top.push({ id: `${opening.id}|${opening.name}`, openingId: opening.id, label: opening.name, eco: '', sans: root, theory: 0 });
