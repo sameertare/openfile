@@ -19,6 +19,7 @@ async function playArrow(page: Page) {
 test.describe('Opening Trainer', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/opening-trainer.html');
+    await expect(page.locator('#ot-book-move')).not.toHaveText(''); // boot (async) must finish saving before we clear
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await expect(page.locator('#ot-line-title')).not.toHaveText(/Loading/);
@@ -36,15 +37,15 @@ test.describe('Opening Trainer', () => {
   });
 
   test('playing the book line out completes it, scores it, and marks the line as learning', async ({ page }) => {
-    test.setTimeout(60000);
-    for (let i = 0; i < 5; i++) {
+    test.setTimeout(90000);
+    for (let i = 0; i < 12; i++) {
       await playArrow(page);
       await expect(page.locator('#ot-feedback')).toContainText('Book move');
-      if (i < 4) await expect(page.locator('#ot-turn')).toContainText('(you)', { timeout: 5000 });
+      if (i < 11) await expect(page.locator('#ot-turn')).toContainText('(you)', { timeout: 5000 });
     }
     await expect(page.locator('#ot-done')).toBeVisible({ timeout: 8000 });
     await expect(page.locator('#ot-done-msg')).toContainText('Line complete — no mistakes');
-    await expect(page.locator('#ot-score-today')).toHaveText('10'); // 5 moves x 1 (arrow showing) + 5 clean-run bonus
+    await expect(page.locator('#ot-score-today')).toHaveText('17'); // 12 moves x 1 (arrow showing) + 5 clean-run bonus
     await expect(page.locator('#ot-line option:checked')).toContainText('◐');
   });
 
@@ -108,13 +109,11 @@ test.describe('Opening Trainer', () => {
     await page.click('#ot-priority');
     await expect(page.locator('#ot-priority')).toContainText('✓');
     await page.locator('#ot-settings summary').click();
-    await page.locator('#ot-len').fill('3');
-    await expect(page.locator('#ot-len-label')).toHaveText('3');
-    await expect(page.locator('#ot-line-info')).toContainText('3 moves');
+    await page.locator('#ot-fade').selectOption('4');
     await page.reload();
     await expect(page.locator('#ot-line-title')).not.toHaveText(/Loading/);
     await expect(page.locator('#ot-priority')).toContainText('✓');
-    await expect(page.locator('#ot-len')).toHaveValue('3');
+    await expect(page.locator('#ot-fade')).toHaveValue('4');
   });
 
   test('progress can be exported and a bad import is rejected without touching saved progress', async ({ page }) => {

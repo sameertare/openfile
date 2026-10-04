@@ -48,20 +48,19 @@ describe('buildLines', () => {
 });
 
 describe('practiceSans', () => {
-  const mk = (id: string, sans: string): TrainerLine => ({ id, openingId: 'o', label: id, eco: '', sans: sans.split(' '), theory: 1 });
-  it('caps at the line-length setting (in full moves)', () => {
-    const l = mk('a', 'e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5');
-    expect(practiceSans(l, [l], 3)).toHaveLength(6);
+  const mk = (sans: string): TrainerLine => ({ id: 'a', openingId: 'o', label: 'a', eco: '', sans: sans.split(' '), theory: 1 });
+  it('uses the whole line, capped at 12 full moves', () => {
+    expect(practiceSans(mk('e4 e5 Nf3'))).toHaveLength(3);
+    const long = Array.from({ length: 30 }, () => 'Nf3').join(' ');
+    expect(practiceSans(mk(long))).toHaveLength(24);
   });
-  it('stops just after the line splits from its most similar sibling', () => {
-    const a = mk('a', 'e4 e5 Nf3 Nc6 Bc4 Bc5 d3 Nf6 O-O d6');
-    const b = mk('b', 'e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d4 exd4');
-    expect(firstDiff(a.sans, b.sans)).toBe(6);
-    expect(practiceSans(a, [a, b], 10).join(' ')).toBe('e4 e5 Nf3 Nc6 Bc4 Bc5 d3'); // ends on the splitting move
-  });
-  it('never trims below 2 plies', () => {
-    const l = mk('a', 'e4 e5 Nf3');
-    expect(practiceSans(l, [l], 1)).toHaveLength(2);
+  it('buildLines pads short book lines with the stored engine extensions, up to 24 plies', () => {
+    const op = { id: 'x', name: 'X', side: 'w' as const, root: 'e4 e5' };
+    const b = loadBook([['C20', 'King\'s Pawn Game', 'e4 e5']]);
+    const ext = ['Nf3', 'Nc6', 'Bb5', 'a6', 'Ba4', 'Nf6', 'O-O', 'Be7', 'Re1', 'b5', 'Bb3', 'd6', 'c3', 'O-O', 'h3', 'Nb8', 'd4', 'Nbd7', 'Nbd2', 'Bb7', 'Bc2', 'Re8'];
+    const [l] = buildLines(b, op, 12, { 'x|King\'s Pawn Game': ext });
+    expect(l.sans).toHaveLength(24);
+    expect(l.sans.slice(0, 3)).toEqual(['e4', 'e5', 'Nf3']);
   });
 });
 

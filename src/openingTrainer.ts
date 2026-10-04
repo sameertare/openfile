@@ -9,6 +9,7 @@ import { initTheme } from './theme';
 import { CATALOG, catalogById } from './openingCatalog';
 import type { CatalogOpening } from './openingCatalog';
 import { loadBook, buildLines, practiceSans, nameAt } from './openingBook';
+import extensionsJson from './data/lineExtensions.json';
 import type { Book, TrainerLine, RawEntry } from './openingBook';
 import {
   classifyLoss, lossBetween, emptyStats, lineStatus, openingStatus, recordStart, recordCompletion, addPoints,
@@ -37,7 +38,6 @@ interface Settings {
   bookArrows: boolean;
   leastStudied: boolean;
   moveColors: MoveColors;
-  lineLength: number;
   fadeAfter: number;
   rating: number;
 }
@@ -46,7 +46,7 @@ const SETTINGS_KEY = 'openfile-ot1:settings';
 const STATS_KEY = 'openfile-ot1:stats';
 const DEFAULTS: Settings = {
   mode: 'practice', openingId: 'italian', lineId: '', side: 'auto', bookArrows: true, leastStudied: false,
-  moveColors: 'always', lineLength: 5, fadeAfter: 2, rating: 1500,
+  moveColors: 'always', fadeAfter: 2, rating: 1500,
 };
 
 function loadSettings(): Settings {
@@ -85,7 +85,7 @@ let book: Book;
 const linesCache = new Map<string, TrainerLine[]>();
 function linesOf(op: CatalogOpening): TrainerLine[] {
   let l = linesCache.get(op.id);
-  if (!l) { l = buildLines(book, op); linesCache.set(op.id, l); }
+  if (!l) { l = buildLines(book, op, undefined, extensionsJson as Record<string, string[]>); linesCache.set(op.id, l); }
   return l;
 }
 
@@ -173,7 +173,7 @@ function selectLine(line: TrainerLine, opts: { countView: boolean } = { countVie
   session = null; free = null; freeHistory = []; inBook = false;
 
   if (settings.mode === 'practice') {
-    const sans = practiceSans(line, siblingsOf(line), settings.lineLength);
+    const sans = practiceSans(line);
     if (opts.countView) { recordStart(stats, line.id, todayKey()); saveStats(); }
     const viewing = Math.max(1, stats.lines[line.id]?.views ?? 1);
     session = new PracticeSession(sans, userColor, viewing, settings.fadeAfter);
@@ -543,7 +543,7 @@ function renderAbout() {
   const rootText = root.map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}.${s}` : s)).join(' ');
   const rows = lines.map((l) => {
     const st = lineStatus(stats.lines[l.id]);
-    const cut = practiceSans(l, lines, settings.lineLength).length;
+    const cut = practiceSans(l).length;
     return `<li><span title="${STATUS_LABEL[st]}">${STATUS_TAG[st]}</span> ${esc(l.label)} <span class="hint">· ${Math.ceil(cut / 2)} moves practiced of ${Math.ceil(l.sans.length / 2)}</span></li>`;
   }).join('');
   el.aboutBody.innerHTML = `<p><b>${esc(op.name)}</b> — ${sideName(op.side)}'s opening${op.traps ? ' (trap-heavy)' : ''}. Defining moves: <code>${esc(rootText)}</code></p>` +
@@ -570,8 +570,6 @@ function renderSettingsUi() {
   el.side.value = settings.side;
   el.arrows.checked = settings.bookArrows;
   el.least.checked = settings.leastStudied;
-  ($('#ot-len') as HTMLInputElement).value = String(settings.lineLength);
-  $('#ot-len-label').textContent = String(settings.lineLength);
   ($('#ot-fade') as HTMLSelectElement).value = String(settings.fadeAfter);
   ($('#ot-rating') as HTMLInputElement).value = String(settings.rating);
   $('#ot-rating-label').textContent = String(settings.rating);
@@ -623,12 +621,6 @@ el.priority.addEventListener('click', () => {
 });
 el.hint.addEventListener('click', () => { session?.requestHint(); renderAll(); });
 
-$('#ot-len').addEventListener('input', () => {
-  settings.lineLength = parseInt(($('#ot-len') as HTMLInputElement).value, 10);
-  saveSettings();
-  // Re-cut the line in place if nothing has been played yet; otherwise it applies from the next start.
-  if (settings.mode === 'practice' && session && session.ply <= 1) restartLine(false); else renderAll();
-});
 $('#ot-fade').addEventListener('change', () => {
   settings.fadeAfter = parseInt(($('#ot-fade') as HTMLSelectElement).value, 10);
   saveSettings();

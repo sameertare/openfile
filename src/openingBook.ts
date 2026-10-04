@@ -65,10 +65,13 @@ export function firstDiff(a: string[], b: string[]): number {
 
 const MAX_LINES = 12;
 
+/** Every line is trained 12 full moves deep. */
+export const LINE_PLIES = 24;
+
 /** Lines for one catalog opening: every named variation under its root, one line per distinct
  *  "Family: Variation" label (the label is the name up to the first comma, so sub-sub-variations fold
  *  into their parent), represented by its deepest sequence. Most-developed variations first. */
-export function buildLines(book: Book, opening: CatalogOpening, maxLines = MAX_LINES): TrainerLine[] {
+export function buildLines(book: Book, opening: CatalogOpening, maxLines = MAX_LINES, extensions: Record<string, string[]> = {}): TrainerLine[] {
   const root = opening.root.split(' ');
   const under = book.entries.filter((e) => startsWith(e.sans, root));
   // Group by name up to the first comma; if that leaves an opening with only a couple of lines
@@ -106,23 +109,17 @@ export function buildLines(book: Book, opening: CatalogOpening, maxLines = MAX_L
   }));
   lines.sort((a, b) => b.theory - a.theory || b.sans.length - a.sans.length || a.label.localeCompare(b.label));
   const top = lines.slice(0, maxLines);
+  // Book lines shorter than 12 moves are padded with engine moves (scripts/extend-lines.ts).
+  for (const l of top) {
+    const ext = extensions[l.id];
+    if (ext && l.sans.length < LINE_PLIES) l.sans = [...l.sans, ...ext].slice(0, LINE_PLIES);
+  }
   // An opening whose root isn't a named position in the data still needs one trainable line.
   if (!top.length) top.push({ id: `${opening.id}|${opening.name}`, openingId: opening.id, label: opening.name, eco: '', sans: root, theory: 0 });
   return top;
 }
 
-/**
- * How much of a line to practice: at most `lineLength` full moves, but stopping just after the
- * point where it splits from its most similar sibling lines (so each practiced line is only as long
- * as it takes to tell it apart — "lines stop here, or just after they split from similar lines").
- */
-export function practiceSans(line: TrainerLine, siblings: TrainerLine[], lineLength: number): string[] {
-  const cap = Math.max(2, lineLength * 2);
-  let split = 0;
-  for (const s of siblings) {
-    if (s.id === line.id) continue;
-    split = Math.max(split, firstDiff(line.sans, s.sans));
-  }
-  const natural = siblings.length > 1 ? Math.min(line.sans.length, split + 1) : line.sans.length;
-  return line.sans.slice(0, Math.max(2, Math.min(cap, natural)));
+/** How much of a line to practice: all of it, capped at 12 full moves. */
+export function practiceSans(line: TrainerLine): string[] {
+  return line.sans.slice(0, LINE_PLIES);
 }
