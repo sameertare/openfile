@@ -810,15 +810,11 @@ textarea {
 .plan-section li { margin-bottom: 8px; line-height: 1.6; }
 .plan-section li:last-child { margin-bottom: 0; }
 
-#move-parse-status { margin-top: 12px; }
-
 @media print {
-  .sidebar, .btn, .app-footer, .app-header .tagline, #input-card { display: none !important; }
+  .sidebar, .btn, .app-footer, .app-header .tagline { display: none !important; }
   body { background: #fff; color: #000; }
   .card { border: none; background: #fff; }
-  
   .plan-section { page-break-inside: avoid; }
-  #plans-card { display: block !important; }
 }
 
 /* ---------- Performance Analysis report — print / PDF export ---------- */

@@ -59,13 +59,6 @@ function startsWith(arr: string[], prefix: string[]): boolean {
   return true;
 }
 
-/** Index of the first ply where two lines differ (the shorter length if one is a prefix of the other). */
-export function firstDiff(a: string[], b: string[]): number {
-  const n = Math.min(a.length, b.length);
-  for (let i = 0; i < n; i++) if (a[i] !== b[i]) return i;
-  return n;
-}
-
 const MAX_LINES = 12;
 
 /** Every line is trained 12 full moves deep. */
