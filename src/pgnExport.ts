@@ -24,7 +24,7 @@ export function buildAnnotatedPgn(g: GameRecord): string {
   if (g.eco) headers.push(headerLine('ECO', g.eco));
   if (g.opening) headers.push(headerLine('Opening', g.opening));
   if (g.timeControl && g.timeControl !== '?') headers.push(headerLine('TimeControl', g.timeControl));
-  if (g.engineDepth) headers.push(headerLine('Annotator', `OpenFile (Stockfish 18, depth ${g.engineDepth})`));
+  if (g.engineDepth) headers.push(headerLine('Annotator', `OpenFile (Stockfish 19, depth ${g.engineDepth})`));
 
   const sans = g.sans ?? [];
   if (!sans.length) {

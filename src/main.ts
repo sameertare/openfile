@@ -528,7 +528,7 @@ async function runAnalysis() {
   let engine: Engine | null = null;
   try {
     if (useEngine && toAnalyze.some((g) => positionsNeeded(g, true) > 0)) {
-      progressText.textContent = 'Loading Stockfish 18 (first load fetches the neural network — ~38 MB)…';
+      progressText.textContent = 'Loading Stockfish 19 (first load fetches the engine — ~2 MB)…';
       engine = new Engine();
       await engine.init();
     }

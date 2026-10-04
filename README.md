@@ -1,6 +1,6 @@
 # ♖ OpenFile
 
-A local-first chess toolkit with **nine tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 18** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. The whole app runs as a pure static site (e.g. GitHub Pages); an optional Node/Express backend is only there for hosting it non-statically (e.g. Render/Railway/Fly) or relaying a live lichess game server-side instead of via a direct browser fetch.
+A local-first chess toolkit with **nine tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 19** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. The whole app runs as a pure static site (e.g. GitHub Pages); an optional Node/Express backend is only there for hosting it non-statically (e.g. Render/Railway/Fly) or relaying a live lichess game server-side instead of via a direct browser fetch.
 
 | Page | Tool | What it does |
 |---|---|---|
@@ -113,7 +113,7 @@ src/
   pgn.ts            multi-game PGN splitting & parsing, eval/clock tag extraction
   openings.ts       opening identification (header → ECOUrl → book)
   playerMatch.ts    groups PGN name variants (casing, "Last, First", nicknames) into one player
-  engine.ts         Stockfish 18 (lite) WASM worker wrapper — shared by analyze & live
+  engine.ts         Stockfish 19 (lite) WASM worker wrapper — shared by analyze & live
   analyze.ts        per-game analysis: win%, accuracy, errors, phases, patterns
   aggregate.ts      cross-game tables, pattern detection, puzzle recommendations
   markdown.ts       report render + round-trip parse + incremental merge
@@ -141,7 +141,7 @@ src/
   about.ts          About page (static content, no logic of its own)
 server/
   server.mjs      Express: static hosting, /api/live/:id SSE relay
-public/engine/    Stockfish 18 (lite) worker + wasm
+public/engine/    Stockfish 19 (lite) worker + wasm
 public/manifest.webmanifest, sw.js, icon.svg, icon-192.png, icon-512.png, apple-touch-icon.png   PWA manifest, service worker, and app icons
 samples/          example PGNs (bundled "try the sample" button)
 ```
@@ -164,11 +164,11 @@ OpenFile is an installable PWA (Progressive Web App):
 
 ## Tool 2 — Live & Engine (`/live.html`)
 
-Two modes, one board (Stockfish 18 runs locally in the browser). Layout follows chesscompass.com's analysis-board pattern: a large board (sized off both the available width and your screen's height, not a fixed cap) with engine feedback — candidate moves, move assessment, move list — docked in a compact panel immediately beside it in both modes, so you never have to scroll past the board to see it. Each mode's own setup form (FEN/PGN entry, or the lichess connect form) sits underneath the board instead, since it's used once per session rather than watched continuously.
+Two modes, one board (Stockfish 19 runs locally in the browser). Layout follows chesscompass.com's analysis-board pattern: a large board (sized off both the available width and your screen's height, not a fixed cap) with engine feedback — candidate moves, move assessment, move list — docked in a compact panel immediately beside it in both modes, so you never have to scroll past the board to see it. Each mode's own setup form (FEN/PGN entry, or the lichess connect form) sits underneath the board instead, since it's used once per session rather than watched continuously.
 
 **Any position**
 - Paste a FEN or click pieces to play moves on the board (moves are validated by chess.js).
-- **Suggest best move** runs Stockfish 18 to your chosen depth and shows the best move (as an arrow + SAN), the evaluation, the eval bar, and the full principal variation.
+- **Suggest best move** runs Stockfish 19 to your chosen depth and shows the best move (as an arrow + SAN), the evaluation, the eval bar, and the full principal variation.
 - **Play best move** applies it so you can walk a line forward; **Undo** / **Start position** to reset.
 - The **opening name** (book lookup, no PGN headers needed) is shown once the moves played match a known line, and keeps updating as you navigate.
 
@@ -235,7 +235,7 @@ Turns your own PGNs into a branching opening tree — like [openingtree.com](htt
 - **Browsing:** a board (reusing the same `Board` component as Game Analysis) plus a lichess-style vertical move list — same grid/markup Game Analysis uses (`.live-pgn-moves`), just without the per-move engine-quality coloring, which doesn't apply to a tree built from bare move lists — and a move-list table sorted by frequency, each row showing games played, score %, avg opponent rating, and a win/draw/loss bar. Click a move (in either place) to drill in; **Back**/**Start**/flip to navigate.
 - **Filters:** color only (White/Black — rebuilds the tree and flips the board). "Moves from here" always shows every move the tracked player has ever played from a position, however rarely — no minimum-games threshold to configure or hit.
 - **Games reaching this position:** every individual game behind the current node — opponent (with rating where known), result, date, a link to the game if the PGN had one, and an expandable full move list. Paginated (50 / 100 / 250 / All per page, with Prev/Next) rather than capped. The same "Show" dropdown also has a **⬇ Download all as PGN** option for every game reaching that position, bundled into one multi-game PGN file.
-- **🔎 Engine analysis:** Stockfish 18 (the same `Engine` class as Game Analysis) runs multi-PV on whichever node is currently viewed — top 3 candidate lines with eval and a short continuation, shown as ranked arrows on the board too. Configurable depth (12/15/18).
+- **🔎 Engine analysis:** Stockfish 19 (the same `Engine` class as Game Analysis) runs multi-PV on whichever node is currently viewed — top 3 candidate lines with eval and a short continuation, shown as ranked arrows on the board too. Configurable depth (12/15/18).
 - **📚 Book theory (Lichess):** aggregate stats from millions of Lichess games at the exact position being viewed, alongside your own repertoire. Lichess's Opening Explorer API now requires an authenticated request, so this is gated behind a "Connect Lichess account" button using a hand-rolled OAuth 2.0 Authorization Code + PKCE flow (`src/lichessAuth.ts`) — no client secret, no app registration (Lichess explicitly supports unregistered public/PKCE clients), token cached in this browser only. Nothing else about the account is accessed.
 - **Save/load a tree:** **⬇ Save tree** writes the already-built `ExplorerGame` list to a portable `.tree.json` file — reopening it later skips re-fetching and re-parsing entirely. Distinct from the PGN download, which keeps the original raw game text instead.
 - **Shareable position URLs:** the address bar always reflects exactly what's on screen (account, color, and move path) for anything loaded via lichess/chess.com fetch, kept in sync via `history.replaceState`. **🔗 Copy link** copies it directly; opening a copied link re-fetches the account and jumps straight to that position (falling back to the deepest still-valid prefix if the account's games have changed since).
@@ -311,4 +311,4 @@ Also an **unofficial estimate** (FIDE Handbook B.02) — actual FIDE processing 
 
 ### Engine notes
 
-- First engine use downloads the ~7 MB Stockfish 18 (lite) build with its NNUE network embedded (served locally from `public/engine`), then it's cached — no separate network file, no cross-origin isolation headers needed.
+- First engine use downloads the ~2 MB Stockfish 19 (lite) build with its NNUE network embedded (served locally from `public/engine`), then it's cached — no separate network file, no cross-origin isolation headers needed.

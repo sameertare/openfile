@@ -61,7 +61,7 @@ describe('buildAnnotatedPgn', () => {
     expect(pgn).toContain('[Black "Villain"]');
     expect(pgn).toContain('[Result "1-0"]');
     expect(pgn).toContain('[ECO "C50"]');
-    expect(pgn).toContain('[Annotator "OpenFile (Stockfish 18, depth 12)"]');
+    expect(pgn).toContain('[Annotator "OpenFile (Stockfish 19, depth 12)"]');
   });
 
   it('escapes double quotes in header values', () => {

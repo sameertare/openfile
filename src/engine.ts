@@ -1,8 +1,8 @@
-/** Thin promise wrapper around the single-threaded Stockfish 18 (lite) WASM worker. */
+/** Thin promise wrapper around the single-threaded Stockfish 19 (lite) WASM worker. */
 
 // Base-path aware so it resolves correctly under a subpath (e.g. GitHub Pages project sites).
-export const ENGINE_URL = `${import.meta.env.BASE_URL}engine/stockfish-18-lite-single.js`;
-export const ENGINE_NAME = 'Stockfish 18 (lite, single-threaded)';
+export const ENGINE_URL = `${import.meta.env.BASE_URL}engine/stockfish-19-lite-single.js`;
+export const ENGINE_NAME = 'Stockfish 19 (lite, single-threaded)';
 
 export interface EngineEval {
   cp: number;             // centipawns from the side-to-move's perspective (mate mapped to ±(10000-n))
