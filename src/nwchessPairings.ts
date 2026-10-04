@@ -88,10 +88,6 @@ let explainingFor: { round: number; board: number } | null = null;
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
 }
-function nameOf(t: Tournament, id: number | null): string {
-  if (id == null) return '—';
-  return t.players.find((p) => p.id === id)?.name ?? '—';
-}
 /** Name with rating in brackets, e.g. "Ava Thompson (1580)" — "(unrated)" when there's none. When
  *  `showEstimate` is true and the player has actual result history this event, also appends a
  *  second bracket with a lightweight running rating estimate reflecting results so far — purely

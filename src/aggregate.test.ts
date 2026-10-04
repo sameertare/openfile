@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { aggregate, opponentList, headToHeadWithOpponent, scorePct, themeUrl, themeLabel, type WDL } from './aggregate';
-import type { ErrCounts, GameRecord, Phase, Result, WorstMove } from './types';
+import type { ErrCounts, GameRecord, Result, WorstMove } from './types';
 
 function errCounts(over: Partial<ErrCounts> = {}): ErrCounts {
   return { inaccuracies: 0, mistakes: 0, blunders: 0, ...over };

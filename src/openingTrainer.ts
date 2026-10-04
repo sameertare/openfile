@@ -90,10 +90,9 @@ function linesOf(op: CatalogOpening): TrainerLine[] {
 }
 
 // ---------- engines ----------
-let analysis: Engine | null = null;
 let analysisReady: Promise<Engine> | null = null;
 function getAnalysis(): Promise<Engine> {
-  if (!analysisReady) analysisReady = (async () => { const e = new Engine(); await e.init(); analysis = e; return e; })();
+  if (!analysisReady) analysisReady = (async () => { const e = new Engine(); await e.init(); return e; })();
   return analysisReady;
 }
 let playEngine: Engine | null = null;
@@ -157,7 +156,6 @@ function shownFen(): string {
 function isLive(): boolean { return viewIdx === null || viewIdx >= history().length; }
 
 // ---------- opening/line selection ----------
-function siblingsOf(line: TrainerLine): TrainerLine[] { return linesOf(catalogById(line.openingId)!); }
 function sidesFor(op: CatalogOpening): Color { return settings.side === 'auto' ? op.side : settings.side; }
 
 function selectLine(line: TrainerLine, opts: { countView: boolean } = { countView: true }) {

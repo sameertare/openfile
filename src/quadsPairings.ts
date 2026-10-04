@@ -1,7 +1,7 @@
 import './style.css';
 import {
   commitRound, createTournament, estimatedCurrentRating,
-  nextRoundNumber, pairNextRound,
+  pairNextRound,
   parseRoster, recommendedRoundsRoundRobin, redoLatestRound,
   setResult, swapByeWithPlayer, swapColors, swapPlayersAcrossBoards,
 } from './swissEngine';

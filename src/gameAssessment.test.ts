@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { assessGame } from './gameAssessment';
-import type { ErrCounts, GameRecord, Phase, WorstMove } from './types';
+import type { ErrCounts, GameRecord, WorstMove } from './types';
 
 function errCounts(over: Partial<ErrCounts> = {}): ErrCounts {
   return { inaccuracies: 0, mistakes: 0, blunders: 0, ...over };

@@ -1,17 +1,18 @@
 # ♖ OpenFile
 
-A local-first chess toolkit with **nine tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 19** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. The whole app runs as a pure static site (e.g. GitHub Pages); an optional Node/Express backend is only there for hosting it non-statically (e.g. Render/Railway/Fly) or relaying a live lichess game server-side instead of via a direct browser fetch.
+A local-first chess toolkit with **ten tools**, each its own single-page app, reachable from a hub landing page. Everything runs in the browser: **Stockfish 19** (lite) as a WASM worker, live games streamed straight from the lichess public API, and all analysis client-side — your games never leave your machine. The whole app runs as a pure static site (e.g. GitHub Pages); an optional Node/Express backend is only there for hosting it non-statically (e.g. Render/Railway/Fly) or relaying a live lichess game server-side instead of via a direct browser fetch.
 
 | Page | Tool | What it does |
 |---|---|---|
-| `index.html` | **Hub** | Landing page linking to the nine tools |
+| `index.html` | **Hub** | Landing page linking to the ten tools |
 | `analyze.html` | **Performance Analysis** | Deep performance report from chess.com / lichess PGNs |
 | `live.html` | **Live & Engine** | Watch a live lichess game with move feedback; best-move suggestion from any position; play vs. Stockfish |
 | `swiss.html` | **Swiss Pairings** | Run a full Swiss tournament from a roster |
 | `opening-explorer.html` | **Opening Explorer** | Branching opening tree from your own PGNs; engine analysis, Lichess book theory |
-| `opening-deviation.html` | **Openings Deviation** | Move-by-move check of your games against a prepared repertoire PGN |
-| `compare-reports.html` | **Compare Reports** | Side-by-side metric delta between two saved Performance Analysis reports |
-| `roster.html` | **Coach Roster** | Track several players' saved reports at once as summary cards |
+| `opening-trainer.html` | **Opening Trainer** | Practice, play-engine and explore modes over ~70 openings; every line 12 moves deep and Stockfish-verified |
+| `strength-report.html` | **Strength Report** | Strengths/weaknesses report from the same PGN analysis |
+| `nwchess-pairings.html` | **NWChess Pairings** | Swiss pairings straight from an NWChess RosterTable.csv |
+| `quads.html` | **Quads Pairings** | Rating-seeded round-robin quads from an NWChess roster |
 | `rating.html` | **USCF Rating Estimator** | Estimate a new US Chess rating after an event |
 | `fide-rating.html` | **FIDE Rating Estimator** | Estimate a new FIDE Standard rating after an event |
 
@@ -34,7 +35,7 @@ The player the report is for is **auto-detected**, not picked from a dropdown: w
 - **Errors in wins vs losses** — do blunders cluster in the games you lose?
 - **Patterns** — thrown wins (winning position → loss), conversion rate of winning positions, resilience (saves from losing), time-trouble errors, and a plain-English narrative of the dominant loss pattern.
 - **Time trouble** — its own small section: how many games had `[%clk]` data, how many blunders/mistakes were played with under 30 seconds left, and what share of your total errors that represents — clock management is something you can actually train, so it gets called out on its own rather than buried in a footnote. Underneath it, a **time-usage chart** plots average seconds remaining by move number across every game with clock data, so you can see whether time trouble tends to build up at a particular stage of the game rather than being spread evenly.
-- **Head-to-head** — pick any opponent from a dropdown (populated from everyone in the loaded games) and see just that match-up: W/D/L, score, an opening breakdown for that opponent specifically, and the underlying game list — different from Compare Reports, which compares aggregate reports rather than filtering to one rivalry.
+- **Head-to-head** — pick any opponent from a dropdown (populated from everyone in the loaded games) and see just that match-up: W/D/L, score, an opening breakdown for that opponent specifically, and the underlying game list.
 - **Results by time control** — Bullet / Blitz / Rapid / Classical / Daily W-D-L and accuracy.
 - **Training plan** — prioritized recommendations, each linking to the exact **lichess puzzle themes** to drill, plus concrete practice tips.
 - **Games list with eval graphs** — every analyzed game, most recent first, with date, opponent, result, opening, accuracy, and a sparkline of the evaluation (white's perspective) across the whole game. A ▶ link opens a lichess-sourced game directly in **Live & Engine**, deep-linked to step through it move by move (chess.com games don't have a public live-game API, so the link only appears for lichess games). A ⬇ link downloads that game as a standard, annotated PGN — engine evals baked in as `[%eval ...]` comments plus a short note on any flagged inaccuracy/mistake/blunder — viewable in any ordinary PGN reader offline, no app required.
@@ -107,7 +108,7 @@ Prefer to run the optional backend live too (non-static hosting, or a server-sid
 ## Project layout
 
 ```
-index.html / analyze.html / live.html / swiss.html / opening-explorer.html / compare-reports.html / rating.html / fide-rating.html / about.html   the seven tool pages + About (Vite multi-page build)
+index.html / analyze.html / live.html / swiss.html / opening-explorer.html / opening-trainer.html / strength-report.html / nwchess-pairings.html / quads.html / rating.html / fide-rating.html / about.html   the tool pages + About (Vite multi-page build)
 src/
   types.ts          shared data model (also the shape persisted in the .md)
   pgn.ts            multi-game PGN splitting & parsing, eval/clock tag extraction
@@ -130,10 +131,10 @@ src/
   openingTree.ts    pure opening-tree logic: builds a move trie from games, aggregates W/D/L per node
   openingExplorer.ts Opening Explorer UI (file load, player detection, tree navigation, engine analysis, book theory, tree save/load, shareable URLs)
   scoutingReport.ts Scouting Report companion page UI — receives a one-time sessionStorage handoff from Opening Explorer, no load UI of its own
+  openingBook.ts / openingCatalog.ts / openingTrainerCore.ts / practiceSession.ts / openingTrainer.ts   Opening Trainer: lichess book data + curated catalog, pure scoring/fade logic, the practice session, and the UI
+  quadsSplit.ts / quadsPairings.ts   Quads grouping logic and UI
   engineFormat.ts   shared eval/UCI-to-SAN formatting helpers, used by Live & Engine and Opening Explorer
   lichessAuth.ts    Lichess OAuth 2.0 Authorization Code + PKCE flow, used by Opening Explorer's book-theory overlay
-  reportCompare.ts  pure report-comparison logic: builds delta rows/direction for every aggregate metric
-  compareReports.ts Compare Reports UI (two-file upload, delta tables, opening-by-opening diff)
   ratingEngine.ts   pure USCF rating-estimate logic
   rating.ts         USCF Rating Estimator UI
   fideRatingEngine.ts pure FIDE rating-estimate logic
@@ -141,6 +142,7 @@ src/
   about.ts          About page (static content, no logic of its own)
 server/
   server.mjs      Express: static hosting, /api/live/:id SSE relay
+scripts/           build-openings.mjs (lichess data -> src/data/openings.json), extend-lines.ts (Stockfish-verifies and completes trainer lines)
 public/engine/    Stockfish 19 (lite) worker + wasm
 public/manifest.webmanifest, sw.js, icon.svg, icon-192.png, icon-512.png, apple-touch-icon.png   PWA manifest, service worker, and app icons
 samples/          example PGNs (bundled "try the sample" button)
@@ -246,45 +248,7 @@ Not in v1 (noted as future work): variant support and master-game database compa
 
 ---
 
-## Tool 5 — Openings Deviation (`/opening-deviation.html`)
-
-Upload a prepared repertoire and your own games, and see — move by move, game by game — exactly where each game left the book.
-
-- **Repertoire input:** a PGN file, or pasted text, of your prepared lines — either several separate games (one full line each, the common export format) or a single PGN with recursive variations in parentheses (`2. Nf3 Nc6 (2... Nf6 3. Nxe5 ...)`), or a mix of both. Since chess.js's own `loadPgn` discards RAVs and only keeps the main line, `src/repertoire.ts` tokenizes the movetext itself (stripping comments/NAGs/glyphs/move numbers, keeping parentheses as structural tokens) and walks it with a `Chess` instance, reloading the branch point's FEN whenever a `(` opens an alternative — no manual move/undo stack needed even for deeply nested variations. Every uploaded line, however supplied, merges into one shared tree by shared opening prefix.
-- **Parse diagnostics:** a chunk with zero usable moves, or one that plays some real moves before hitting an unrecognized token partway through, is reported rather than silently dropped or silently truncated — a duplicate line that fully re-treads existing tree nodes is *not* flagged as a failure, only a genuine parse problem is, with the actual offending move token named.
-- **Which color:** a White/Black selector, since the tree itself is symmetric (it doesn't know which side it was prepared for) — games where the auto-detected player had the other color are skipped with a note rather than compared nonsensically.
-- **Comparison:** every ply of every relevant game is walked against the tree. Three outcomes per game: stayed in book the whole way; a real **deviation** (a move was played that contradicts a branch the repertoire actually covers); or simply ran **past the end of prepared theory** (not a mistake — the tree just didn't go that deep). The distinction matters enough to label separately rather than lumping both under "left book."
-- **Output:** per-game in-repertoire/out-of-repertoire move counts and the exact move the game first left prep, plus an expandable move-by-move list (reusing the same lichess-style move-pair grid as Live & Engine) color-coding book moves, the deviation itself, and everything after it.
-
----
-
-## Tool 6 — Compare Reports (`/compare-reports.html`)
-
-Upload two saved Performance Analysis `report.md` files and see every metric compared side by side, with the delta highlighted.
-
-- **Input:** two independent drop zones, Report A (baseline) and Report B (compare against) — each takes a single saved `report.md`. A file that doesn't contain the embedded `chess-insight:data:v1` block is rejected with an inline error and clears that slot (a failed re-upload never leaves a stale comparison from a previous successful load showing).
-- **What's compared:** the exact same aggregates Performance Analysis computes (`src/aggregate.ts`) for each report — overview score/games/accuracy, by-color (White/Black) breakdowns, by-time-control tables, per-phase (opening/middlegame/endgame) accuracy and errors, tactics (missed wins/mates/tactics, blunders), patterns (conversion rate, thrown wins, saves, time-pressure blunders), and an opening-by-opening score comparison matched by opening family, repeated per time control — openings present in only one report (or one time control) are marked "(only in A)" / "(only in B)" rather than silently dropped.
-- **Delta semantics:** every row is colored green/red based on whether B is better or worse than A for *that specific metric* — e.g. a drop in losses or blunder rate is green (good), a drop in accuracy or score % is red (bad); count-only rows with no inherent direction (like game counts) are left uncolored. Tactics counts are normalized to **per-game rates** for the purpose of coloring (so a report with far more games isn't unfairly flagged worse just for having more raw blunders) — the raw counts are still shown alongside, uncolored, for reference.
-- **Two modes, auto-detected:** if both reports have the same username, the page frames it as one player's **progress over time**. If the usernames differ, it switches to a **head-to-head** framing instead — same tables, same metrics, but the header shows a verdict card tallying which player leads on more of the compared metrics overall (e.g. "Alice comes out ahead, leading on 13 of 39 compared metrics"), handy for scouting an opponent or comparing two players directly.
-- **Trend across reports:** a separate section below the A/B comparison accepts three or more `report.md` files at once (or added incrementally) for the same player, sorts them chronologically by report date, and charts overall score % and accuracy % over time — more signal than a single before/after snapshot. Reports for different usernames are still charted (in date order) but flagged with a warning, since a trend line only really means something for one player over time.
-
-Pure comparison logic lives in `src/reportCompare.ts` (no DOM), separate from the `src/compareReports.ts` UI controller — same split used by Opening Explorer and the rating estimators. The trend and time-usage charts share a small generic SVG line-chart renderer, `src/linechart.ts`.
-
----
-
-## Tool 7 — Coach Roster (`/roster.html`)
-
-Track several players at once instead of opening one Performance Analysis report at a time — built for a coach or tournament director following multiple students.
-
-- **Input:** drop any number of saved `report.md` files at once, or add more later. One card per player — dropping a newer report for a player already in the roster replaces their card rather than adding a duplicate, keyed by username (case-insensitive) and compared by `meta.updatedAt`.
-- **Cards show:** games, score %, accuracy, and blunder count, plus the player's weakest opening (2+ games) and their top training-recommendation area, when the underlying report has that data (both need an engine-analyzed report — a report loaded/re-analyzed with "No engine" won't have accuracy or recommendations to show).
-- **Sort by:** score % (either direction), accuracy, name, or last updated — defaults to lowest score first, surfacing whoever most needs attention.
-
-A malformed or unexpectedly old-schema `report.md` is skipped with an inline error rather than silently aborting the whole batch load. Reuses `src/markdown.ts`'s `parseMarkdownReport` and `src/aggregate.ts`'s `aggregate()` — the exact same parsing/aggregation Performance Analysis and Compare Reports already use.
-
----
-
-## Tool 8 — USCF Rating Estimator (`/rating.html`)
+## Tool 5 — USCF Rating Estimator (`/rating.html`)
 
 Estimate a new US Chess (USCF) rating after an event, using the published rating formula.
 
@@ -297,7 +261,7 @@ This is an **unofficial estimate**, clearly labeled as such in the tool — US C
 
 ---
 
-## Tool 9 — FIDE Rating Estimator (`/fide-rating.html`)
+## Tool 6 — FIDE Rating Estimator (`/fide-rating.html`)
 
 Estimate a new FIDE **Standard** rating after an event (Rapid/Blitz use separate rating pools and aren't covered).
 

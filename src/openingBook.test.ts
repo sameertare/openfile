@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Chess } from 'chess.js';
 import data from './data/openings.json';
 import { CATALOG } from './openingCatalog';
-import { loadBook, nameAt, buildLines, practiceSans, firstDiff } from './openingBook';
+import { loadBook, nameAt, buildLines, practiceSans } from './openingBook';
 import type { RawEntry, TrainerLine } from './openingBook';
 
 const RAW: RawEntry[] = [

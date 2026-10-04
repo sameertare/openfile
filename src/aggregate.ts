@@ -467,16 +467,6 @@ export function themeLabel(theme: string): string {
   return THEME_LABELS[theme] ?? theme;
 }
 
-/** Finds the single most damaging recorded moment (biggest win% swing), optionally filtered to a
- *  phase and/or a subset of WorstMove kinds — used to ground a recommendation in one of the
- *  player's own games (opponent, date, exact move) instead of interchangeable generic advice. */
-function worstMoment(
-  analyzed: GameRecord[],
-  opts: { phase?: Phase; kinds?: WorstMove['kind'][] } = {}
-): { game: GameRecord; move: WorstMove } | null {
-  return worstMoments(analyzed, opts, 1)[0] ?? null;
-}
-
 /** Every recorded moment matching a phase and/or WorstMove kinds, worst swing first. A training
  *  plan can dedicate every single day to one recommendation (e.g. only one weak area was found at
  *  all) — citing just the single worst moment made every revisit of that area cite the identical

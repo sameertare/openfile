@@ -1,6 +1,6 @@
 import type { GameRecord, ReportData, ReportMeta } from './types';
 import type { Aggregates, OpeningRow, WDL } from './aggregate';
-import { scorePct, themeLabel, themeUrl } from './aggregate';
+import { scorePct, themeUrl } from './aggregate';
 import { assessGame } from './gameAssessment';
 
 const DATA_MARK_START = '<!-- chess-insight:data:v1';

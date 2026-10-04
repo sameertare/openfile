@@ -529,7 +529,6 @@ describe('pairNextRound: FIDE round 1 (Dutch slide + colour alternation)', () =>
     const roster = makeRoster(8);
     const t = createTournament('T', roster, 5, 'swiss', 'fide');
     const round = pairNextRound(t);
-    const byId = new Map(t.players.map((p) => [p.id, p]));
     const games = round.pairings.filter((p) => p.byeId == null).sort((a, b) => a.board - b.board);
     expect(games).toHaveLength(4);
 

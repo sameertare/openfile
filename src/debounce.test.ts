@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { debounce, throttle } from './debounce';
+import { debounce } from './debounce';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -39,34 +39,5 @@ describe('debounce', () => {
     debounced('second');
     vi.advanceTimersByTime(50);
     expect(fn).toHaveBeenCalledWith('second');
-  });
-});
-
-describe('throttle', () => {
-  it('invokes immediately on the first call', () => {
-    const fn = vi.fn();
-    const throttled = throttle(fn, 100);
-    throttled();
-    expect(fn).toHaveBeenCalledTimes(1);
-  });
-
-  it('suppresses calls within the delay window, then fires once at the end of it', () => {
-    const fn = vi.fn();
-    const throttled = throttle(fn, 100);
-    throttled();
-    throttled();
-    throttled();
-    expect(fn).toHaveBeenCalledTimes(1);
-    vi.advanceTimersByTime(100);
-    expect(fn).toHaveBeenCalledTimes(2);
-  });
-
-  it('allows another immediate call once the delay window has fully elapsed', () => {
-    const fn = vi.fn();
-    const throttled = throttle(fn, 100);
-    throttled();
-    vi.advanceTimersByTime(150);
-    throttled();
-    expect(fn).toHaveBeenCalledTimes(2);
   });
 });

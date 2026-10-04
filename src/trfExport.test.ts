@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildTrf } from './trfExport';
 import { createTournament, pairNextRound, commitRound, setResult } from './swissEngine';
-import type { RosterEntry, Tournament } from './swissEngine';
+import type { RosterEntry } from './swissEngine';
 
 function makeRoster(n: number): RosterEntry[] {
   return Array.from({ length: n }, (_, i) => ({ name: `Player ${i + 1}`, rating: 1000 + (n - i) * 10 }));

@@ -12,7 +12,6 @@ import { initTheme } from './theme';
 import { buildPgnFromLine, downloadPgn } from './pgnExport';
 import { debounce } from './debounce';
 import { queryTablebase, tablebaseEligible, tbCategoryLabel, tbCategoryClass } from './tablebase';
-import type { TbResult, TbCategory } from './tablebase';
 import { whiteCp, fmtEval, uciToSan, pvToSans } from './engineFormat';
 
 registerServiceWorker();
