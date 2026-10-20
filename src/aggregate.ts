@@ -2,6 +2,7 @@ import type { ErrCounts, GameRecord, Phase, WorstMove } from './types';
 import { LOSING_WINPCT, WINNING_WINPCT } from './analyze';
 import { analyzeTimeByPhase, findBlunderClusters } from './advancedAnalysis';
 import type { TimePhaseStats, BlunderCluster } from './advancedAnalysis';
+import { moveLabel } from './openingTheory';
 
 export interface WDL {
   games: number;
@@ -522,6 +523,16 @@ function recommend(
   const weakestPhase = withAcc.length
     ? withAcc.reduce((a, b) => (a.avgAccuracy! <= b.avgAccuracy! ? a : b))
     : null;
+  const playerTheoryDepartures = analyzed.filter((g) => g.openingTheory?.departureBy === 'player');
+  const opponentTheoryDepartures = analyzed.filter((g) => g.openingTheory?.departureBy === 'opponent');
+  const repeatedTheoryGap = playerTheoryDepartures.length >= Math.max(2, Math.ceil(analyzed.length * 0.3));
+  const theoryLineText = (g: GameRecord) => {
+    const th = g.openingTheory!;
+    return th.recommendedLine.map((san, i) => {
+      const ply = th.lineStartPly + i;
+      return moveLabel(Math.floor(ply / 2) + 1, ply % 2 === 0 ? 'w' : 'b', san);
+    }).join(' ');
+  };
 
   if (weakestPhase?.phase === 'endgame' || phases[2].blunders >= 3) {
     const p = phases[2];
@@ -598,18 +609,36 @@ function recommend(
     recs.push({ area: 'Middlegame calculation', severity: sev, why, themes: t(['middlegame', 'fork', 'pin', 'discoveredAttack', 'hangingPiece']), drills });
   }
 
-  if (weakestPhase?.phase === 'opening' || phases[0].blunders + phases[0].mistakes >= 3 || weakest.length > 0) {
+  if (weakestPhase?.phase === 'opening' || phases[0].blunders + phases[0].mistakes >= 3 || weakest.length > 0 || repeatedTheoryGap) {
     const p = phases[0];
-    const sev = phaseSeverity(p);
+    let sev = phaseSeverity(p);
+    if (repeatedTheoryGap && sev === 'low') sev = 'medium';
     const openingList = weakest.slice(0, 3).map((o) => `${o.family} (${o.wins}W-${o.draws}D-${o.losses}L)`).join(', ');
     let why = `Opening accuracy is ${p.avgAccuracy ?? '—'}%` +
       (p.blunders || p.mistakes ? `, with ${p.blunders} blunder(s) and ${p.mistakes} mistake(s) in this phase` : '') +
       '.' + (openingList ? ` Worst-scoring openings: ${openingList}.` : '');
+    if (playerTheoryDepartures.length) {
+      why += ` You were first to leave the bundled reference in ${playerTheoryDepartures.length} of ${analyzed.length} analyzed game(s); each example below is judged separately by Stockfish, because leaving the book is not automatically an error.`;
+    }
     const drills: string[] = [];
     // Cite every weak opening in turn, not just the single worst — same reasoning as the phase
     // blocks above: a recommendation can end up carrying an entire training plan alone.
     weakest.slice(0, 6).forEach((o) => {
       drills.push(`Review your losses in ${o.family} (${o.wins}W-${o.draws}D-${o.losses}L) — where did the game actually leave your prep?`);
+    });
+    playerTheoryDepartures.slice(0, 6).forEach((g) => {
+      const th = g.openingTheory!;
+      const opponent = g.userColor === 'w' ? g.black : g.white;
+      const departure = moveLabel(th.departureMoveNo!, th.departureColor!, th.played!);
+      const verdict = th.departureWinPctLoss !== null ? `; it cost ${th.departureWinPctLoss} win-probability points` : '';
+      const line = theoryLineText(g);
+      drills.push(`Your ${th.bookName} vs ${opponent} (${g.date}) left the reference with ${departure}${verdict}. ${line ? `Rehearse Stockfish 19's line: ${line}` : `Review ${th.best ? `the engine preference ${th.best}` : 'the position'} one move deeper.`}`);
+    });
+    opponentTheoryDepartures.slice(0, 3).forEach((g) => {
+      const th = g.openingTheory!;
+      const opponent = g.userColor === 'w' ? g.black : g.white;
+      const line = theoryLineText(g);
+      drills.push(`${opponent} left ${th.bookName} first with ${moveLabel(th.departureMoveNo!, th.departureColor!, th.played!)}. Practice your response${th.best ? ` ${th.best}` : ''}${line ? ` in this line: ${line}` : '.'}`);
     });
     if (sev === 'low' && !openingList) {
       why += ' No real weak spot here — opening prep is not the priority right now.';

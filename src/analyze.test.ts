@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { winPct, positionsNeeded, analyzeGame, WINNING_WINPCT, type AnalyzeOptions } from './analyze';
 import { parseGame } from './pgn';
 import { nameKey } from './playerMatch';
@@ -57,9 +57,9 @@ describe('positionsNeeded', () => {
     expect(positionsNeeded(g, false)).toBe(0);
   });
 
-  it('is 0 when the PGN already carries evals for (almost) every move', () => {
+  it('is 1 when PGN evals cover the moves, for the targeted Stockfish theory line', () => {
     const g = parseGame(CLEAN_GAME)!;
-    expect(positionsNeeded(g, true)).toBe(0);
+    expect(positionsNeeded(g, true)).toBe(1);
   });
 
   it('is moves.length + 1 when engine analysis is actually needed', () => {
@@ -82,6 +82,11 @@ describe('analyzeGame: PGN-eval path (no engine needed)', () => {
     expect(record.accuracy.overall).not.toBeNull();
     expect(record.accuracy.overall!).toBeGreaterThanOrEqual(0);
     expect(record.accuracy.overall!).toBeLessThanOrEqual(100);
+    expect(record.openingTheory).toMatchObject({
+      reference: 'Lichess opening database',
+      status: 'book-to-end',
+      bookName: 'Ruy Lopez: Morphy Defense',
+    });
   });
 
   it('maps result correctly for the player analyzed as Black', async () => {
@@ -131,6 +136,25 @@ describe('analyzeGame: PGN-eval path (no engine needed)', () => {
     const g = parseGame(CLEAN_GAME)!;
     const record = await analyzeGame(g, opts());
     expect(record.id).toBe('https://lichess.org/abcd1234');
+  });
+
+  it('runs one targeted Stockfish search for an engine-backed opening continuation', async () => {
+    const engine = {
+      evaluate: vi.fn().mockResolvedValue({
+        cp: 28,
+        mateIn: null,
+        bestmove: 'b5a4',
+        pv: ['b5a4', 'g8f6', 'e1g1', 'f8e7', 'f1e1', 'b7b5', 'a4b3', 'd7d6', 'c2c3', 'e8g8'],
+        depth: 18,
+      }),
+    } as unknown as NonNullable<AnalyzeOptions['engine']>;
+    const record = await analyzeGame(parseGame(CLEAN_GAME)!, opts({ engine, depth: 18 }));
+    expect(engine.evaluate).toHaveBeenCalledTimes(1);
+    expect(record.openingTheory).toMatchObject({
+      best: 'Ba4',
+      engineDepth: 18,
+      recommendedLine: ['Ba4', 'Nf6', 'O-O', 'Be7', 'Re1', 'b5', 'Bb3', 'd6', 'c3', 'O-O'],
+    });
   });
 });
 

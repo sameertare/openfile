@@ -124,6 +124,23 @@ describe('renderMarkdown + parseMarkdownReport: round trip', () => {
     expect(md).toContain('_No analyzed games yet._');
   });
 
+  it('renders per-game opening theory and the Stockfish continuation', () => {
+    const analyzed = game({
+      analyzed: true,
+      accuracy: { overall: 90, opening: 90, middlegame: null, endgame: null },
+      openingTheory: {
+        reference: 'Lichess opening database', bookName: 'Italian Game', eco: 'C50',
+        status: 'book-to-end', knownPlies: 6, departurePly: null, departureMoveNo: null,
+        departureColor: null, departureBy: null, played: null, departureWinPctLoss: null,
+        best: 'd3', engineDepth: 18, lineStartPly: 6, recommendedLine: ['d3', 'Nf6'],
+      },
+    });
+    const md = renderMarkdown(minimalAggregates(), [analyzed], meta());
+    expect(md).toContain('**Opening theory & Stockfish line:**');
+    expect(md).toContain('Stockfish 19 at depth 18 recommends next: **d3**');
+    expect(md).toContain('4.d3 4...Nf6');
+  });
+
   it('renders training recommendations when present', () => {
     const agg = minimalAggregates({
       recommendations: [{ area: 'Tactics', severity: 'high', why: 'Too many blunders.', themes: [{ name: 'fork', label: 'Forks' }], drills: ['Do puzzles'] }],

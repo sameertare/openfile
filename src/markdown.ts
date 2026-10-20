@@ -115,6 +115,9 @@ export function renderMarkdown(agg: Aggregates, games: GameRecord[], meta: Repor
     md.push('');
     md.push(`**Overall:** ${assessment.overall}`);
     md.push('');
+    md.push('**Opening theory & Stockfish line:**');
+    for (const line of assessment.openingTheory) md.push(`- ${line}`);
+    md.push('');
     md.push('| Phase | Verdict | Accuracy | Assessment |');
     md.push('|---|---|--:|---|');
     for (const p of assessment.phases) {
@@ -239,7 +242,11 @@ export function mergeGames(oldGames: GameRecord[], newGames: GameRecord[]): Game
   for (const g of oldGames) map.set(g.id, g);
   for (const g of newGames) {
     const existing = map.get(g.id);
-    if (!existing || (!existing.analyzed && g.analyzed)) map.set(g.id, g);
+    const existingDepth = Math.max(existing?.engineDepth ?? 0, existing?.openingTheory?.engineDepth ?? 0);
+    const newDepth = Math.max(g.engineDepth ?? 0, g.openingTheory?.engineDepth ?? 0);
+    if (!existing || (!existing.analyzed && g.analyzed) || newDepth > existingDepth || (!existing.openingTheory && !!g.openingTheory)) {
+      map.set(g.id, g);
+    }
   }
   return [...map.values()].sort((x, y) => x.date.localeCompare(y.date));
 }

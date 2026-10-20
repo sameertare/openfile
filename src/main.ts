@@ -7,6 +7,7 @@ import { analyzeGame, positionsNeeded } from './analyze';
 import { aggregate, scorePct, themeUrl, opponentList, headToHeadWithOpponent } from './aggregate';
 import type { Aggregates, OpeningRow, WDL, HeadToHeadOpponent } from './aggregate';
 import { assessGame } from './gameAssessment';
+import { moveLabel } from './openingTheory';
 import { mergeGames, parseMarkdownReport, renderMarkdown } from './markdown';
 import type { GameRecord, ReportData, ReportMeta } from './types';
 import { renderSparklineSvg } from './sparkline';
@@ -521,8 +522,16 @@ async function runAnalysis() {
 
   const baseReportIsSamePlayer = !!baseReport && matchKeys.has(nameKey(baseReport.meta.username));
 
-  // Skip games already analyzed in the loaded report (same id, same player).
-  const knownIds = new Set((baseReportIsSamePlayer ? baseReport!.games : []).map((g) => g.id));
+  const oldGames = baseReportIsSamePlayer ? baseReport!.games : [];
+  // A higher requested depth upgrades older engine records when the matching PGN is present.
+  // Reports created before theory tracking are also refreshed so they gain a real book boundary
+  // and Stockfish model line instead of remaining permanently stuck in the legacy shape.
+  const knownIds = new Set(oldGames.filter((g) => {
+    if (!useEngine) return true;
+    const moveAnalysisDeepEnough = g.evalSource !== 'engine' || (g.engineDepth ?? 0) >= depth;
+    const theoryDeepEnough = !!g.openingTheory && (g.openingTheory.engineDepth ?? 0) >= depth;
+    return moveAnalysisDeepEnough && theoryDeepEnough;
+  }).map((g) => g.id));
   const toAnalyze = gamesForPlayer(matchKeys).filter((g) => !knownIds.has(gameId(g)));
 
   let engine: Engine | null = null;
@@ -538,6 +547,10 @@ async function runAnalysis() {
     const newRecords: GameRecord[] = [];
     for (let i = 0; i < toAnalyze.length; i++) {
       const g = toAnalyze[i];
+      const previous = oldGames.find((old) => old.id === gameId(g));
+      // Refreshing a legacy report for theory data must never downgrade a deeper move analysis
+      // that was already saved in it.
+      const gameDepth = Math.max(depth, previous?.evalSource === 'engine' ? previous.engineDepth ?? 0 : 0);
       const label = g.headers['White'] && g.headers['Black']
         ? `${g.headers['White']} vs ${g.headers['Black']}`
         : g.headers['ChapterName'] || g.headers['Event'] || 'untitled game';
@@ -545,7 +558,7 @@ async function runAnalysis() {
       const rec = await analyzeGame(toAnalyze[i], {
         username,
         matchKeys,
-        depth,
+        depth: gameDepth,
         engine,
         onPosition: () => {
           done++;
@@ -557,8 +570,10 @@ async function runAnalysis() {
       await new Promise((r) => setTimeout(r, 0)); // let the UI breathe
     }
 
-    const oldGames = baseReportIsSamePlayer ? baseReport!.games : [];
     records = mergeGames(oldGames, newRecords);
+    const oldIds = new Set(oldGames.map((g) => g.id));
+    const addedCount = newRecords.filter((g) => !oldIds.has(g.id)).length;
+    const reanalyzedCount = newRecords.length - addedCount;
 
     const now = new Date().toISOString();
     const meta: ReportMeta = {
@@ -572,7 +587,13 @@ async function runAnalysis() {
       sessions: [
         ...(baseReportIsSamePlayer ? baseReport!.meta.sessions : []),
         ...(newRecords.length
-          ? [{ date: now.slice(0, 10), gamesAdded: newRecords.length, source: 'PGN upload' }]
+          ? [{
+              date: now.slice(0, 10),
+              gamesAdded: addedCount,
+              source: reanalyzedCount
+                ? `PGN upload; ${reanalyzedCount} game(s) refreshed at Stockfish depth ${depth}`
+                : 'PGN upload',
+            }]
           : []),
       ],
     };
@@ -584,12 +605,12 @@ async function runAnalysis() {
 
     currentAgg = aggregate(records);
     currentMarkdown = renderMarkdown(currentAgg, records, meta);
-    renderResults(currentAgg, username, newRecords.length, oldGames.length);
+    renderResults(currentAgg, username, addedCount, oldGames.length, reanalyzedCount);
     exportCard.hidden = false;
     updatePuzzleCard();
     updateTrainPlanCard();
     progressFill.style.width = '100%';
-    progressText.textContent = `Done — ${newRecords.length} new game(s) analyzed, ${records.length} total in report.`;
+    progressText.textContent = `Done — ${addedCount} new game(s) analyzed${reanalyzedCount ? `, ${reanalyzedCount} existing game(s) refreshed at depth ${depth}` : ''}, ${records.length} total in report.`;
   } catch (err) {
     progressText.textContent = `Analysis error: ${err instanceof Error ? err.message : String(err)}`;
     console.error(err);
@@ -986,13 +1007,27 @@ function assessmentHtml(g: GameRecord, openingsByFamily?: Map<string, OpeningRow
   const weaknessesHtml = a.weaknesses.length
     ? `<p><b>Weaknesses</b></p><ul class="pattern-list">${a.weaknesses.map((s) => `<li><span class="neg">✗</span> ${mdBold(esc(s))}</li>`).join('')}</ul>`
     : '';
+  const theoryHtml = a.openingTheory.length
+    ? `<p><b>Opening theory &amp; Stockfish line</b></p><ul class="pattern-list">${a.openingTheory.map((s) => `<li>${mdBold(esc(s))}</li>`).join('')}</ul>`
+    : '';
   return `
     <p><b>Overall:</b> ${mdBold(esc(a.overall))}</p>
+    ${theoryHtml}
     <p><b>By phase</b></p>
     <ul class="pattern-list">${phaseRows}</ul>
     ${strengthsHtml}
     ${weaknessesHtml}
   `;
+}
+
+function theoryCellHtml(g: GameRecord): string {
+  const t = g.openingTheory;
+  if (!t) return '<span class="hint">legacy report</span>';
+  if (t.departurePly === null) return `<span class="pos">Book through move ${Math.ceil(t.knownPlies / 2)}</span>`;
+  const actor = t.departureBy === 'player' ? 'You left' : 'Opponent left';
+  const label = moveLabel(t.departureMoveNo!, t.departureColor!, t.played!);
+  const cls = t.departureBy === 'player' && (t.departureWinPctLoss ?? 0) >= 10 ? 'neg' : 'mid';
+  return `<span class="${cls}">${actor}: ${esc(label)}</span>`;
 }
 
 function gamesTableHtml(games: GameRecord[], openingsByFamily?: Map<string, OpeningRow>): string {
@@ -1020,13 +1055,14 @@ function gamesTableHtml(games: GameRecord[], openingsByFamily?: Map<string, Open
         ? `<button class="btn-icon assess-btn" data-id="${esc(g.id)}" title="Strengths &amp; weaknesses">🩺</button>`
         : '';
       const assessRow = g.analyzed
-        ? `<tr class="explain-row assess-row" data-id="${esc(g.id)}" hidden><td></td><td colspan="6">${assessmentHtml(g, openingsByFamily)}</td></tr>`
+        ? `<tr class="explain-row assess-row" data-id="${esc(g.id)}" hidden><td></td><td colspan="7">${assessmentHtml(g, openingsByFamily)}</td></tr>`
         : '';
       return `<tr>
         <td>${esc(g.date)}</td>
         <td>${colorGlyph} ${esc(opponent)}</td>
         <td><span class="${resultCls}">${resultLabel}</span></td>
         <td>${esc(g.family)}</td>
+        <td>${theoryCellHtml(g)}</td>
         <td class="num">${g.accuracy.overall != null ? g.accuracy.overall + '%' : '—'}</td>
         <td class="spark-cell">${spark}</td>
         <td class="num">${liveLink} ${pgnBtn} ${assessBtn}</td>
@@ -1034,7 +1070,7 @@ function gamesTableHtml(games: GameRecord[], openingsByFamily?: Map<string, Open
     })
     .join('');
   return `<div class="games-table-wrap"><table><thead><tr>
-      <th>Date</th><th>Opponent</th><th>Result</th><th>Opening</th><th class="num">Accuracy</th><th>Eval graph</th><th></th>
+      <th>Date</th><th>Opponent</th><th>Result</th><th>Opening</th><th>Theory</th><th class="num">Accuracy</th><th>Eval graph</th><th></th>
     </tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
@@ -1043,18 +1079,18 @@ function renderGamesSection(games: GameRecord[], openings: OpeningRow[]): string
   const openingsByFamily = new Map(openings.map((o) => [o.family, o]));
   return `<div class="card span-2"><h2>📈 Games</h2>
     ${gamesTableHtml(games, openingsByFamily)}
-    <p class="hint">The eval graph tracks the position's evaluation (white's perspective) across the whole game. Click ▶ to open a game in Game Analysis and step through it move by move. Click ⬇ to download that game as a standard PGN with engine evals and flagged-move notes baked in as comments. Click 🩺 for a strengths/weaknesses breakdown of that game's opening, middlegame, and endgame.</p>
+    <p class="hint">Theory marks the first move outside the bundled Lichess opening reference; it is not automatically an error. When an engine depth is selected, click 🩺 for Stockfish 19's verdict and an up-to-10-move model continuation, plus the game's full strengths/weaknesses breakdown. The eval graph tracks the position's evaluation (white's perspective). Click ▶ to review the game or ⬇ to download an annotated PGN.</p>
   </div>`;
 }
 
-function renderResults(a: Aggregates, username: string, newCount: number, oldCount: number) {
+function renderResults(a: Aggregates, username: string, newCount: number, oldCount: number, reanalyzedCount = 0) {
   const p = a.patterns;
   const html: string[] = [];
 
   const unfinishedCount = records.length - a.total.games;
   html.push(`<div class="card">
     <h2>Results for <b>${esc(username)}</b></h2>
-    <p class="section-note">${newCount} newly analyzed game(s)${oldCount ? ` merged with ${oldCount} from the loaded report` : ''} · ${a.analyzedCount} of ${records.length} games have move-quality data${unfinishedCount ? ` · ${unfinishedCount} unfinished/undecided game(s) excluded from W-D-L and score` : ''}</p>
+    <p class="section-note">${newCount} new game(s) analyzed${reanalyzedCount ? ` · ${reanalyzedCount} existing game(s) refreshed with deeper/theory analysis` : ''}${oldCount ? ` · merged with ${oldCount} from the loaded report` : ''} · ${a.analyzedCount} of ${records.length} games have move-quality data${unfinishedCount ? ` · ${unfinishedCount} unfinished/undecided game(s) excluded from W-D-L and score` : ''}</p>
     <div class="summary-cards">
       <div class="stat-card"><span class="big">${a.total.games}</span><span class="label">Games</span></div>
       <div class="stat-card"><span class="big">${a.total.wins}-${a.total.draws}-${a.total.losses}</span><span class="label">W-D-L</span></div>
@@ -1084,7 +1120,17 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
   }
 
   const rc = a.repertoireCoverage;
+  const theoryTracked = records.filter((g) => g.openingTheory);
+  const playerDepartures = theoryTracked.filter((g) => g.openingTheory?.departureBy === 'player');
+  const opponentDepartures = theoryTracked.filter((g) => g.openingTheory?.departureBy === 'opponent');
+  const stayedInBook = theoryTracked.filter((g) => g.openingTheory?.departurePly === null);
   html.push(`<div class="card span-2"><h2>♟ Opening performance</h2>
+    ${theoryTracked.length ? `<div class="summary-cards">
+      <div class="stat-card"><span class="big">${playerDepartures.length}</span><span class="label">You left theory first</span></div>
+      <div class="stat-card"><span class="big">${opponentDepartures.length}</span><span class="label">Opponent left first</span></div>
+      <div class="stat-card"><span class="big">${stayedInBook.length}</span><span class="label">Stayed in book to game end</span></div>
+    </div>
+    <p class="section-note">Theory is matched against the bundled Lichess opening-name database. When engine analysis is enabled, Stockfish 19 separately judges whether the first non-book move was good and supplies the model line inside each game's 🩺 report.</p>` : ''}
     ${
       rc.coveragePct !== null
         ? `<div class="summary-cards">

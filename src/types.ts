@@ -20,6 +20,29 @@ export interface WorstMove {
   best?: string;        // engine best move (SAN) if known
 }
 
+export interface OpeningTheory {
+  /** The bundled Lichess opening-name dataset is a reference book, not a claim that every
+   *  unlisted move is bad. Stockfish supplies the separate move-quality verdict below. */
+  reference: 'Lichess opening database';
+  bookName: string;
+  eco: string;
+  status: 'departed' | 'book-to-end' | 'unrecognized';
+  knownPlies: number;
+  departurePly: number | null; // zero-based index in `sans`
+  departureMoveNo: number | null;
+  departureColor: Color | null;
+  departureBy: 'player' | 'opponent' | null;
+  played: string | null;
+  /** Win-probability loss for the side that made the first non-book move. */
+  departureWinPctLoss: number | null;
+  /** Stockfish recommendation from before the player's departure, or after the opponent's. */
+  best: string | null;
+  engineDepth: number | null;
+  lineStartPly: number;
+  /** SAN continuation, capped at 20 plies (10 full moves). */
+  recommendedLine: string[];
+}
+
 /** Everything needed to rebuild every aggregate — persisted in the .md report. */
 export interface GameRecord {
   id: string;
@@ -68,6 +91,7 @@ export interface GameRecord {
   worstMoves: WorstMove[];
   evalGraph: number[] | null; // white-perspective cp per ply (start position + after each move), clamped for charting; null if not analyzed
   sans: string[]; // SAN for every ply, for reconstructing an annotated PGN on export
+  openingTheory?: OpeningTheory; // optional for backwards compatibility with older saved reports
 }
 
 export interface ReportMeta {

@@ -3,6 +3,8 @@ import type { Engine } from './engine';
 import type { ParsedGame } from './pgn';
 import { gameId, timeClassOf } from './pgn';
 import { identifyOpening } from './openings';
+import { pvToSans, uciToSan } from './engineFormat';
+import { theoryLineStartPly, traceOpeningTheory } from './openingTheory';
 import { inferOwnerColorFromTitle, nameKey } from './playerMatch';
 import type { Color, ErrCounts, GameRecord, Phase, Result, WorstMove } from './types';
 
@@ -82,7 +84,11 @@ function hasPgnEvals(game: ParsedGame): boolean {
 
 /** How many engine evaluations analyzing this game will need (for progress bars). */
 export function positionsNeeded(game: ParsedGame, useEngine: boolean): number {
-  if (!useEngine || hasPgnEvals(game)) return 0;
+  if (!useEngine) return 0;
+  // Even when every move already has a PGN eval, run one fresh Stockfish search at the opening
+  // theory boundary. That produces an engine-backed model continuation instead of presenting a
+  // database boundary as if it were itself a chess verdict.
+  if (hasPgnEvals(game)) return game.moves.length ? 1 : 0;
   return game.moves.length + 1;
 }
 
@@ -107,6 +113,8 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
 
   const sans = game.moves.map((m) => m.san);
   const { eco, opening, family } = identifyOpening(h, sans);
+  const theoryTrace = traceOpeningTheory(sans, userColor, { opening, eco });
+  const theoryStartPly = theoryLineStartPly(theoryTrace, sans.length);
 
   // FEN before each ply, plus the final position.
   const fens = game.moves.map((m) => m.before).concat(game.moves[game.moves.length - 1].after);
@@ -116,6 +124,8 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
   let evals: (number | null)[] = new Array(fens.length).fill(null);
   let bestmoves: (string | null)[] = new Array(fens.length).fill(null);
   let mates: (number | null)[] = new Array(fens.length).fill(null); // side-to-move perspective
+  const pvs: string[][] = Array.from({ length: fens.length }, () => []);
+  const searchDepths: number[] = new Array(fens.length).fill(0);
 
   const finalChess = new Chess(fens[fens.length - 1]);
   const finalMate = finalChess.isCheckmate();
@@ -142,6 +152,19 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
       const sideToMoveIsWhite = fens[i].includes(' w ');
       mates[i] = whiteHasMate === sideToMoveIsWhite ? pliesToMate : -pliesToMate;
     }
+    // PGN eval annotations are enough for move-quality scoring, but they do not include a
+    // dependable principal variation. Run one targeted Stockfish 19 search so every game's
+    // theory section can recommend a concrete continuation without re-analyzing every position.
+    if (opts.engine && opts.depth > 0) {
+      const pos = new Chess(fens[theoryStartPly]);
+      if (!pos.isGameOver()) {
+        const r = await opts.engine.evaluate(fens[theoryStartPly], opts.depth);
+        bestmoves[theoryStartPly] = r.bestmove;
+        pvs[theoryStartPly] = r.pv;
+        searchDepths[theoryStartPly] = r.depth;
+      }
+      opts.onPosition?.();
+    }
   } else if (opts.engine && opts.depth > 0) {
     evalSource = 'engine';
     for (let i = 0; i < fens.length; i++) {
@@ -156,6 +179,8 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
         evals[i] = whiteCp;
         bestmoves[i] = r.bestmove;
         mates[i] = r.mateIn;
+        pvs[i] = r.pv;
+        searchDepths[i] = r.depth;
       }
       opts.onPosition?.();
     }
@@ -310,6 +335,23 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
       ? (accSums.opening.sum + accSums.middlegame.sum + accSums.endgame.sum) / allN
       : null;
 
+  let departureWinPctLoss: number | null = null;
+  if (theoryTrace.departurePly !== null) {
+    const i = theoryTrace.departurePly;
+    const before = evals[i];
+    const after = evals[i + 1];
+    if (before !== null && after !== null && theoryTrace.departureColor) {
+      const beforeWhite = winPct(before);
+      const afterWhite = winPct(after);
+      const moverBefore = theoryTrace.departureColor === 'w' ? beforeWhite : 100 - beforeWhite;
+      const moverAfter = theoryTrace.departureColor === 'w' ? afterWhite : 100 - afterWhite;
+      departureWinPctLoss = Math.max(0, Math.round((moverBefore - moverAfter) * 10) / 10);
+    }
+  }
+  const theoryBestUci = bestmoves[theoryStartPly];
+  const theoryBest = theoryBestUci ? uciToSan(fens[theoryStartPly], theoryBestUci) : null;
+  const theoryLine = pvToSans(fens[theoryStartPly], pvs[theoryStartPly], 20);
+
   return {
     id: gameId(game),
     date: h['UTCDate'] || h['Date'] || '????.??.??',
@@ -357,5 +399,14 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
     worstMoves: keptMoves,
     evalGraph: analyzed ? evals.map((v) => Math.max(-1000, Math.min(1000, v ?? 0))) : null,
     sans,
+    openingTheory: {
+      reference: 'Lichess opening database',
+      ...theoryTrace,
+      departureWinPctLoss,
+      best: theoryBest,
+      engineDepth: searchDepths[theoryStartPly] || null,
+      lineStartPly: theoryStartPly,
+      recommendedLine: theoryLine,
+    },
   };
 }

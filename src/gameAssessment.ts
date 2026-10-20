@@ -1,5 +1,6 @@
 import type { Color, ErrCounts, GameRecord, Phase, WorstMove } from './types';
 import type { OpeningRow } from './aggregate';
+import { moveLabel } from './openingTheory';
 
 const PHASES: Phase[] = ['opening', 'middlegame', 'endgame'];
 const PHASE_LABEL: Record<Phase, string> = { opening: 'Opening', middlegame: 'Middlegame', endgame: 'Endgame' };
@@ -20,6 +21,7 @@ export interface GameAssessment {
   strengths: string[];
   weaknesses: string[];
   phases: PhaseAssessment[]; // always opening, middlegame, endgame in order
+  openingTheory: string[];
 }
 
 /** Accuracy band matching the common chess.com/lichess convention, used consistently across
@@ -118,7 +120,7 @@ function assessPhase(g: GameRecord, phase: Phase, opening?: OpeningRow): PhaseAs
         : '';
     if ((b === 'excellent' || b === 'solid') && errors.blunders === 0 && !isDecisive) {
       verdict = 'strength';
-      summary = `${accuracy}% accuracy, no serious errors — left theory in good shape.${extraDetail}${prepNote}`;
+      summary = `${accuracy}% accuracy, no serious errors — handled the opening accurately.${extraDetail}${prepNote}`;
     } else if (b === 'weak' || errors.blunders > 0 || isDecisive) {
       verdict = 'weakness';
       summary = `${accuracy}% accuracy in the opening.${moveDetail}${extraDetail}${decisiveFlag}${prepNote}`;
@@ -156,6 +158,57 @@ function assessPhase(g: GameRecord, phase: Phase, opening?: OpeningRow): PhaseAs
     summary = `${accuracy}% accuracy${typeNote} — adequate but not precise.${moveDetail}${extraDetail}`;
   }
   return { phase, verdict, accuracy, errors, reached, summary };
+}
+
+function formatVariation(g: GameRecord): string | null {
+  const theory = g.openingTheory;
+  if (!theory?.recommendedLine.length) return null;
+  return theory.recommendedLine.map((san, i) => {
+    const ply = theory.lineStartPly + i;
+    const moveNo = Math.floor(ply / 2) + 1;
+    return ply % 2 === 0 ? `${moveNo}.${san}` : `${moveNo}...${san}`;
+  }).join(' ');
+}
+
+/** Book status and engine verdict are kept deliberately separate: an unlisted move can still be
+ *  excellent, while a move that remains in a named line can still be impractical at a given
+ *  level. The first sentence reports the database fact; the rest reports Stockfish 19. */
+export function openingTheoryAssessment(g: GameRecord): string[] {
+  const theory = g.openingTheory;
+  if (!theory) return ['This game predates opening-theory tracking; re-add its PGN to generate a book boundary and Stockfish line.'];
+
+  const out: string[] = [];
+  if (theory.departurePly === null) {
+    const through = theory.knownPlies
+      ? ` through move ${Math.ceil(theory.knownPlies / 2)}`
+      : '';
+    out.push(`Stayed inside the bundled Lichess opening reference${through}: ${theory.bookName}${theory.eco ? ` (${theory.eco})` : ''}.`);
+  } else {
+    const label = moveLabel(theory.departureMoveNo!, theory.departureColor!, theory.played!);
+    const actor = theory.departureBy === 'player' ? 'You' : 'Your opponent';
+    const boundary = theory.status === 'unrecognized'
+      ? `${actor} moved outside the reference from the first move with ${label}.`
+      : `${actor} first left the named reference line ${theory.bookName} with ${label}.`;
+    out.push(boundary);
+
+    if (theory.departureWinPctLoss !== null) {
+      const loss = theory.departureWinPctLoss;
+      const verdict = loss < 2 ? 'engine-approved despite being out of book'
+        : loss < 10 ? 'playable'
+        : loss < 20 ? 'an inaccuracy'
+        : 'a serious mistake';
+      out.push(`Stockfish measured a ${loss}-point win-probability loss for that move: ${verdict}.`);
+    }
+  }
+
+  if (theory.best) {
+    const role = theory.departureBy === 'player' ? 'preferred instead' : theory.departureBy === 'opponent' ? 'recommends as your reply' : 'recommends next';
+    out.push(`Stockfish 19${theory.engineDepth ? ` at depth ${theory.engineDepth}` : ''} ${role}: **${theory.best}**.`);
+  }
+  const variation = formatVariation(g);
+  if (variation) out.push(`Model continuation (up to 10 full moves): **${variation}**`);
+  out.push('Book status is sequence-based and may miss transpositions; “out of book” does not by itself mean “bad.”');
+  return out;
 }
 
 /** Per-game strength/weakness/overall assessment, derived entirely from the already-computed
@@ -236,5 +289,5 @@ export function assessGame(g: GameRecord, opening?: OpeningRow): GameAssessment 
   }
   const overall = `${resultWord} as ${colorWord}, ${g.family || 'unspecified opening'}. ${accText}.${driver}`;
 
-  return { overall, strengths, weaknesses, phases };
+  return { overall, strengths, weaknesses, phases, openingTheory: openingTheoryAssessment(g) };
 }

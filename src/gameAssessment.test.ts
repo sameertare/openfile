@@ -268,3 +268,34 @@ describe('assessGame: clean-game / overall summary', () => {
     expect(result.overall).toContain('Nxe5??');
   });
 });
+
+describe('assessGame: opening theory', () => {
+  it('separates the book departure fact from the Stockfish verdict and model line', () => {
+    const g = baseGame({
+      sans: ['e4', 'e5', 'h4'],
+      openingTheory: {
+        reference: 'Lichess opening database',
+        bookName: "King's Pawn Game",
+        eco: 'C20',
+        status: 'departed',
+        knownPlies: 2,
+        departurePly: 2,
+        departureMoveNo: 2,
+        departureColor: 'w',
+        departureBy: 'player',
+        played: 'h4',
+        departureWinPctLoss: 12.5,
+        best: 'Nf3',
+        engineDepth: 18,
+        lineStartPly: 2,
+        recommendedLine: ['Nf3', 'Nc6', 'Bb5', 'a6'],
+      },
+    });
+    const theory = assessGame(g)!.openingTheory.join(' ');
+    expect(theory).toContain('2.h4');
+    expect(theory).toContain('12.5-point');
+    expect(theory).toContain('depth 18');
+    expect(theory).toContain('2.Nf3 2...Nc6 3.Bb5 3...a6');
+    expect(theory).toContain('does not by itself mean');
+  });
+});

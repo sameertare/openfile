@@ -28,7 +28,7 @@ The player the report is for is **auto-detected**, not picked from a dropdown: w
 
 ## What it analyzes
 
-- **Openings** — every opening played, with W/D/L, score %, colour split and accuracy; **strongest** and **weakest** openings called out in their own tables, alongside a **repertoire coverage** stat (what % of your games followed an opening you've played 2+ times, i.e. "prepared," vs. a one-off/improvised line). When games span more than one time control, an **Openings by time control** section repeats the same breakdown per Bullet/Blitz/Rapid/Classical/Daily — a repertoire that scores well in Rapid can fall apart under Bullet's time pressure, and the aggregate-only view would hide that.
+- **Openings** — every opening played, with W/D/L, score %, colour split and accuracy; **strongest** and **weakest** openings called out in their own tables, alongside a **repertoire coverage** stat. Every game is also traced against the bundled 3,864-line Lichess opening reference: the report says whether the player or opponent left the named line first, identifies the exact move, lets Stockfish 19 judge that move separately, and supplies an up-to-10-full-move engine continuation for study. Sequence-based book matching may miss transpositions, and the UI explicitly avoids treating “out of book” as synonymous with “bad.” When games span more than one time control, an **Openings by time control** section repeats the same breakdown per Bullet/Blitz/Rapid/Classical/Daily.
 - **Game phases** — separate accuracy, inaccuracy/mistake/blunder counts for **opening / middlegame / endgame**, plus which phase decided each loss. An **errors-by-move-number** chart underneath plots inaccuracies/mistakes/blunders against the actual move number they happened on — more granular than the phase split, since two games can reach (say) the endgame at very different move numbers.
 - **Endgames** — which endgame types you reach (rook, pawn, queen…) and your record in each.
 - **Tactics** — missed wins, missed forced mates, missed tactical shots (engine's best was an unplayed capture/check), and your biggest single-move swings.
@@ -91,8 +91,10 @@ Prefer to run the optional backend live too (non-static hosting, or a server-sid
 | Setting | Speed | Use for |
 |---|---|---|
 | Fast (depth 8) | ~1–2 s/game | Large batches, quick pass |
-| Balanced (depth 12) | default | Most cases |
-| Deep (depth 16) | slow | Small, important sets |
+| Balanced (depth 12) | faster | Large sets |
+| Detailed (depth 16) | default | Most reports; stronger move and theory-line analysis |
+| Coach (depth 18) | slow | Small, important sets |
+| Maximum (depth 20) | very slow | A few critical games |
 | No engine | instant | PGNs that already have `[%eval]` tags |
 
 ---

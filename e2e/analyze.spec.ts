@@ -34,4 +34,20 @@ test.describe('Performance Analysis', () => {
     ]);
     expect(download.suggestedFilename()).toMatch(/\.md$/);
   });
+
+  test('shows an engine-backed theory departure and model continuation for each analyzed game', async ({ page }) => {
+    await page.click('#load-sample');
+    await expect(page.locator('#config-card')).toBeVisible({ timeout: 15000 });
+    await page.selectOption('#depth-select', '8');
+    await page.click('#analyze-btn');
+    await expect(page.locator('#results')).toBeVisible({ timeout: 120000 });
+    await expect(page.locator('#results')).toContainText('You left theory first');
+    await expect(page.locator('th', { hasText: 'Theory' }).first()).toBeVisible();
+
+    await page.locator('.assess-btn').first().click();
+    const detail = page.locator('.assess-row:not([hidden])');
+    await expect(detail).toContainText('Opening theory & Stockfish line');
+    await expect(detail).toContainText('Stockfish 19');
+    await expect(detail).toContainText('Model continuation');
+  });
 });

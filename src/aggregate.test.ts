@@ -263,6 +263,25 @@ describe('aggregate: recommendations', () => {
     expect(agg.recommendations.some((r) => r.area === 'Time management')).toBe(true);
   });
 
+  it('turns repeated player theory departures into game-specific Stockfish opening drills', () => {
+    const theory = {
+      reference: 'Lichess opening database' as const,
+      bookName: "King's Pawn Game", eco: 'C20', status: 'departed' as const, knownPlies: 2,
+      departurePly: 2, departureMoveNo: 2, departureColor: 'w' as const,
+      departureBy: 'player' as const, played: 'h4', departureWinPctLoss: 12.5,
+      best: 'Nf3', engineDepth: 18, lineStartPly: 2,
+      recommendedLine: ['Nf3', 'Nc6', 'Bb5', 'a6'],
+    };
+    const games = [
+      game({ accuracy: { overall: 96, opening: 98, middlegame: 96, endgame: 95 }, openingTheory: theory }),
+      game({ accuracy: { overall: 96, opening: 98, middlegame: 96, endgame: 95 }, openingTheory: theory }),
+    ];
+    const opening = aggregate(games).recommendations.find((r) => r.area === 'Opening preparation');
+    expect(opening?.severity).toBe('medium');
+    expect(opening?.why).toContain('first to leave');
+    expect(opening?.drills.some((d) => d.includes("Stockfish 19's line") && d.includes('2.Nf3'))).toBe(true);
+  });
+
   it('every recommendation carries at least one drill', () => {
     const games = [
       game({
