@@ -47,7 +47,7 @@ jobs:
       - run: npm ci
       # Custom domain (openfile.app, see public/CNAME) serves from the site root, so the
       # default base path ("/") is correct here — no --base override needed.
-      - run: npx vite build
+      - run: npm run build
       - run: touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v5
         with:

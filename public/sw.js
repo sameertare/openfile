@@ -16,7 +16,7 @@
  */
 
 // Bump this on any change to this file's caching behavior, to drop old caches on activate.
-const CACHE_NAME = 'openfile-v1';
+const CACHE_NAME = 'openfile-v2-sf19';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

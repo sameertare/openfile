@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "prebuild": "npm run verify:engine",
     "preview": "vite preview",
     "serve": "npm run build && node server/server.mjs",
     "start": "node server/server.mjs",
@@ -14,12 +15,13 @@
     "test:watch": "NODE_OPTIONS=--no-experimental-webstorage vitest",
     "test:e2e": "playwright test",
     "build:openings": "node scripts/build-openings.mjs",
-    "build:lines": "npx tsx scripts/extend-lines.ts"
+    "build:lines": "npx tsx scripts/extend-lines.ts",
+    "verify:engine": "node scripts/verify-engine.mjs"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
     "express": "^4.21.2",
-    "stockfish": "^19.0.0",
+    "stockfish": "19.0.0",
     "xlsx": "file:vendor/xlsx-0.20.3.tgz"
   },
   "devDependencies": {

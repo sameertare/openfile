@@ -275,4 +275,6 @@ Also an **unofficial estimate** (FIDE Handbook B.02) — actual FIDE processing 
 
 ### Engine notes
 
+- Stockfish is pinned to **19.0.0**. All engine-backed tools share `src/engine.ts`; the opening-line generation script uses the same release. `npm run verify:engine` checks that the shipped worker and WASM exactly match that package, rejects extra engine files, verifies the engine's UCI identity, and runs a depth-4 search. This check also runs automatically before production builds, including deployment builds.
+- The offline cache version is bumped for the Stockfish 19 baseline so activation clears previously cached application and engine assets. Existing imported reports and PGN evaluations retain their original analysis; verifying the current engine does not re-analyze historical results.
 - First engine use downloads the ~2 MB Stockfish 19 (lite) build with its NNUE network embedded (served locally from `public/engine`), then it's cached — no separate network file, no cross-origin isolation headers needed.
