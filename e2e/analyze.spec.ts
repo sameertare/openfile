@@ -35,13 +35,15 @@ test.describe('Performance Analysis', () => {
     expect(download.suggestedFilename()).toMatch(/\.md$/);
   });
 
-  test('shows an engine-backed theory departure and model continuation for each analyzed game', async ({ page }) => {
+  test('shows player-only theory departures and engine-backed model continuations', async ({ page }) => {
     await page.click('#load-sample');
     await expect(page.locator('#config-card')).toBeVisible({ timeout: 15000 });
     await page.selectOption('#depth-select', '8');
     await page.click('#analyze-btn');
     await expect(page.locator('#results')).toBeVisible({ timeout: 120000 });
     await expect(page.locator('#results')).toContainText('Your theory departures');
+    await expect(page.locator('#results')).not.toContainText('Opponent left');
+    await expect(page.locator('#results')).not.toContainText('No player departure');
     await expect(page.locator('th', { hasText: 'Theory' }).first()).toBeVisible();
 
     await page.locator('.assess-btn').first().click();

@@ -178,17 +178,12 @@ export function openingTheoryAssessment(g: GameRecord): string[] {
   if (!theory) return ['This game predates opening-theory tracking; re-add its PGN to generate a book boundary and Stockfish line.'];
 
   const out: string[] = [];
-  if (theory.departureBy === 'opponent') {
-    const through = theory.knownPlies
-      ? ` through move ${Math.ceil(theory.knownPlies / 2)}`
-      : '';
-    out.push(`No opening-theory departure is assigned to you in this game. Your game matched ${theory.bookName}${theory.eco ? ` (${theory.eco})` : ''}${through}.`);
-  } else if (theory.departurePly === null) {
+  if (theory.departurePly === null) {
     const through = theory.knownPlies
       ? ` through move ${Math.ceil(theory.knownPlies / 2)}`
       : '';
     out.push(`Stayed inside the bundled Lichess opening reference${through}: ${theory.bookName}${theory.eco ? ` (${theory.eco})` : ''}.`);
-  } else {
+  } else if (theory.departureBy === 'player') {
     const label = moveLabel(theory.departureMoveNo!, theory.departureColor!, theory.played!);
     const boundary = theory.status === 'unrecognized'
       ? `You moved outside the reference from the first move with ${label}.`
@@ -206,12 +201,18 @@ export function openingTheoryAssessment(g: GameRecord): string[] {
   }
 
   if (theory.best) {
-    const role = theory.departureBy === 'player' ? 'preferred instead' : theory.departureBy === 'opponent' ? 'recommends as your reply' : 'recommends next';
+    const role = theory.departureBy === 'player'
+      ? 'preferred instead'
+      : theory.departureBy === 'opponent'
+        ? 'recommends for your next move'
+        : 'recommends next';
     out.push(`Stockfish 19${theory.engineDepth ? ` at depth ${theory.engineDepth}` : ''} ${role}: **${theory.best}**.`);
   }
   const variation = formatVariation(g);
   if (variation) out.push(`Model continuation (up to 10 full moves): **${variation}**`);
-  out.push('Your book status is sequence-based and may miss transpositions; “out of book” does not by itself mean “bad.”');
+  if (theory.departureBy === 'player') {
+    out.push('Your book status is sequence-based and may miss transpositions; “out of book” does not by itself mean “bad.”');
+  }
   return out;
 }
 

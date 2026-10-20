@@ -321,9 +321,10 @@ describe('assessGame: opening theory', () => {
       },
     });
     const theory = assessGame(g)!.openingTheory.join(' ');
-    expect(theory).toContain('No opening-theory departure is assigned to you');
-    expect(theory).toContain('recommends as your reply');
-    expect(theory).not.toContain('Your opponent');
+    expect(theory).toContain('recommends for your next move');
+    expect(theory).toContain('Model continuation');
+    expect(theory).not.toContain('departure');
+    expect(theory).not.toContain('opponent');
     expect(theory).not.toContain('2...h5');
   });
 });
