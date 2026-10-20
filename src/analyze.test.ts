@@ -156,6 +156,16 @@ describe('analyzeGame: PGN-eval path (no engine needed)', () => {
       recommendedLine: ['Ba4', 'Nf6', 'O-O', 'Be7', 'Re1', 'b5', 'Bb3', 'd6', 'c3', 'O-O'],
     });
   });
+
+  it("does not grade an opponent's first move beyond the opening reference", async () => {
+    const opponentLeaves = `[Event "e"]\n[Site "s"]\n[White "Hero"]\n[Black "Villain"]\n[Result "1-0"]\n\n1. e4 { [%eval 0.2] } e5 { [%eval 0.2] } 2. Nf3 { [%eval 0.3] } h5 { [%eval 1.5] } 3. d4 { [%eval 1.4] } 1-0`;
+    const record = await analyzeGame(parseGame(opponentLeaves)!, opts());
+    expect(record.openingTheory).toMatchObject({
+      departureBy: 'opponent',
+      played: 'h5',
+      departureWinPctLoss: null,
+    });
+  });
 });
 
 describe('analyzeGame: no analysis available', () => {

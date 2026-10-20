@@ -278,8 +278,28 @@ describe('aggregate: recommendations', () => {
     ];
     const opening = aggregate(games).recommendations.find((r) => r.area === 'Opening preparation');
     expect(opening?.severity).toBe('medium');
-    expect(opening?.why).toContain('first to leave');
+    expect(opening?.why).toContain('moved beyond');
     expect(opening?.drills.some((d) => d.includes("Stockfish 19's line") && d.includes('2.Nf3'))).toBe(true);
+  });
+
+  it('does not turn an opponent book boundary into a player training drill', () => {
+    const opponentBoundary = {
+      reference: 'Lichess opening database' as const,
+      bookName: "King's Pawn Game", eco: 'C20', status: 'departed' as const, knownPlies: 3,
+      departurePly: 3, departureMoveNo: 2, departureColor: 'b' as const,
+      departureBy: 'opponent' as const, played: 'h5', departureWinPctLoss: null,
+      best: 'd4', engineDepth: 18, lineStartPly: 4,
+      recommendedLine: ['d4', 'exd4', 'Nf3', 'Nc6'],
+    };
+    const games = [game({
+      accuracy: { overall: 60, opening: 55, middlegame: 70, endgame: 70 },
+      errors: { opening: errCounts({ mistakes: 3 }), middlegame: errCounts(), endgame: errCounts() },
+      openingTheory: opponentBoundary,
+    })];
+    const opening = aggregate(games).recommendations.find((r) => r.area === 'Opening preparation');
+    expect(opening).toBeDefined();
+    expect(opening?.drills.join(' ')).not.toContain('h5');
+    expect(opening?.drills.join(' ')).not.toContain('Opponent');
   });
 
   it('every recommendation carries at least one drill', () => {

@@ -178,17 +178,21 @@ export function openingTheoryAssessment(g: GameRecord): string[] {
   if (!theory) return ['This game predates opening-theory tracking; re-add its PGN to generate a book boundary and Stockfish line.'];
 
   const out: string[] = [];
-  if (theory.departurePly === null) {
+  if (theory.departureBy === 'opponent') {
+    const through = theory.knownPlies
+      ? ` through move ${Math.ceil(theory.knownPlies / 2)}`
+      : '';
+    out.push(`No opening-theory departure is assigned to you in this game. Your game matched ${theory.bookName}${theory.eco ? ` (${theory.eco})` : ''}${through}.`);
+  } else if (theory.departurePly === null) {
     const through = theory.knownPlies
       ? ` through move ${Math.ceil(theory.knownPlies / 2)}`
       : '';
     out.push(`Stayed inside the bundled Lichess opening reference${through}: ${theory.bookName}${theory.eco ? ` (${theory.eco})` : ''}.`);
   } else {
     const label = moveLabel(theory.departureMoveNo!, theory.departureColor!, theory.played!);
-    const actor = theory.departureBy === 'player' ? 'You' : 'Your opponent';
     const boundary = theory.status === 'unrecognized'
-      ? `${actor} moved outside the reference from the first move with ${label}.`
-      : `${actor} first left the named reference line ${theory.bookName} with ${label}.`;
+      ? `You moved outside the reference from the first move with ${label}.`
+      : `You left the named reference line ${theory.bookName} with ${label}.`;
     out.push(boundary);
 
     if (theory.departureWinPctLoss !== null) {
@@ -207,7 +211,7 @@ export function openingTheoryAssessment(g: GameRecord): string[] {
   }
   const variation = formatVariation(g);
   if (variation) out.push(`Model continuation (up to 10 full moves): **${variation}**`);
-  out.push('Book status is sequence-based and may miss transpositions; “out of book” does not by itself mean “bad.”');
+  out.push('Your book status is sequence-based and may miss transpositions; “out of book” does not by itself mean “bad.”');
   return out;
 }
 

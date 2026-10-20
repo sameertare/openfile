@@ -41,7 +41,7 @@ test.describe('Performance Analysis', () => {
     await page.selectOption('#depth-select', '8');
     await page.click('#analyze-btn');
     await expect(page.locator('#results')).toBeVisible({ timeout: 120000 });
-    await expect(page.locator('#results')).toContainText('You left theory first');
+    await expect(page.locator('#results')).toContainText('Your theory departures');
     await expect(page.locator('th', { hasText: 'Theory' }).first()).toBeVisible();
 
     await page.locator('.assess-btn').first().click();

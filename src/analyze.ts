@@ -336,7 +336,11 @@ export async function analyzeGame(game: ParsedGame, opts: AnalyzeOptions): Promi
       : null;
 
   let departureWinPctLoss: number | null = null;
-  if (theoryTrace.departurePly !== null) {
+  // Only grade an out-of-book move when it belongs to the player whose games are being
+  // analyzed. We still retain an opponent boundary internally so the engine can start after
+  // that move and recommend the player's reply, but opponent play must not be presented as one
+  // of the uploaded player's theory departures.
+  if (theoryTrace.departurePly !== null && theoryTrace.departureBy === 'player') {
     const i = theoryTrace.departurePly;
     const before = evals[i];
     const after = evals[i + 1];

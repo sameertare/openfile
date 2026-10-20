@@ -298,4 +298,32 @@ describe('assessGame: opening theory', () => {
     expect(theory).toContain('2.Nf3 2...Nc6 3.Bb5 3...a6');
     expect(theory).toContain('does not by itself mean');
   });
+
+  it("does not attribute an opponent's book boundary as a theory departure", () => {
+    const g = baseGame({
+      sans: ['e4', 'e5', 'Nf3', 'h5', 'd4'],
+      openingTheory: {
+        reference: 'Lichess opening database',
+        bookName: "King's Pawn Game",
+        eco: 'C20',
+        status: 'departed',
+        knownPlies: 3,
+        departurePly: 3,
+        departureMoveNo: 2,
+        departureColor: 'b',
+        departureBy: 'opponent',
+        played: 'h5',
+        departureWinPctLoss: null,
+        best: 'd4',
+        engineDepth: 18,
+        lineStartPly: 4,
+        recommendedLine: ['d4', 'exd4', 'Nf3', 'Nc6'],
+      },
+    });
+    const theory = assessGame(g)!.openingTheory.join(' ');
+    expect(theory).toContain('No opening-theory departure is assigned to you');
+    expect(theory).toContain('recommends as your reply');
+    expect(theory).not.toContain('Your opponent');
+    expect(theory).not.toContain('2...h5');
+  });
 });

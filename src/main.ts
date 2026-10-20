@@ -1023,11 +1023,13 @@ function assessmentHtml(g: GameRecord, openingsByFamily?: Map<string, OpeningRow
 function theoryCellHtml(g: GameRecord): string {
   const t = g.openingTheory;
   if (!t) return '<span class="hint">legacy report</span>';
+  // Opponent boundaries remain in the saved analysis only to anchor Stockfish's recommended
+  // reply. The report's theory-departure label belongs exclusively to the analyzed player.
+  if (t.departureBy === 'opponent') return '<span class="hint">No player departure</span>';
   if (t.departurePly === null) return `<span class="pos">Book through move ${Math.ceil(t.knownPlies / 2)}</span>`;
-  const actor = t.departureBy === 'player' ? 'You left' : 'Opponent left';
   const label = moveLabel(t.departureMoveNo!, t.departureColor!, t.played!);
-  const cls = t.departureBy === 'player' && (t.departureWinPctLoss ?? 0) >= 10 ? 'neg' : 'mid';
-  return `<span class="${cls}">${actor}: ${esc(label)}</span>`;
+  const cls = (t.departureWinPctLoss ?? 0) >= 10 ? 'neg' : 'mid';
+  return `<span class="${cls}">You left: ${esc(label)}</span>`;
 }
 
 function gamesTableHtml(games: GameRecord[], openingsByFamily?: Map<string, OpeningRow>): string {
@@ -1079,7 +1081,7 @@ function renderGamesSection(games: GameRecord[], openings: OpeningRow[]): string
   const openingsByFamily = new Map(openings.map((o) => [o.family, o]));
   return `<div class="card span-2"><h2>📈 Games</h2>
     ${gamesTableHtml(games, openingsByFamily)}
-    <p class="hint">Theory marks the first move outside the bundled Lichess opening reference; it is not automatically an error. When an engine depth is selected, click 🩺 for Stockfish 19's verdict and an up-to-10-move model continuation, plus the game's full strengths/weaknesses breakdown. The eval graph tracks the position's evaluation (white's perspective). Click ▶ to review the game or ⬇ to download an annotated PGN.</p>
+    <p class="hint">Theory only flags when the analyzed player moves outside the bundled Lichess opening reference; an opponent's departure is not attributed or counted. It is not automatically an error. When an engine depth is selected, click 🩺 for Stockfish 19's verdict and an up-to-10-move model continuation, plus the game's full strengths/weaknesses breakdown. The eval graph tracks the position's evaluation (white's perspective). Click ▶ to review the game or ⬇ to download an annotated PGN.</p>
   </div>`;
 }
 
@@ -1122,15 +1124,13 @@ function renderResults(a: Aggregates, username: string, newCount: number, oldCou
   const rc = a.repertoireCoverage;
   const theoryTracked = records.filter((g) => g.openingTheory);
   const playerDepartures = theoryTracked.filter((g) => g.openingTheory?.departureBy === 'player');
-  const opponentDepartures = theoryTracked.filter((g) => g.openingTheory?.departureBy === 'opponent');
-  const stayedInBook = theoryTracked.filter((g) => g.openingTheory?.departurePly === null);
+  const noPlayerDeparture = theoryTracked.length - playerDepartures.length;
   html.push(`<div class="card span-2"><h2>♟ Opening performance</h2>
     ${theoryTracked.length ? `<div class="summary-cards">
-      <div class="stat-card"><span class="big">${playerDepartures.length}</span><span class="label">You left theory first</span></div>
-      <div class="stat-card"><span class="big">${opponentDepartures.length}</span><span class="label">Opponent left first</span></div>
-      <div class="stat-card"><span class="big">${stayedInBook.length}</span><span class="label">Stayed in book to game end</span></div>
+      <div class="stat-card"><span class="big">${playerDepartures.length}</span><span class="label">Your theory departures</span></div>
+      <div class="stat-card"><span class="big">${noPlayerDeparture}</span><span class="label">No player departure</span></div>
     </div>
-    <p class="section-note">Theory is matched against the bundled Lichess opening-name database. When engine analysis is enabled, Stockfish 19 separately judges whether the first non-book move was good and supplies the model line inside each game's 🩺 report.</p>` : ''}
+    <p class="section-note">Theory is matched against the bundled Lichess opening-name database and only the analyzed player's departure is reported. When engine analysis is enabled, Stockfish 19 separately judges the player's non-book move and supplies a model line inside each game's 🩺 report.</p>` : ''}
     ${
       rc.coveragePct !== null
         ? `<div class="summary-cards">

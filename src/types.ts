@@ -33,7 +33,7 @@ export interface OpeningTheory {
   departureColor: Color | null;
   departureBy: 'player' | 'opponent' | null;
   played: string | null;
-  /** Win-probability loss for the side that made the first non-book move. */
+  /** Win-probability loss for the analyzed player's non-book move; never grades an opponent. */
   departureWinPctLoss: number | null;
   /** Stockfish recommendation from before the player's departure, or after the opponent's. */
   best: string | null;
